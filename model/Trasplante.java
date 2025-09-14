@@ -55,4 +55,21 @@ public class Trasplante {
     }
     
     //Metodos Adicionales   
+    //validar compatibilidad
+    public boolean esCompatible() {
+        return donor != null && receiver != null && !donor.equals(receiver);
+    }
+    //registrar rechazo
+    public void registrarRechazo(String motivo) {
+        this.rejectionHistory = "Rechazo previo registrado";
+        this.rejectionReason = motivo;
+    }
+    //resumen de trasplante
+    public String resumen() {
+        return "Trasplante de " + organType + 
+               " entre donante: " + donor + " y receptor: " + receiver +
+               (rejectionReason != null ? ". Motivo de rechazo: " + rejectionReason : "");
+    }
+
+
 }
