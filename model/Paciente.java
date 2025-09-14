@@ -8,6 +8,7 @@ public class Paciente extends Persona {
     private double height;
     private List<String> allergies;
     private List<Cita> citas;
+    private static List<Paciente> pacientes = new ArrayList<>();
 
     public Paciente(String name, byte age, String id, String bloodType, String address, String phone, double weight, double height, List<String> allergies, List<Cita> citas) {
         super(name, age, id, bloodType, address, phone);
@@ -51,9 +52,6 @@ public class Paciente extends Persona {
     
     //Metodos Adicionales
 
-    // Lista estática para almacenar pacientes
-    private static List<Paciente> pacientes = new ArrayList<>();
-
     // Método para añadir un paciente
     public static void añadir(Paciente paciente) {
         pacientes.add(paciente);
@@ -67,6 +65,16 @@ public class Paciente extends Persona {
     // Método para obtener la lista de pacientes
     public static List<Paciente> getPacientes() {
         return pacientes;
+    }
+
+    // Método para buscar un paciente por ID
+    public static Paciente elegirPaciente(String id) {
+        for (Paciente paciente : pacientes) {
+            if (paciente.getId().equals(id)) {
+                return paciente;
+            }
+        }
+        return null;
     }
 
 }
