@@ -1,6 +1,7 @@
 package model;
 
 import java.util.List;
+import java.util.ArrayList; 
 
 public class Paciente extends Persona {
     private double weight;
@@ -49,5 +50,23 @@ public class Paciente extends Persona {
     }
     
     //Metodos Adicionales
+
+    // Lista estática para almacenar pacientes
+    private static List<Paciente> pacientes = new ArrayList<>();
+
+    // Método para añadir un paciente
+    public static void añadir(Paciente paciente) {
+        pacientes.add(paciente);
+    }
+
+    // Método para eliminar un paciente
+    public static void eliminar(Paciente paciente) {
+        pacientes.remove(paciente);
+    }
+
+    // Método para obtener la lista de pacientes
+    public static List<Paciente> getPacientes() {
+        return pacientes;
+    }
 
 }

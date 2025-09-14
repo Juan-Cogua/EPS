@@ -1,5 +1,8 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class Persona {
     private String name;
     private byte age;
@@ -65,6 +68,7 @@ class Persona {
     public void setPhone(String phone) {
         this.phone = phone;
     }
-    
     //Metodos Adicionales
+    
+    
 }

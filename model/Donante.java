@@ -1,5 +1,7 @@
 package model;
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 
 public class Donante extends Persona {
     private  Date birthDate;
@@ -47,6 +49,24 @@ public class Donante extends Persona {
         this.eligibility = eligibility;
     }
     //Metodos Adicionales
+
+    // Lista estática para almacenar donantes
+    private static List<Donante> donantes = new ArrayList<>();
+
+    // Método para añadir un donante
+    public static void añadir(Donante donante) {
+        donantes.add(donante);
+    }
+
+    // Método para eliminar un donante
+    public static void eliminar(Donante donante) {
+        donantes.remove(donante);
+    }
+
+    // Método para obtener la lista de donantes
+    public static List<Donante> getDonantes() {
+        return donantes;
+    }
     
 
 }
