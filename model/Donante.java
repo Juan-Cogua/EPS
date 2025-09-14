@@ -1,0 +1,52 @@
+package model;
+import java.util.Date;
+
+public class Donante extends Persona {
+    private  Date birthDate;
+    private String donationType;
+    private String healthStatus;
+    private boolean eligibility;
+
+    public Donante(String name, byte age, String id, String bloodType, String address, String phone, Date birthDate, String donationType, String healthStatus, boolean eligibility) {
+        super(name, age, id, bloodType, address, phone);
+        this.birthDate = birthDate;
+        this.donationType = donationType;
+        this.healthStatus = healthStatus;
+        this.eligibility = eligibility;
+    }
+
+    public Date getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(Date birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public String getDonationType() {
+        return donationType;
+    }
+
+    public void setDonationType(String donationType) {
+        this.donationType = donationType;
+    }
+
+    public String getHealthStatus() {
+        return healthStatus;
+    }
+
+    public void setHealthStatus(String healthStatus) {
+        this.healthStatus = healthStatus;
+    }
+
+    public boolean isEligibility() {
+        return eligibility;
+    }
+
+    public void setEligibility(boolean eligibility) {
+        this.eligibility = eligibility;
+    }
+    //Metodos Adicionales
+    
+
+}
