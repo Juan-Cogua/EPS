@@ -63,11 +63,11 @@ public class Cita {
         this.time = nuevaHora;
         System.out.println("La cita ha sido reprogramada para: " + nuevaFecha + " a las " + nuevaHora);
     }
-    //resumen de la cita
+    //resumen cita
     public String resumen() {
         return "Cita de " + paciente.getName() + " en " + location + 
-               " el " + date + " a las " + time;
+               " el " + date + " a las " + time +
+               (confirmada ? " [CONFIRMADA]" : "") +
+               (cancelada ? " [CANCELADA]" : "");
     }
-
-
 }
