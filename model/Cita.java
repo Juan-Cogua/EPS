@@ -50,12 +50,24 @@ public class Cita {
     
 //Metodos Adicionales
     //confirmar y cancelar citas
-    public void confirmarCita() {
+public void confirmarCita() {
+        this.confirmada = true;
+        this.cancelada = false;
         System.out.println("La cita ha sido confirmada para el paciente " + paciente.getName());
     }
 
     public void cancelarCita() {
+        this.cancelada = true;
+        this.confirmada = false;
         System.out.println("La cita ha sido cancelada para el paciente " + paciente.getName());
+    }
+
+    public boolean isConfirmada() {
+        return confirmada;
+    }
+
+    public boolean isCancelada() {
+        return cancelada;
     }
     //reprogramr la cita
     public void reprogramarCita(Date nuevaFecha, Date nuevaHora) {
