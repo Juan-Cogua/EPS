@@ -1,8 +1,5 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class Persona {
     private String name;
     private byte age;
@@ -18,57 +15,60 @@ class Persona {
         this.bloodType = bloodType;
         this.address = address;
         this.phone = phone;
-
     }
 
-    public String getName() {
-        return name;
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public byte getAge() { return age; }
+    public void setAge(byte age) { this.age = age; }
+
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public String getBloodType() { return bloodType; }
+    public void setBloodType(String bloodType) { this.bloodType = bloodType; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    // Métodos adicionales
+    // 1. Mostrar información resumida
+    public String resumen() {
+        return "Nombre: " + name +
+               ", ID: " + id +
+               ", Edad: " + age +
+               ", Tipo de sangre: " + bloodType +
+               ", Direccion: " + address +
+               ", Telefono: " + phone;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    // 2. Validar si es mayor de edad
+    public boolean esMayorDeEdad() {
+        return age >= 18;
     }
 
-    public byte getAge() {
-        return age;
+    // 3. Actualizar información de contacto
+    public void actualizarContacto(String nuevaDireccion, String nuevoTelefono) {
+        this.address = nuevaDireccion;
+        this.phone = nuevoTelefono;
     }
 
-    public void setAge(byte age) {
-        this.age = age;
+    // 4. Redefinir equals para comparar por ID
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true; 
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Persona persona = (Persona) obj;
+        return id.equals(persona.id); 
     }
 
-    public String getId() {
-        return id;
+    // 5. Redefinir hashCode para mantener consistencia con equals
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getBloodType() {
-        return bloodType;
-    }
-
-    public void setBloodType(String bloodType) {
-        this.bloodType = bloodType;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-    //Metodos Adicionales
-    
-    
 }
