@@ -1,13 +1,13 @@
 package model;
 import java.util.Date;
 
-
-
 public class Cita {
     private Date date;
     private Date time; 
     private String location;
     private Paciente paciente;
+    private boolean confirmada = false;
+    private boolean cancelada = false;
 
     public Cita(Date date, Date time, String location, Paciente paciente) {
         this.date = date;
@@ -47,10 +47,9 @@ public class Cita {
     public void setPaciente(Paciente paciente) {
         this.paciente = paciente;
     }
-    
-//Metodos Adicionales
+    //Metodos Adicionales    
     //confirmar y cancelar citas
-public void confirmarCita() {
+    public void confirmarCita() {
         this.confirmada = true;
         this.cancelada = false;
         System.out.println("La cita ha sido confirmada para el paciente " + paciente.getName());
