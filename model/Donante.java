@@ -67,6 +67,10 @@ public class Donante extends Persona {
     public static List<Donante> getDonantes() {
         return donantes;
     }
-    
+    //metodo para representar en forma de cadena variables
+    @Override
+    public String toString() {
+        return getName() + " (ID: " + getId() + ")";
+    }
 
 }
