@@ -9,7 +9,8 @@ public class Paciente extends Persona {
     private List<String> allergies;
     private List<Cita> citas;
 
-    public Paciente(String name, byte age, String id, String bloodType, String address, String phone,double weight, double height, List<String> allergies, List<Cita> citas) {
+    public Paciente(String name, byte age, String id, String bloodType, String address, String phone,
+                    double weight, double height, List<String> allergies, List<Cita> citas) {
         super(name, age, id, bloodType, address, phone);
         this.weight = weight;
         this.height = height;
@@ -76,4 +77,9 @@ public class Paciente extends Persona {
         }
         return sb.toString();
     }
+    @Override//metodo para representar en forma de cadena variables
+    public String toString() {
+        return getName() + " (ID: " + getId() + ")";
+    }
+
 }
