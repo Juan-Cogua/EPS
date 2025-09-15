@@ -1,4 +1,4 @@
-package UI;
+package IU;
 
 import model.*;
 import javax.swing.*;
