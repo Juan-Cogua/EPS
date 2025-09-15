@@ -10,60 +10,70 @@ import java.util.Date;
 import java.util.List;	
 
 public class EPS_GUI extends JFrame {
-    // Componentes principales
     private JTabbedPane tabbedPane;
     private JTextArea displayArea;
-    
-    // Paneles para cada funcionalidad
+
+    // Modelos y JLists para el panel trasplantes
+    private DefaultListModel<Donante> modeloDonantes;
+    private DefaultListModel<Paciente> modeloPacientes;
+    private JList<Donante> listaDonantes;
+    private JList<Paciente> listaPacientes;
+
     private JPanel pacientePanel;
     private JPanel donantePanel;
     private JPanel citaPanel;
     private JPanel trasplantePanel;
-    
+
     public EPS_GUI() {
         initializeComponents();
         setupLayout();
         setWindowProperties();
     }
-    
+
     private void initializeComponents() {
         tabbedPane = new JTabbedPane();
         displayArea = new JTextArea(10, 50);
         displayArea.setEditable(false);
         displayArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        
+
+        // Inicializar modelos y listas
+        modeloDonantes = new DefaultListModel<>();
+        modeloPacientes = new DefaultListModel<>();
+        listaDonantes = new JList<>(modeloDonantes);
+        listaPacientes = new JList<>(modeloPacientes);
+        modeloDonantes = new DefaultListModel<>();
+        modeloPacientes = new DefaultListModel<>();
+        refrescarListasTransplante(); // <-- Actualiza lista en panel trasplantes
+        listaDonantes = new JList<>(modeloDonantes);
+        listaPacientes = new JList<>(modeloPacientes);
+
         // Crear paneles
         pacientePanel = createPacientePanel();
         donantePanel = createDonantePanel();
         citaPanel = createCitaPanel();
         trasplantePanel = createTrasplantePanel();
+
+
     }
-    
+
     private void setupLayout() {
         setLayout(new BorderLayout());
-        
-        // Agregar pestañas
+		// Agregar pestañas
         tabbedPane.addTab("Pacientes", pacientePanel);
         tabbedPane.addTab("Donantes", donantePanel);
         tabbedPane.addTab("Citas", citaPanel);
         tabbedPane.addTab("Trasplantes", trasplantePanel);
-        
-        // Panel principal
         add(tabbedPane, BorderLayout.CENTER);
-        
-        // Area de información en la parte inferior
+
         JScrollPane scrollPane = new JScrollPane(displayArea);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Información del Sistema"));
         add(scrollPane, BorderLayout.SOUTH);
-        
-        // Panel de botones generales
+		// Panel de botones generales
         JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton clearButton = new JButton("Limpiar Pantalla");
         clearButton.addActionListener(e -> displayArea.setText(""));
         buttonPanel.add(clearButton);
-        
         add(buttonPanel, BorderLayout.NORTH);
-        
     }
     
     private JPanel createPacientePanel() {
@@ -139,7 +149,6 @@ public class EPS_GUI extends JFrame {
 
         JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton addButton = new JButton("Agregar Paciente");
-        //JButton listButton = new JButton("Listar Pacientes");
         JButton deleteButton = new JButton("Eliminar Paciente");
         JButton showHistoryButton = new JButton("Mostrar Historial");
         
@@ -152,7 +161,7 @@ public class EPS_GUI extends JFrame {
         gbc.gridx = 0; gbc.gridy = ++y;
         gbc.gridwidth = 2;
         formPanel.add(buttonPanel, gbc);
-
+        //añadir paciente
         añadirPacientePanel.add(formPanel, BorderLayout.NORTH);
 
         btnElegirPaciente.addActionListener(e -> {
@@ -273,12 +282,26 @@ public class EPS_GUI extends JFrame {
                     displayArea.append("[ERROR] Nombre e ID son obligatorios.\n");
                     return;
                 }
+                if (weight <= 0) {
+                    displayArea.append("[ERROR] El peso debe ser mayor que cero.\n");
+                    return;
+                }
+                if (height <= 0) {
+                    displayArea.append("[ERROR] La altura debe ser mayor que cero.\n");
+                    return;
+                }
+                if (age < 18) {
+                    displayArea.append("[ERROR] El paciente debe ser mayor de edad para registrarse.\n");
+                    return;
+                }
+
                 List<Cita> citas = new ArrayList<>();
                 Paciente paciente = new Paciente(name, age, id, bloodType, address, phone,
                         weight, height, allergies, citas);
                 boolean agregado = Paciente.añadir(paciente);
                 if (agregado) {
                     displayArea.append("[ÉXITO] Paciente agregado: " + paciente.resumen() + "\n");
+                    refrescarListasTransplante();
                     // Limpiar campos
                     nameField.setText("");
                     idField.setText("");
@@ -510,8 +533,8 @@ public class EPS_GUI extends JFrame {
             Donante donante = new Donante(name, age, id, bloodType, address, phone, 
                                         birthDate, donationType, healthStatus, eligibility);
             Donante.añadir(donante);
+            refrescarListasTransplante();
             displayArea.append("Donante agregado: " + name + " (ID: " + id + ")\n");
-            
             // Limpiar campos
             nameField.setText("");
             idField.setText("");
@@ -758,101 +781,123 @@ public class EPS_GUI extends JFrame {
 
 
     private JPanel createTrasplantePanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        
-        JTextField organTypeField = new JTextField(20);
-        JTextField donorField = new JTextField(20);
-        JTextField receiverField = new JTextField(20);
-        JTextArea rejectionHistoryArea = new JTextArea(3, 20);
-        JTextField rejectionReasonField = new JTextField(20);
-        
-        gbc.gridx = 0; gbc.gridy = 0;
-        formPanel.add(new JLabel("Tipo de Órgano:"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(organTypeField, gbc);
-        
-        gbc.gridx = 0; gbc.gridy = 1;
-        formPanel.add(new JLabel("Donante:"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(donorField, gbc);
-        
-        gbc.gridx = 0; gbc.gridy = 2;
-        formPanel.add(new JLabel("Receptor:"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(receiverField, gbc);
-        
-        gbc.gridx = 0; gbc.gridy = 3;
-        formPanel.add(new JLabel("Historial de Rechazo:"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(new JScrollPane(rejectionHistoryArea), gbc);
-        
-        gbc.gridx = 0; gbc.gridy = 4;
-        formPanel.add(new JLabel("Razón de Rechazo:"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(rejectionReasonField, gbc);
-        
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+
+        JTextArea displayAreaTransplante = new JTextArea(10, 40);
+        displayAreaTransplante.setEditable(false);
+        JScrollPane scrollDisplay = new JScrollPane(displayAreaTransplante);
+        panel.add(scrollDisplay, BorderLayout.SOUTH);
+
+        JPanel listsPanel = new JPanel(new GridLayout(1, 2, 10, 10));
+
+        // Usar las variables globales listaDonantes y listaPacientes
+        listaDonantes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JScrollPane donanteScroll = new JScrollPane(listaDonantes);
+        donanteScroll.setBorder(BorderFactory.createTitledBorder("Donantes"));
+        listsPanel.add(donanteScroll);
+
+        listaPacientes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JScrollPane pacienteScroll = new JScrollPane(listaPacientes);
+        pacienteScroll.setBorder(BorderFactory.createTitledBorder("Pacientes"));
+        listsPanel.add(pacienteScroll);
+
+        panel.add(listsPanel, BorderLayout.CENTER);
+
         JPanel buttonPanel = new JPanel(new FlowLayout());
-        JButton createButton = new JButton("Crear Trasplante");
-        JButton validateButton = new JButton("Validar Compatibilidad");
-        JButton rejectButton = new JButton("Registrar Rechazo");
-        
-        createButton.addActionListener(e -> {
-            String organType = organTypeField.getText().trim();
-            String donor = donorField.getText().trim();
-            String receiver = receiverField.getText().trim();
-            String rejectionHistory = rejectionHistoryArea.getText().trim();
-            String rejectionReason = rejectionReasonField.getText().trim();
-            
-            if (organType.isEmpty() || donor.isEmpty() || receiver.isEmpty()) {
-                displayArea.append("Error: Tipo de órgano, donante y receptor son obligatorios.\n");
+        JButton crearBtn = new JButton("Crear Trasplante");
+        JButton validarBtn = new JButton("Validar Compatibilidad");
+        JButton rechazoBtn = new JButton("Registrar Rechazo");
+
+        buttonPanel.add(crearBtn);
+        buttonPanel.add(validarBtn);
+        buttonPanel.add(rechazoBtn);
+
+        panel.add(buttonPanel, BorderLayout.NORTH);
+
+        crearBtn.addActionListener(e -> {
+            Donante don = listaDonantes.getSelectedValue();
+            Paciente pac = listaPacientes.getSelectedValue();
+            if (don == null || pac == null) {
+                displayAreaTransplante.append("Seleccione donante y paciente.\n");
                 return;
             }
-            
-            Trasplante trasplante = new Trasplante(organType, donor, receiver, 
-                                                 rejectionHistory, rejectionReason);
-            
-            displayArea.append("Trasplante creado: " + trasplante.resumen() + "\n");
-            
-            // Limpiar campos
-            organTypeField.setText("");
-            donorField.setText("");
-            receiverField.setText("");
-            rejectionHistoryArea.setText("");
-            rejectionReasonField.setText("");
+            displayAreaTransplante.append("Trasplante creado: " + don + " -> " + pac + "\n");
         });
-        
-        validateButton.addActionListener(e -> {
-            String donor = donorField.getText().trim();
-            String receiver = receiverField.getText().trim();
-            
-            if (donor.isEmpty() || receiver.isEmpty()) {
-                displayArea.append("Error: Especifique donante y receptor para validar.\n");
+
+        validarBtn.addActionListener(e -> {
+            Donante don = listaDonantes.getSelectedValue();
+            Paciente pac = listaPacientes.getSelectedValue();
+            if (don == null || pac == null) {
+                displayAreaTransplante.append("Seleccione donante y paciente.\n");
                 return;
             }
-            
-            Trasplante trasplante = new Trasplante("Temporal", donor, receiver, "", "");
-            boolean compatible = trasplante.esCompatible();
-            
-            displayArea.append("Validación de compatibilidad: " + 
-                             (compatible ? "COMPATIBLE" : "NO COMPATIBLE") + "\n");
+
+            if (esCompatibleSangre(don.getBloodType(), pac.getBloodType())) {
+                displayAreaTransplante.append(
+                    "Compatibilidad sanguínea confirmada: Donante " 
+                    + don.getBloodType() + " ¬ Paciente " + pac.getBloodType() + "\n");
+            } else {
+                displayAreaTransplante.append(
+                    "No hay compatibilidad sanguínea: Donante " 
+                    + don.getBloodType() + " ¬ Paciente " + pac.getBloodType() + "\n");
+            }
         });
-        
-        buttonPanel.add(createButton);
-        buttonPanel.add(validateButton);
-        buttonPanel.add(rejectButton);
-        
-        gbc.gridx = 0; gbc.gridy = 5;
-        gbc.gridwidth = 2;
-        formPanel.add(buttonPanel, gbc);
-        
-        panel.add(formPanel, BorderLayout.NORTH);
+
+        rechazoBtn.addActionListener(e -> {
+            Paciente pac = listaPacientes.getSelectedValue();
+            if (pac == null) {
+                displayAreaTransplante.append("Seleccione paciente.\n");
+                return;
+            }
+            displayAreaTransplante.append("Rechazo registrado para paciente: " + pac + "\n");
+        });
+
         return panel;
     }
-    
+
+    private boolean esCompatibleSangre(String donante, String receptor) {
+        donante = donante.toUpperCase();
+        receptor = receptor.toUpperCase();
+
+        if (donante.equals("O-")) {
+            return receptor.matches("^(O|A|B|AB)[+-]$");
+        }
+        if (donante.equals("O+")) {
+            return receptor.endsWith("+");
+        }
+        if (donante.equals("A-")) {
+            return receptor.startsWith("A") || receptor.startsWith("AB");
+        }
+        if (donante.equals("A+")) {
+            return receptor.equals("A+") || receptor.equals("AB+");
+        }
+        if (donante.equals("B-")) {
+            return receptor.startsWith("B") || receptor.startsWith("AB");
+        }
+        if (donante.equals("B+")) {
+            return receptor.equals("B+") || receptor.equals("AB+");
+        }
+        if (donante.equals("AB-")) {
+            return receptor.equals("AB-") || receptor.equals("AB+");
+        }
+        if (donante.equals("AB+")) {
+            return receptor.equals("AB+");
+        }
+        return false;
+    }
+
+
+    // Método que actualiza las listas del panel de trasplante
+    public void refrescarListasTransplante() {
+        modeloDonantes.clear();
+        for (Donante d : Donante.getDonantes()) {
+            modeloDonantes.addElement(d);
+        }
+        modeloPacientes.clear();
+        for (Paciente p : Paciente.getPacientes()) {
+            modeloPacientes.addElement(p);
+        }
+    }
     private void setWindowProperties() {
         setTitle("Sistema EPS - Gestión Hospitalaria");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
