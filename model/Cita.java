@@ -47,7 +47,8 @@ public class Cita {
     public void setPaciente(Paciente paciente) {
         this.paciente = paciente;
     }
-    //Metodos Adicionales    
+     //Metodos Adicionales    
+
     //confirmar y cancelar citas
     public void confirmarCita() {
         this.confirmada = true;
