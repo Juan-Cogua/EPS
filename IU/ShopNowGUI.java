@@ -7,7 +7,7 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+import java.util.List;	
 
 public class EPS_GUI extends JFrame {
     // Componentes principales
@@ -63,17 +63,32 @@ public class EPS_GUI extends JFrame {
         buttonPanel.add(clearButton);
         
         add(buttonPanel, BorderLayout.NORTH);
+        
     }
     
     private JPanel createPacientePanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        // Panel de formulario
+        JPanel menuPacientesPanel = new JPanel(new FlowLayout());
+        JButton btnElegirPaciente = new JButton("Elegir Paciente");
+        JButton btnAñadirPaciente = new JButton("Añadir Paciente");
+        JButton btnEliminarPaciente = new JButton("Eliminar Paciente");
+        JButton listButton = new JButton("Listar Pacientes");
+        menuPacientesPanel.add(btnElegirPaciente);
+        menuPacientesPanel.add(btnAñadirPaciente);
+        menuPacientesPanel.add(btnEliminarPaciente);
+
+        JPanel cardPacientePanel = new JPanel();
+        CardLayout cardPacienteLayout = new CardLayout();
+        cardPacientePanel.setLayout(cardPacienteLayout);
+
+        JPanel elegirPacientePanel = new JPanel();
+
+        JPanel añadirPacientePanel = new JPanel(new BorderLayout());
         JPanel formPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        // Campos del formulario
         JTextField nameField = new JTextField(20);
         JTextField idField = new JTextField(20);
         JSpinner ageSpinner = new JSpinner(new SpinnerNumberModel(18, 0, 120, 1));
@@ -82,128 +97,210 @@ public class EPS_GUI extends JFrame {
         JTextField phoneField = new JTextField(20);
         JSpinner weightSpinner = new JSpinner(new SpinnerNumberModel(0.0, 0.0, 500.0, 0.1));
         JSpinner heightSpinner = new JSpinner(new SpinnerNumberModel(0.0, 0.0, 3.0, 0.01));
-        JTextField allergiesField = new JTextField(20); // alergias como texto separado por comas
+        JTextField allergiesField = new JTextField(20);
 
         int y = 0;
         gbc.gridx = 0; gbc.gridy = y;
         formPanel.add(new JLabel("Nombre:"), gbc);
         gbc.gridx = 1;
         formPanel.add(nameField, gbc);
-
         gbc.gridx = 0; gbc.gridy = ++y;
         formPanel.add(new JLabel("ID:"), gbc);
         gbc.gridx = 1;
         formPanel.add(idField, gbc);
-
         gbc.gridx = 0; gbc.gridy = ++y;
         formPanel.add(new JLabel("Edad:"), gbc);
         gbc.gridx = 1;
         formPanel.add(ageSpinner, gbc);
-
         gbc.gridx = 0; gbc.gridy = ++y;
         formPanel.add(new JLabel("Tipo de Sangre:"), gbc);
         gbc.gridx = 1;
         formPanel.add(bloodTypeField, gbc);
-
         gbc.gridx = 0; gbc.gridy = ++y;
         formPanel.add(new JLabel("Dirección:"), gbc);
         gbc.gridx = 1;
         formPanel.add(addressField, gbc);
-
         gbc.gridx = 0; gbc.gridy = ++y;
         formPanel.add(new JLabel("Teléfono:"), gbc);
         gbc.gridx = 1;
         formPanel.add(phoneField, gbc);
-
         gbc.gridx = 0; gbc.gridy = ++y;
         formPanel.add(new JLabel("Peso (kg):"), gbc);
         gbc.gridx = 1;
         formPanel.add(weightSpinner, gbc);
-
         gbc.gridx = 0; gbc.gridy = ++y;
         formPanel.add(new JLabel("Altura (m):"), gbc);
         gbc.gridx = 1;
         formPanel.add(heightSpinner, gbc);
-
         gbc.gridx = 0; gbc.gridy = ++y;
         formPanel.add(new JLabel("Alergias (separadas por coma):"), gbc);
         gbc.gridx = 1;
         formPanel.add(allergiesField, gbc);
 
-        // Panel de botones
         JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton addButton = new JButton("Agregar Paciente");
-        JButton listButton = new JButton("Listar Pacientes");
+        //JButton listButton = new JButton("Listar Pacientes");
         JButton deleteButton = new JButton("Eliminar Paciente");
         JButton showHistoryButton = new JButton("Mostrar Historial");
+        
 
-     // Botón Agregar Paciente
-        addButton.addActionListener(e -> {
-            String name = nameField.getText().trim();
-            String id = idField.getText().trim();
-            byte age = ((Integer) ageSpinner.getValue()).byteValue();
-            String bloodType = bloodTypeField.getText().trim().toUpperCase();
-            String address = addressField.getText().trim();
-            String phone = phoneField.getText().replaceAll("\\s+", ""); // quita todos los espacios
-            double weight = ((Double) weightSpinner.getValue()).doubleValue();
-            double height = ((Double) heightSpinner.getValue()).doubleValue();
-            String allergiesText = allergiesField.getText().trim();
-            List<String> allergies = new ArrayList<>();
-            if (!allergiesText.isEmpty()) {
-                for (String allergy : allergiesText.split(",")) {
-                    allergies.add(allergy.trim());
+        buttonPanel.add(addButton);
+        buttonPanel.add(listButton);
+        buttonPanel.add(deleteButton);
+        buttonPanel.add(showHistoryButton);
+
+        gbc.gridx = 0; gbc.gridy = ++y;
+        gbc.gridwidth = 2;
+        formPanel.add(buttonPanel, gbc);
+
+        añadirPacientePanel.add(formPanel, BorderLayout.NORTH);
+
+        btnElegirPaciente.addActionListener(e -> {
+            List<Paciente> pacientes = Paciente.getPacientes();
+            if (pacientes.isEmpty()) {
+                displayArea.append("[INFO] No hay pacientes para elegir.\n");
+                return;
+            }
+            String[] opcionesPacientes = new String[pacientes.size()];
+            for (int i = 0; i < pacientes.size(); i++) {
+                opcionesPacientes[i] = pacientes.get(i).getName() + " (ID: " + pacientes.get(i).getId() + ")";
+            }
+
+            String seleccionado = (String) JOptionPane.showInputDialog(
+                null,
+                "Seleccione un paciente:",
+                "Elegir Paciente",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                opcionesPacientes,
+                opcionesPacientes[0]);
+
+            if (seleccionado != null) {
+                Paciente pacienteSeleccionado = null;
+                for (Paciente p : pacientes) {
+                    String etiqueta = p.getName() + " (ID: " + p.getId() + ")";
+                    if (etiqueta.equals(seleccionado)) {
+                        pacienteSeleccionado = p;
+                        break;
+                    }
+                }
+                if (pacienteSeleccionado != null) {
+                    displayArea.append("[INFO] Paciente seleccionado: " + pacienteSeleccionado.resumen() + "\n");
+                    Object[] options = {"Crear Cita", "Modificar Datos", "Cancelar"};
+                    int opcion = JOptionPane.showOptionDialog(
+                        null,
+                        "¿Qué acción desea realizar con el paciente?",
+                        "Acciones Paciente",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options,
+                        options[0]);
+
+                    switch (opcion) {
+                    case 0: // Crear Cita
+                        tabbedPane.setSelectedIndex(tabbedPane.indexOfTab("Citas"));
+                        displayArea.append("[INFO] Redirigiendo a crear cita...\n");
+                        break;
+                    case 1: // Modificar Datos
+                        JTextField nameFieldMod = new JTextField(pacienteSeleccionado.getName());
+                        JTextField idFieldMod = new JTextField(pacienteSeleccionado.getId());
+                        JTextField phoneFieldMod = new JTextField(pacienteSeleccionado.getPhone());
+
+                        JPanel modPanel = new JPanel(new GridLayout(0, 2));
+                        modPanel.add(new JLabel("Nombre:"));
+                        modPanel.add(nameFieldMod);
+                        modPanel.add(new JLabel("ID:"));
+                        modPanel.add(idFieldMod);
+                        modPanel.add(new JLabel("Teléfono:"));
+                        modPanel.add(phoneFieldMod);
+
+                        int result = JOptionPane.showConfirmDialog(
+                                null,
+                                modPanel,
+                                "Modificar Datos de Paciente",
+                                JOptionPane.OK_CANCEL_OPTION,
+                                JOptionPane.PLAIN_MESSAGE);
+
+                        if (result == JOptionPane.OK_OPTION) {
+                            pacienteSeleccionado.setName(nameFieldMod.getText().trim());
+                            pacienteSeleccionado.setId(idFieldMod.getText().trim());
+                            pacienteSeleccionado.setPhone(phoneFieldMod.getText().trim());
+
+                            displayArea.append("[INFO] Datos actualizados: " + pacienteSeleccionado.resumen() + "\n");
+                        } else {
+                            displayArea.append("[INFO] Modificación cancelada.\n");
+                        }
+                        break;
+                    default:
+                        displayArea.append("[INFO] Acción cancelada.\n");
+                        break;
                 }
             }
+        }
+    });
+        addButton.addActionListener(e -> {
+            try {
+                String name = nameField.getText().trim();
+                String id = idField.getText().trim();
+                byte age = ((Integer) ageSpinner.getValue()).byteValue();
+                String bloodType = bloodTypeField.getText().trim().toUpperCase();
+                String address = addressField.getText().trim();
+                String phone = phoneField.getText().replaceAll("\\s+", "");
+                double weight = ((Double) weightSpinner.getValue()).doubleValue();
+                double height = ((Double) heightSpinner.getValue()).doubleValue();
+                String allergiesText = allergiesField.getText().trim();
+                List<String> allergies = new ArrayList<>();
+                if (!allergiesText.isEmpty()) {
+                    for (String allergy : allergiesText.split(",")) {
+                        allergies.add(allergy.trim());
+                    }
+                }
 
-            // Validar ID: máximo 9 caracteres
-            if (id.length() > 9) {
-                JOptionPane.showMessageDialog(panel, "ID debe tener máximo 9 caracteres.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
+                if (id.length() > 9) {
+                    displayArea.append("[ERROR] ID debe tener máximo 9 caracteres.\n");
+                    return;
+                }
+                if (!phone.matches("^\\d{10}$")) {
+                    displayArea.append("[ERROR] Teléfono inválido. Debe contener exactamente 10 dígitos numéricos.\n");
+                    return;
+                }
+                if (!bloodType.matches("^(A|B|AB|O)[+-]$")) {
+                    displayArea.append("[ERROR] Tipo de sangre inválido. Solo se admiten A, B, AB, O con + o - (ejemplo: A+).\n");
+                    return;
+                }
+                if (name.isEmpty() || id.isEmpty()) {
+                    displayArea.append("[ERROR] Nombre e ID son obligatorios.\n");
+                    return;
+                }
+                List<Cita> citas = new ArrayList<>();
+                Paciente paciente = new Paciente(name, age, id, bloodType, address, phone,
+                        weight, height, allergies, citas);
+                boolean agregado = Paciente.añadir(paciente);
+                if (agregado) {
+                    displayArea.append("[ÉXITO] Paciente agregado: " + paciente.resumen() + "\n");
+                    // Limpiar campos
+                    nameField.setText("");
+                    idField.setText("");
+                    ageSpinner.setValue(18);
+                    bloodTypeField.setText("");
+                    addressField.setText("");
+                    phoneField.setText("");
+                    weightSpinner.setValue(0.0);
+                    heightSpinner.setValue(0.0);
+                    allergiesField.setText("");
+                } else {
+                    displayArea.append("[ERROR] No se pudo agregar el paciente. ID duplicado o error interno.\n");
+                }
+            } catch (Exception ex) {
+                displayArea.append("[ERROR] Excepción al agregar paciente: " + ex.getMessage() + "\n");
             }
-
-            // Validar teléfono: 10 dígitos numéricos sin espacios
-            // phone ya sin espacios, validar que tenga 10 dígitos solo números
-            if (!phone.matches("^\\d{10}$")) {
-                JOptionPane.showMessageDialog(panel, "Teléfono inválido. Debe contener exactamente 10 dígitos numéricos.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Validar tipo de sangre: A, B, AB, O con + o - seguido
-            if (!bloodType.matches("^(A|B|AB|O)[+-]$")) {
-                JOptionPane.showMessageDialog(panel, "Tipo de sangre inválido. Solo se admiten A, B, AB, O con + o - (ejemplo: A+).", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (name.isEmpty() || id.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "Nombre e ID son obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            List<Cita> citas = new ArrayList<>();
-
-            Paciente paciente = new Paciente(name, age, id, bloodType, address, phone,
-                                            weight, height, allergies, citas);
-            Paciente.añadir(paciente);
-            JOptionPane.showMessageDialog(panel, "Paciente agregado: " + paciente.resumen(), "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-            // Limpiar campos
-            nameField.setText("");
-            idField.setText("");
-            ageSpinner.setValue(18);
-            bloodTypeField.setText("");
-            addressField.setText("");
-            phoneField.setText("");
-            weightSpinner.setValue(0.0);
-            heightSpinner.setValue(0.0);
-            allergiesField.setText("");
         });
 
-
-        // Botón Eliminar Paciente
         deleteButton.addActionListener(e -> {
             String id = idField.getText().trim();
             if (id.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "Ingrese un ID para eliminar.", "Error", JOptionPane.ERROR_MESSAGE);
+                displayArea.append("[ERROR] Ingrese un ID para eliminar.\n");
                 return;
             }
             List<Paciente> pacientes = Paciente.getPacientes();
@@ -216,16 +313,16 @@ public class EPS_GUI extends JFrame {
             }
             if (toRemove != null) {
                 Paciente.eliminar(toRemove);
-                JOptionPane.showMessageDialog(panel, "Paciente eliminado: " + toRemove.getName(), "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                displayArea.append("[ÉXITO] Paciente eliminado: " + toRemove.getName() + "\n");
             } else {
-                JOptionPane.showMessageDialog(panel, "No se encontró paciente con ID: " + id, "Error", JOptionPane.ERROR_MESSAGE);
+                displayArea.append("[ERROR] No se encontró paciente con ID: " + id + "\n");
             }
         });
 
         showHistoryButton.addActionListener(e -> {
             String id = idField.getText().trim();
             if (id.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "Por favor ingrese el ID del paciente.", "Error", JOptionPane.ERROR_MESSAGE);
+                displayArea.append("[ERROR] Por favor ingrese el ID del paciente.\n");
                 return;
             }
             Paciente paciente = null;
@@ -236,13 +333,13 @@ public class EPS_GUI extends JFrame {
                 }
             }
             if (paciente == null) {
-                JOptionPane.showMessageDialog(panel, "No se encontró paciente con ID: " + id, "Error", JOptionPane.ERROR_MESSAGE);
+                displayArea.append("[ERROR] No se encontró paciente con ID: " + id + "\n");
                 return;
             }
             String historial = paciente.historialCitas();
             displayArea.append("\nHistorial de Citas - " + paciente.getName() + ":\n" + historial + "\n");
         });
-        //boton lista de pacientes
+
         listButton.addActionListener(e -> {
             List<Paciente> pacientes = Paciente.getPacientes();
             displayArea.append("\n=== LISTA DE PACIENTES ===\n");
@@ -256,23 +353,51 @@ public class EPS_GUI extends JFrame {
             displayArea.append("Total: " + pacientes.size() + " pacientes\n\n");
         });
 
+        cardPacientePanel.add(elegirPacientePanel, "ELEGIR");
+        cardPacientePanel.add(añadirPacientePanel, "AÑADIR");
 
+        // Panel eliminar paciente simple
+        JPanel eliminarPacientePanel = new JPanel(new BorderLayout());
+        JPanel eliminarForm = new JPanel(new FlowLayout());
+        JTextField eliminarIdField = new JTextField(20);
+        JButton eliminarBtn = new JButton("Eliminar Paciente");
+        eliminarForm.add(new JLabel("ID Paciente a eliminar:"));
+        eliminarForm.add(eliminarIdField);
+        eliminarForm.add(eliminarBtn);
+        eliminarPacientePanel.add(eliminarForm, BorderLayout.NORTH);
+        eliminarBtn.addActionListener(e -> {
+            String id = eliminarIdField.getText().trim();
+            if (id.isEmpty()) {
+                displayArea.append("[ERROR] Ingrese ID para eliminar.\n");
+                return;
+            }
+            List<Paciente> pacientes = Paciente.getPacientes();
+            Paciente toRemove = null;
+            for (Paciente p : pacientes) {
+                if (p.getId().equals(id)) {
+                    toRemove = p;
+                    break;
+                }
+            }
+            if (toRemove != null) {
+                Paciente.eliminar(toRemove);
+                displayArea.append("[ÉXITO] Paciente eliminado: " + toRemove.getName() + "\n");
+                eliminarIdField.setText("");
+            } else {
+                displayArea.append("[ERROR] Paciente no encontrado con ID: " + id + "\n");
+            }
+        });
+        cardPacientePanel.add(eliminarPacientePanel, "ELIMINAR");
 
-        buttonPanel.add(addButton);
-        buttonPanel.add(listButton);
-        buttonPanel.add(deleteButton);
-        buttonPanel.add(showHistoryButton);
+        btnElegirPaciente.addActionListener(e -> cardPacienteLayout.show(cardPacientePanel, "ELEGIR"));
+        btnAñadirPaciente.addActionListener(e -> cardPacienteLayout.show(cardPacientePanel, "AÑADIR"));
+        btnEliminarPaciente.addActionListener(e -> cardPacienteLayout.show(cardPacientePanel, "ELIMINAR"));
 
-        gbc.gridx = 0; gbc.gridy = ++y;
-        gbc.gridwidth = 2;
-        formPanel.add(buttonPanel, gbc);
+        panel.add(menuPacientesPanel, BorderLayout.NORTH);
+        panel.add(cardPacientePanel, BorderLayout.CENTER);
 
-        panel.add(formPanel, BorderLayout.NORTH);
         return panel;
     }
-
-
-    
     private JPanel createDonantePanel() {
         JPanel panel = new JPanel(new BorderLayout());
         
@@ -499,7 +624,6 @@ public class EPS_GUI extends JFrame {
 
         buttonPanel.add(createButton);
         buttonPanel.add(listButton);
-        buttonPanel.add(confirmButton);
         buttonPanel.add(cancelButton);
 
         panel.add(formPanel, BorderLayout.CENTER);
@@ -568,34 +692,6 @@ public class EPS_GUI extends JFrame {
             }
             displayArea.append("Total de citas: " + totalCitas + "\n\n");
         });
-
-        confirmButton.addActionListener(e -> {
-            String pacienteId = pacienteIdField.getText().trim();
-            if (pacienteId.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "Ingrese ID del paciente para confirmar cita.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            Paciente paciente = null;
-            for (Paciente p : Paciente.getPacientes()) {
-                if (p.getId().equals(pacienteId)) {
-                    paciente = p;
-                    break;
-                }
-            }
-            if (paciente == null) {
-                JOptionPane.showMessageDialog(panel, "Paciente no encontrado: " + pacienteId, "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            List<Cita> citas = paciente.getCitas();
-            if (citas.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "Paciente no tiene citas para confirmar.", "Información", JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-            Cita ultimaCita = citas.get(citas.size() - 1);
-            ultimaCita.confirmarCita();
-            JOptionPane.showMessageDialog(panel, "Cita confirmada:\n" + ultimaCita.resumen(), "Éxito", JOptionPane.INFORMATION_MESSAGE);
-        });
-
         cancelButton.addActionListener(e -> {
             String pacienteId = pacienteIdField.getText().trim();
             if (pacienteId.isEmpty()) {
