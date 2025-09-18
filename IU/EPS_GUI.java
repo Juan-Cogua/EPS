@@ -25,6 +25,9 @@ public class EPS_GUI extends JFrame {
     private JPanel trasplantePanel;
 
     public EPS_GUI() {
+        // Cargar datos desde archivos al iniciar
+        Paciente.cargarPacientesDesdeArchivo("Paciente.txt");
+        Donante.cargarDonantesDesdeArchivo("Donante.txt");
         initializeComponents();
         setupLayout();
         setWindowProperties();
@@ -106,7 +109,7 @@ public class EPS_GUI extends JFrame {
         JTextField addressField = new JTextField(20);
         JTextField phoneField = new JTextField(20);
         JSpinner weightSpinner = new JSpinner(new SpinnerNumberModel(0.0, 0.0, 500.0, 0.1));
-        JSpinner heightSpinner = new JSpinner(new SpinnerNumberModel(0.0, 0.0, 3.0, 0.01));
+        JSpinner heightSpinner = new JSpinner(new SpinnerNumberModel(0.0, 0.0, 500.0, 0.01));
         JTextField allergiesField = new JTextField(20);
 
         int y = 0;
@@ -301,6 +304,7 @@ public class EPS_GUI extends JFrame {
                 boolean agregado = Paciente.añadir(paciente);
                 if (agregado) {
                     displayArea.append("[ÉXITO] Paciente agregado: " + paciente.resumen() + "\n");
+                    Paciente.guardarPacientesEnArchivo("Paciente.txt"); // Guardar en archivo
                     refrescarListasTransplante();
                     // Limpiar campos
                     nameField.setText("");
@@ -336,6 +340,7 @@ public class EPS_GUI extends JFrame {
             }
             if (toRemove != null) {
                 Paciente.eliminar(toRemove);
+                Paciente.guardarPacientesEnArchivo("Paciente.txt"); // Guardar en archivo
                 displayArea.append("[ÉXITO] Paciente eliminado: " + toRemove.getName() + "\n");
             } else {
                 displayArea.append("[ERROR] No se encontró paciente con ID: " + id + "\n");
@@ -404,6 +409,7 @@ public class EPS_GUI extends JFrame {
             }
             if (toRemove != null) {
                 Paciente.eliminar(toRemove);
+                Paciente.guardarPacientesEnArchivo("Paciente.txt"); // Guardar en archivo
                 displayArea.append("[ÉXITO] Paciente eliminado: " + toRemove.getName() + "\n");
                 eliminarIdField.setText("");
             } else {
@@ -533,6 +539,7 @@ public class EPS_GUI extends JFrame {
             Donante donante = new Donante(name, age, id, bloodType, address, phone, 
                                         birthDate, donationType, healthStatus, eligibility);
             Donante.añadir(donante);
+            Donante.guardarDonantesEnArchivo("Donante.txt"); // Guardar en archivo
             refrescarListasTransplante();
             displayArea.append("Donante agregado: " + name + " (ID: " + id + ")\n");
             // Limpiar campos
@@ -580,6 +587,7 @@ public class EPS_GUI extends JFrame {
             
             if (toRemove != null) {
                 Donante.eliminar(toRemove);
+                Donante.guardarDonantesEnArchivo("Donante.txt"); // Guardar en archivo
                 displayArea.append("Donante eliminado: " + toRemove.getName() + "\n");
             } else {
                 displayArea.append("No se encontró donante con ID: " + id + "\n");

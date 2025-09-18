@@ -1,7 +1,7 @@
 package model;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.io.*;
+import java.util.*;
 
 public class Paciente extends Persona {
     private double weight;
@@ -82,4 +82,60 @@ public class Paciente extends Persona {
         return getName() + " (ID: " + getId() + ")";
     }
 
+    // Guarda todos los pacientes en el archivo especificado
+    public static void guardarPacientesEnArchivo(String ruta) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(ruta))) {
+            for (Paciente p : getPacientes()) {
+                bw.write(p.toArchivo());
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Carga los pacientes desde el archivo especificado
+    public static void cargarPacientesDesdeArchivo(String ruta) {
+        getPacientes().clear();
+        try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                Paciente p = fromArchivo(linea);
+                if (p != null) {
+                    añadir(p);
+                }
+            }
+        } catch (IOException e) {
+            // Si el archivo no existe, lo ignoramos
+        }
+    }
+
+    // Convierte el paciente a una línea de texto para guardar
+    public String toArchivo() {
+        return getName() + ";" + getAge() + ";" + getId() + ";" + getBloodType() + ";" +
+               getAddress() + ";" + getPhone() + ";" + getWeight() + ";" + getHeight() + ";" +
+               String.join(",", getAllergies());
+    }
+
+    // Crea un paciente desde una línea de texto
+    public static Paciente fromArchivo(String linea) {
+        try {
+            String[] parts = linea.split(";");
+            String name = parts[0];
+            byte age = Byte.parseByte(parts[1]);
+            String id = parts[2];
+            String bloodType = parts[3];
+            String address = parts[4];
+            String phone = parts[5];
+            double weight = Double.parseDouble(parts[6]);
+            double height = Double.parseDouble(parts[7]);
+            List<String> allergies = new ArrayList<>();
+            if (parts.length > 8 && !parts[8].isEmpty()) {
+                for (String a : parts[8].split(",")) allergies.add(a.trim());
+            }
+            return new Paciente(name, age, id, bloodType, address, phone, weight, height, allergies, new ArrayList<>());
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
