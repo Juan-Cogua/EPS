@@ -4,12 +4,36 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.*;
 
+/**
+ * Representa un donante en el sistema EPS.
+ *
+ * @author Juan Cogua
+ * @version 1.0
+ */
 public class Donante extends Persona {
-    private  Date birthDate;
+    /** Fecha de nacimiento del donante. */
+    private Date birthDate;
+    /** Tipo de donación que realiza (ej: sangre, plasma, órganos). */
     private String donationType;
+    /** Estado de salud actual del donante. */
     private String healthStatus;
+    /** Indica si el donante es elegible para donar. */
     private boolean eligibility;
 
+    /**
+     * Constructor de Donante.
+     *
+     * @param name Nombre del donante.
+     * @param age Edad.
+     * @param id Identificación.
+     * @param bloodType Tipo de sangre.
+     * @param address Dirección.
+     * @param phone Teléfono.
+     * @param birthDate Fecha de nacimiento.
+     * @param donationType Tipo de donación.
+     * @param healthStatus Estado de salud.
+     * @param eligibility Elegibilidad.
+     */
     public Donante(String name, byte age, String id, String bloodType, String address, String phone, Date birthDate, String donationType, String healthStatus, boolean eligibility) {
         super(name, age, id, bloodType, address, phone);
         this.birthDate = birthDate;
@@ -17,7 +41,7 @@ public class Donante extends Persona {
         this.healthStatus = healthStatus;
         this.eligibility = eligibility;
     }
-
+//getters y setters
     public Date getBirthDate() {
         return birthDate;
     }
@@ -51,25 +75,41 @@ public class Donante extends Persona {
     }
     //Metodos Adicionales
 
-    // Lista estática para almacenar donantes
+     /**
+     * Lista estática para almacenar todos los objetos Donante en memoria.
+     */
     private static List<Donante> donantes = new ArrayList<>();
 
-    // Método para añadir un donante
+    /**
+     * Agrega un nuevo donante a la lista estática.
+     * @param donante El objeto Donante a añadir.
+     */
     public static void añadir(Donante donante) {
         donantes.add(donante);
     }
 
-    // Método para eliminar un donante
+    /**
+     * Elimina un donante de la lista estática.
+     * @param donante El objeto Donante a eliminar.
+     * @return {@code true} si se eliminó el donante, {@code false} si no se encontró.
+     */
     public static void eliminar(Donante donante) {
         donantes.remove(donante);
     }
 
-    // Método para obtener la lista de donantes
+    /**
+     * Obtiene la lista completa de donantes almacenados.
+     * @return La lista de objetos Donante.
+     */
     public static List<Donante> getDonantes() {
         return donantes;
     }
 
-    // Guarda todos los donantes en el archivo especificado
+    /**
+     * Guarda todos los donantes en el archivo especificado.
+     * @param ruta Ruta del archivo.
+     * @throws IOException Si ocurre un error de escritura.
+     */
     public static void guardarDonantesEnArchivo(String ruta) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(ruta))) {
             for (Donante d : getDonantes()) {
@@ -81,7 +121,11 @@ public class Donante extends Persona {
         }
     }
 
-    // Carga los donantes desde el archivo especificado
+    /**
+     * Carga los donantes desde el archivo especificado.
+     * @param ruta Ruta del archivo.
+     * @throws IOException Si ocurre un error de lectura.
+     */
     public static void cargarDonantesDesdeArchivo(String ruta) {
         getDonantes().clear();
         try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
@@ -97,14 +141,21 @@ public class Donante extends Persona {
         }
     }
 
-    // Convierte el donante a una línea de texto para guardar
+    /**
+     * Convierte el donante a una línea de texto para guardar en archivo.
+     * @return Cadena con los datos del donante separados por punto y coma.
+     */
     public String toArchivo() {
         return getName() + ";" + getAge() + ";" + getId() + ";" + getBloodType() + ";" +
                getAddress() + ";" + getPhone() + ";" + getDonationType() + ";" +
                getHealthStatus() + ";" + (isEligibility() ? "1" : "0");
     }
 
-    // Crea un donante desde una línea de texto
+    /**
+     * Crea un donante desde una línea de texto.
+     * @param linea Línea de texto con los datos del donante.
+     * @return Instancia de {@link Donante} si el formato es válido, null si hay error.
+     */
     public static Donante fromArchivo(String linea) {
         try {
             String[] parts = linea.split(";");
@@ -122,7 +173,11 @@ public class Donante extends Persona {
             return null;
         }
     }
-    //metodo para representar en forma de cadena variables
+
+    /**
+     * Representa el donante como cadena para mostrar en listas.
+     * @return Cadena con nombre e ID del donante.
+     */
     @Override
     public String toString() {
         return getName() + " (ID: " + getId() + ")";

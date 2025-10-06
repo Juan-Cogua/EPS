@@ -9,6 +9,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;	
 
+/**
+ * Interfaz gráfica principal para el sistema EPS.
+ * Permite la gestión de pacientes, donantes, citas y trasplantes.
+ *
+ * @author Andres Rojas
+ * @version 1.0
+ */
 public class EPS_GUI extends JFrame {
     private JTabbedPane tabbedPane;
     private JTextArea displayArea;
@@ -24,6 +31,11 @@ public class EPS_GUI extends JFrame {
     private JPanel citaPanel;
     private JPanel trasplantePanel;
 
+    /**
+     * Constructor. Inicializa la interfaz y carga los datos desde archivos.
+     *
+     * @throws RuntimeException si ocurre un error al cargar los datos iniciales.
+     */
     public EPS_GUI() {
         // Cargar datos desde archivos al iniciar
         Paciente.cargarPacientesDesdeArchivo("Paciente.txt");
@@ -33,6 +45,9 @@ public class EPS_GUI extends JFrame {
         setWindowProperties();
     }
 
+    /**
+     * Inicializa los componentes gráficos y modelos de datos.
+     */
     private void initializeComponents() {
         tabbedPane = new JTabbedPane();
         displayArea = new JTextArea(10, 50);
@@ -59,6 +74,9 @@ public class EPS_GUI extends JFrame {
 
     }
 
+    /**
+     * Configura el layout principal de la ventana.
+     */
     private void setupLayout() {
         setLayout(new BorderLayout());
 		// Agregar pestañas
@@ -79,6 +97,11 @@ public class EPS_GUI extends JFrame {
         add(buttonPanel, BorderLayout.NORTH);
     }
     
+    /**
+     * Crea el panel de gestión de pacientes.
+     *
+     * @return JPanel con la interfaz de pacientes.
+     */
     private JPanel createPacientePanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
@@ -427,6 +450,11 @@ public class EPS_GUI extends JFrame {
 
         return panel;
     }
+    /**
+     * Crea el panel de gestión de donantes.
+     *
+     * @return JPanel con la interfaz de donantes.
+     */
     private JPanel createDonantePanel() {
         JPanel panel = new JPanel(new BorderLayout());
         
@@ -605,6 +633,11 @@ public class EPS_GUI extends JFrame {
         return panel;
     }
     
+    /**
+     * Crea el panel de gestión de citas.
+     *
+     * @return JPanel con la interfaz de citas.
+     */
     private JPanel createCitaPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
@@ -788,6 +821,11 @@ public class EPS_GUI extends JFrame {
     }
 
 
+    /**
+     * Crea el panel de gestión de trasplantes.
+     *
+     * @return JPanel con la interfaz de trasplantes.
+     */
     private JPanel createTrasplantePanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
 
@@ -863,6 +901,13 @@ public class EPS_GUI extends JFrame {
         return panel;
     }
 
+    /**
+     * Valida la compatibilidad sanguínea entre donante y receptor.
+     *
+     * @param donante Tipo de sangre del donante.
+     * @param receptor Tipo de sangre del receptor.
+     * @return true si son compatibles, false si no.
+     */
     private boolean esCompatibleSangre(String donante, String receptor) {
         donante = donante.toUpperCase();
         receptor = receptor.toUpperCase();
@@ -895,7 +940,9 @@ public class EPS_GUI extends JFrame {
     }
 
 
-    // Método que actualiza las listas del panel de trasplante
+    /**
+     * Actualiza las listas de donantes y pacientes en el panel de trasplantes.
+     */
     public void refrescarListasTransplante() {
         modeloDonantes.clear();
         for (Donante d : Donante.getDonantes()) {
@@ -906,6 +953,9 @@ public class EPS_GUI extends JFrame {
             modeloPacientes.addElement(p);
         }
     }
+    /**
+     * Configura las propiedades de la ventana principal.
+     */
     private void setWindowProperties() {
         setTitle("Sistema EPS - Gestión Hospitalaria");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -918,6 +968,11 @@ public class EPS_GUI extends JFrame {
                            "Seleccione una pestaña para comenzar a trabajar.\n\n");
     }
     
+    /**
+     * Método principal. Inicia la aplicación.
+     *
+     * @param args Argumentos de línea de comandos.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             new EPS_GUI().setVisible(true);

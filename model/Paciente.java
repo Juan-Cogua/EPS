@@ -3,12 +3,32 @@ package model;
 import java.io.*;
 import java.util.*;
 
+/**
+ * Representa un paciente en el sistema EPS.
+ *
+ * @author Juan Cogua
+ * @version 1.0
+ */
 public class Paciente extends Persona {
     private double weight;
     private double height;
     private List<String> allergies;
     private List<Cita> citas;
 
+    /**
+     * Constructor de Paciente.
+     *
+     * @param name Nombre del paciente.
+     * @param age Edad del paciente.
+     * @param id Identificación del paciente.
+     * @param bloodType Tipo de sangre.
+     * @param address Dirección.
+     * @param phone Teléfono.
+     * @param weight Peso en kg.
+     * @param height Altura en m.
+     * @param allergies Lista de alergias.
+     * @param citas Lista de citas.
+     */
     public Paciente(String name, byte age, String id, String bloodType, String address, String phone,
                     double weight, double height, List<String> allergies, List<Cita> citas) {
         super(name, age, id, bloodType, address, phone);
@@ -17,7 +37,7 @@ public class Paciente extends Persona {
         this.allergies = allergies;
         this.citas = citas;
     }
-
+//getters y setters
     public double getWeight() {
         return weight;
     }
@@ -45,8 +65,18 @@ public class Paciente extends Persona {
 
     // Métodos Adicionales
 
-    // Lista estática para almacenar pacientes
+    /**
+     * Lista estática para almacenar todos los objetos Paciente en memoria.
+     * Sirve como la colección central de pacientes.
+     */
     private static List<Paciente> pacientes = new ArrayList<>();
+
+    /**
+     * Agrega un nuevo paciente a la lista estática.
+     *
+     * @param paciente El objeto Paciente a añadir.
+     * @return {@code true} si el paciente fue añadido exitosamente.
+     */
 
     public static boolean añadir(Paciente paciente) {
         return pacientes.add(paciente);
@@ -58,15 +88,26 @@ public class Paciente extends Persona {
         return pacientes;
     }
 
-    // Manejo de citas
+    /**
+     * Agrega una cita al paciente.
+     * @param cita Cita a agregar.
+     */
     public void agregarCita(Cita cita) {
         citas.add(cita);
     }
+
+    /**
+     * Cancela una cita del paciente.
+     * @param cita Cita a cancelar.
+     */
     public void cancelarCita(Cita cita) {
         citas.remove(cita);
     }
 
-    // Historial dinámico de citas
+    /**
+     * Devuelve el historial de citas del paciente.
+     * @return Historial de citas como String.
+     */
     public String historialCitas() {
         if (citas == null || citas.isEmpty()) {
             return "El paciente no tiene citas registradas.";
@@ -77,47 +118,22 @@ public class Paciente extends Persona {
         }
         return sb.toString();
     }
-    @Override//metodo para representar en forma de cadena variables
-    public String toString() {
-        return getName() + " (ID: " + getId() + ")";
-    }
 
-    // Guarda todos los pacientes en el archivo especificado
-    public static void guardarPacientesEnArchivo(String ruta) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(ruta))) {
-            for (Paciente p : getPacientes()) {
-                bw.write(p.toArchivo());
-                bw.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Carga los pacientes desde el archivo especificado
-    public static void cargarPacientesDesdeArchivo(String ruta) {
-        getPacientes().clear();
-        try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
-            String linea;
-            while ((linea = br.readLine()) != null) {
-                Paciente p = fromArchivo(linea);
-                if (p != null) {
-                    añadir(p);
-                }
-            }
-        } catch (IOException e) {
-            // Si el archivo no existe, lo ignoramos
-        }
-    }
-
-    // Convierte el paciente a una línea de texto para guardar
+    /**
+     * Convierte el paciente a una línea de texto para guardar en archivo.
+     * @return Cadena con los datos del paciente separados por punto y coma.
+     */
     public String toArchivo() {
         return getName() + ";" + getAge() + ";" + getId() + ";" + getBloodType() + ";" +
                getAddress() + ";" + getPhone() + ";" + getWeight() + ";" + getHeight() + ";" +
                String.join(",", getAllergies());
     }
 
-    // Crea un paciente desde una línea de texto
+    /**
+     * Crea un paciente desde una línea de texto.
+     * @param linea Línea de texto con los datos del paciente.
+     * @return Instancia de {@link Paciente} si el formato es válido, null si hay error.
+     */
     public static Paciente fromArchivo(String linea) {
         try {
             String[] parts = linea.split(";");
@@ -136,6 +152,51 @@ public class Paciente extends Persona {
             return new Paciente(name, age, id, bloodType, address, phone, weight, height, allergies, new ArrayList<>());
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    /**
+     * Representa el paciente como cadena para mostrar en listas.
+     * @return Cadena con nombre e ID del paciente.
+     */
+    @Override
+    public String toString() {
+        return getName() + " (ID: " + getId() + ")";
+    }
+
+    /**
+     * Guarda todos los pacientes en el archivo especificado.
+     * @param ruta Ruta del archivo.
+     * @throws IOException Si ocurre un error de escritura.
+     */
+    public static void guardarPacientesEnArchivo(String ruta) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(ruta))) {
+            for (Paciente p : getPacientes()) {
+                bw.write(p.toArchivo());
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Carga los pacientes desde el archivo especificado.
+     * @param ruta Ruta del archivo.
+     * @throws IOException Si ocurre un error de lectura.
+     */
+    public static void cargarPacientesDesdeArchivo(String ruta) {
+        getPacientes().clear();
+        try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                Paciente p = fromArchivo(linea);
+                if (p != null) {
+                    añadir(p);
+                }
+            }
+        } catch (IOException e) {
+            // Si el archivo no existe, lo ignoramos
         }
     }
 }

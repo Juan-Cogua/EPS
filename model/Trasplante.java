@@ -1,4 +1,10 @@
 package model;
+/**
+ * Representa un trasplante en el sistema EPS.
+ *
+ * @author Andres Rojas
+ * @version 1.0
+ */
 public class Trasplante {
     private String organType;
     private String donor;
@@ -6,6 +12,15 @@ public class Trasplante {
     private String rejectionHistory;
     private String rejectionReason;
 
+    /**
+     * Constructor de Trasplante.
+     *
+     * @param organType Tipo de órgano.
+     * @param donor Donante.
+     * @param receiver Receptor.
+     * @param rejectionHistory Historial de rechazo.
+     * @param rejectionReason Motivo de rechazo.
+     */
     public Trasplante(String organType, String donor, String receiver, String rejectionHistory, String rejectionReason) {
         this.organType = organType;
         this.donor = donor;
@@ -13,7 +28,7 @@ public class Trasplante {
         this.rejectionHistory = rejectionHistory;
         this.rejectionReason = rejectionReason;
     }
-
+//getters y setters
     public String getOrganType() {
         return organType;
     }
@@ -55,21 +70,60 @@ public class Trasplante {
     }
     
     //Metodos Adicionales   
-    //validar compatibilidad
+    /**
+     * Valida la compatibilidad entre donante y receptor.
+     * @return true si son compatibles, false si no.
+     */
     public boolean esCompatible() {
         return donor != null && receiver != null && !donor.equals(receiver);
     }
-    //registrar rechazo
+
+    /**
+     * Registra un rechazo en el trasplante.
+     * @param motivo Motivo del rechazo.
+     */
     public void registrarRechazo(String motivo) {
         this.rejectionHistory = "Rechazo previo registrado";
         this.rejectionReason = motivo;
     }
-    //resumen de trasplante
+
+    /**
+     * Devuelve un resumen del trasplante.
+     * @return Resumen como String.
+     */
     public String resumen() {
         return "Trasplante de " + organType + 
                " entre donante: " + donor + " y receptor: " + receiver +
                (rejectionReason != null ? ". Motivo de rechazo: " + rejectionReason : "");
     }
 
+    /**
+     * Convierte el trasplante a una línea de texto para guardar en archivo.
+     * @return Cadena con los datos del trasplante separados por punto y coma.
+     */
+    public String toArchivo() {
+        return organType + ";" + donor + ";" + receiver + ";" + rejectionHistory + ";" + rejectionReason;
+    }
 
+    /**
+     * Crea un trasplante desde una línea de texto.
+     * @param linea Línea de texto con los datos del trasplante.
+     * @return Instancia de {@link Trasplante} si el formato es válido, null si hay error.
+     */
+    public static Trasplante fromArchivo(String linea) {
+        String[] partes = linea.split(";");
+        if (partes.length != 5) {
+            return null;
+        }
+        return new Trasplante(partes[0], partes[1], partes[2], partes[3], partes[4]);
+    }
+
+    /**
+     * Representa el trasplante como cadena para mostrar en listas.
+     * @return Cadena con resumen del trasplante.
+     */
+    @Override
+    public String toString() {
+        return resumen();
+    }
 }
