@@ -1,7 +1,9 @@
-package IU;
+package scr.IU;
 
-import model.*;
 import javax.swing.*;
+
+import scr.model.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;

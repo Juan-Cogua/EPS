@@ -1,4 +1,4 @@
-package model;
+package scr.model;
 /**
  * Representa un trasplante en el sistema EPS.
  *

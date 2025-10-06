@@ -1,4 +1,4 @@
-package model;
+package scr.model;
 import java.util.Date;
 
 /**
