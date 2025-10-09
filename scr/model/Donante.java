@@ -2,7 +2,6 @@ package scr.model;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
-import java.io.*;
 
 /**
  * Representa un donante en el sistema EPS.
@@ -104,6 +103,7 @@ public class Donante extends Persona {
     public static List<Donante> getDonantes() {
         return donantes;
     }
+<<<<<<< HEAD:scr/model/Donante.java
 
     /**
      * Guarda todos los donantes en el archivo especificado.
@@ -178,6 +178,9 @@ public class Donante extends Persona {
      * Representa el donante como cadena para mostrar en listas.
      * @return Cadena con nombre e ID del donante.
      */
+=======
+    //metodo para representar en forma de cadena variables
+>>>>>>> parent of ca5ac4d (Partre final):model/Donante.java
     @Override
     public String toString() {
         return getName() + " (ID: " + getId() + ")";

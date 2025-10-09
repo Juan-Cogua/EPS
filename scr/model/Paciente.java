@@ -1,7 +1,7 @@
 package scr.model;
 
-import java.io.*;
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Representa un paciente en el sistema EPS.
@@ -119,6 +119,7 @@ public class Paciente extends Persona {
         return sb.toString();
     }
 
+<<<<<<< HEAD:scr/model/Paciente.java
     /**
      * Convierte el paciente a una línea de texto para guardar en archivo.
      * @return Cadena con los datos del paciente separados por punto y coma.
@@ -199,4 +200,6 @@ public class Paciente extends Persona {
             // Si el archivo no existe, lo ignoramos
         }
     }
+=======
+>>>>>>> parent of ca5ac4d (Partre final):model/Paciente.java
 }
