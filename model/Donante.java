@@ -4,12 +4,38 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.*;
 
+/**
+ * Clase que representa a un donante en el sistema.
+ * Contiene información personal, estado de salud y elegibilidad.
+ * 
+ * @author Juan Cogua
+ * @author Andres Rojas
+ * @version 1.0
+ */
 public class Donante extends Persona {
-    private  Date birthDate;
+    /** Fecha de nacimiento del donante. */
+    private Date birthDate;
+    /** Tipo de donación que realiza el donante. */
     private String donationType;
+    /** Estado de salud del donante. */
     private String healthStatus;
+    /** Indica si el donante es elegible. */
     private boolean eligibility;
 
+    /**
+     * Constructor que inicializa los datos de un donante.
+     *
+     * @param name Nombre del donante.
+     * @param age Edad del donante.
+     * @param id Identificación del donante.
+     * @param bloodType Tipo de sangre del donante.
+     * @param address Dirección del donante.
+     * @param phone Teléfono del donante.
+     * @param birthDate Fecha de nacimiento.
+     * @param donationType Tipo de donación.
+     * @param healthStatus Estado de salud.
+     * @param eligibility Elegibilidad para donar.
+     */
     public Donante(String name, byte age, String id, String bloodType, String address, String phone, Date birthDate, String donationType, String healthStatus, boolean eligibility) {
         super(name, age, id, bloodType, address, phone);
         this.birthDate = birthDate;
@@ -18,58 +44,114 @@ public class Donante extends Persona {
         this.eligibility = eligibility;
     }
 
+    /**
+     * Obtiene la fecha de nacimiento del donante.
+     *
+     * @return Fecha de nacimiento.
+     */
     public Date getBirthDate() {
         return birthDate;
     }
 
+    /**
+     * Establece la fecha de nacimiento del donante.
+     *
+     * @param birthDate Fecha de nacimiento.
+     */
     public void setBirthDate(Date birthDate) {
         this.birthDate = birthDate;
     }
 
+    /**
+     * Obtiene el tipo de donación.
+     *
+     * @return Tipo de donación.
+     */
     public String getDonationType() {
         return donationType;
     }
 
+    /**
+     * Establece el tipo de donación.
+     *
+     * @param donationType Tipo de donación.
+     */
     public void setDonationType(String donationType) {
         this.donationType = donationType;
     }
 
+    /**
+     * Obtiene el estado de salud del donante.
+     *
+     * @return Estado de salud.
+     */
     public String getHealthStatus() {
         return healthStatus;
     }
 
+    /**
+     * Establece el estado de salud del donante.
+     *
+     * @param healthStatus Estado de salud.
+     */
     public void setHealthStatus(String healthStatus) {
         this.healthStatus = healthStatus;
     }
 
+    /**
+     * Verifica si el donante es elegible.
+     *
+     * @return true si es elegible, false en caso contrario.
+     */
     public boolean isEligibility() {
         return eligibility;
     }
 
+    /**
+     * Establece si el donante es elegible.
+     *
+     * @param eligibility true si es elegible, false en caso contrario.
+     */
     public void setEligibility(boolean eligibility) {
         this.eligibility = eligibility;
     }
-    //Metodos Adicionales
 
-    // Lista estática para almacenar donantes
+    /** Lista estática para almacenar donantes. */
     private static List<Donante> donantes = new ArrayList<>();
 
-    // Método para añadir un donante
+    /**
+     * Añade un donante a la lista.
+     *
+     * @param donante Donante a añadir.
+     */
     public static void añadir(Donante donante) {
         donantes.add(donante);
     }
 
-    // Método para eliminar un donante
+    /**
+     * Elimina un donante de la lista.
+     *
+     * @param donante Donante a eliminar.
+     */
     public static void eliminar(Donante donante) {
         donantes.remove(donante);
     }
 
-    // Método para obtener la lista de donantes
+    /**
+     * Obtiene la lista de donantes.
+     *
+     * @return Lista de donantes.
+     */
     public static List<Donante> getDonantes() {
         return donantes;
     }
 
-    // Guarda todos los donantes en el archivo especificado
+    /**
+     * Guarda todos los donantes en un archivo de texto.
+     *
+     * @param ruta Ruta del archivo.
+     * @throws IOException Si ocurre un error al escribir el archivo.
+     */
     public static void guardarDonantesEnArchivo(String ruta) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(ruta))) {
             for (Donante d : getDonantes()) {
@@ -81,7 +163,11 @@ public class Donante extends Persona {
         }
     }
 
-    // Carga los donantes desde el archivo especificado
+    /**
+     * Carga los donantes desde un archivo de texto.
+     *
+     * @param ruta Ruta del archivo.
+     */
     public static void cargarDonantesDesdeArchivo(String ruta) {
         getDonantes().clear();
         try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
@@ -97,14 +183,24 @@ public class Donante extends Persona {
         }
     }
 
-    // Convierte el donante a una línea de texto para guardar
+    /**
+     * Convierte la información del donante en una línea de texto.
+     *
+     * @return Cadena de texto con los datos del donante.
+     */
     public String toArchivo() {
         return getName() + ";" + getAge() + ";" + getId() + ";" + getBloodType() + ";" +
                getAddress() + ";" + getPhone() + ";" + getDonationType() + ";" +
                getHealthStatus() + ";" + (isEligibility() ? "1" : "0");
     }
 
-    // Crea un donante desde una línea de texto
+    /**
+     * Crea un objeto Donante a partir de una línea de texto.
+     *
+     * @param linea Línea con los datos del donante.
+     * @return Objeto Donante o null si ocurre un error.
+     * @throws Exception Si hay un error al convertir los datos.
+     */
     public static Donante fromArchivo(String linea) {
         try {
             String[] parts = linea.split(";");
@@ -122,7 +218,12 @@ public class Donante extends Persona {
             return null;
         }
     }
-    //metodo para representar en forma de cadena variables
+
+    /**
+     * Devuelve una representación en cadena del donante.
+     *
+     * @return Cadena con el nombre e identificación.
+     */
     @Override
     public String toString() {
         return getName() + " (ID: " + getId() + ")";

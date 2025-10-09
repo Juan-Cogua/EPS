@@ -8,7 +8,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;	
-
+/**
+ * Clase principal que representa la interfaz gráfica del sistema EPS.
+ * Gestiona pacientes, donantes, citas y trasplantes.
+ *
+ * @author Juan Cogua
+ * @author Andres Rojas
+ * @version 1.0
+ */
 public class EPS_GUI extends JFrame {
     private JTabbedPane tabbedPane;
     private JTextArea displayArea;
@@ -24,6 +31,10 @@ public class EPS_GUI extends JFrame {
     private JPanel citaPanel;
     private JPanel trasplantePanel;
 
+    /**
+     * Constructor de la interfaz gráfica EPS_GUI.
+     * Carga los datos iniciales desde archivos y configura los componentes de la ventana.
+     */
     public EPS_GUI() {
         // Cargar datos desde archivos al iniciar
         Paciente.cargarPacientesDesdeArchivo("Paciente.txt");
@@ -33,6 +44,9 @@ public class EPS_GUI extends JFrame {
         setWindowProperties();
     }
 
+    /**
+     * Inicializa los componentes gráficos y modelos de datos de la interfaz.
+     */
     private void initializeComponents() {
         tabbedPane = new JTabbedPane();
         displayArea = new JTextArea(10, 50);
@@ -56,9 +70,11 @@ public class EPS_GUI extends JFrame {
         citaPanel = createCitaPanel();
         trasplantePanel = createTrasplantePanel();
 
-
     }
 
+    /**
+     * Configura la distribución de los paneles, pestañas y botones de la ventana principal.
+     */
     private void setupLayout() {
         setLayout(new BorderLayout());
 		// Agregar pestañas
@@ -79,6 +95,11 @@ public class EPS_GUI extends JFrame {
         add(buttonPanel, BorderLayout.NORTH);
     }
     
+    /**
+     * Crea y configura el panel de gestión de donantes.
+     *
+     * @return JPanel que contiene los componentes para manejar donantes.
+     */
     private JPanel createPacientePanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
