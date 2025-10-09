@@ -121,7 +121,7 @@ class Persona {
     /**
      * Valida si la persona es mayor de edad (18 años o más).
      * Autor: Andrés Rojas.
-     * * @return {@code true} si la edad es 18 o mayor, {@code false} en caso contrario.
+     * @return {@code true} si la edad es 18 o mayor, {@code false} en caso contrario.
      */
     public boolean esMayorDeEdad() {
         return age >= 18;
@@ -129,7 +129,7 @@ class Persona {
     /**
      * Actualiza la información de contacto (dirección y teléfono) de la persona.
      * Autor: Andrés Rojas.
-     * * @param nuevaDireccion La nueva dirección de residencia.
+     * @param nuevaDireccion La nueva dirección de residencia.
      * @param nuevoTelefono El nuevo número de teléfono de contacto.
      */
     public void actualizarContacto(String nuevaDireccion, String nuevoTelefono) {
@@ -141,7 +141,7 @@ class Persona {
      * Redefine el método equals para comparar objetos Persona basándose en su ID.
      * Dos objetos Persona son considerados iguales si tienen el mismo ID.
      * Autor: Andrés Rojas.
-     * * @param obj El objeto a comparar.
+     * @param obj El objeto a comparar.
      * @return {@code true} si el objeto es una Persona con el mismo ID, {@code false} en caso contrario.
      */
     @Override
@@ -156,7 +156,7 @@ class Persona {
      * Redefine el método hashCode para mantener la consistencia con equals.
      * El hash code se calcula basándose en el ID.
      * Autor: Andrés Rojas.
-     * * @return El valor del hash code.
+     * @return El valor del hash code.
      */
     @Override
     public int hashCode() {

@@ -155,7 +155,7 @@ public class Donante extends Persona {
      * Guarda todos los donantes en un archivo de texto.
      *
      * @param ruta Ruta del archivo.
-     * @throws IOException Si ocurre un error al escribir el archivo.
+     *
      */
     public static void guardarDonantesEnArchivo(String ruta) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(ruta))) {
@@ -202,11 +202,6 @@ public class Donante extends Persona {
     }
 
     /**
-     * Crea un objeto Donante a partir de una línea de texto.
-     *
-     * @param linea Línea con los datos del donante.
-     * @return Objeto Donante o null si ocurre un error.
-     * @throws Exception Si hay un error al convertir los datos.
      * Crea un donante desde una línea de texto.
      * @param linea Línea de texto con los datos del donante.
      * @return Instancia de {@link Donante} si el formato es válido, null si hay error.
@@ -235,10 +230,6 @@ public class Donante extends Persona {
      * @return Cadena con el nombre e identificación.
      */
 
-     /** 
-     * Representa el donante como cadena para mostrar en listas.
-     * @return Cadena con nombre e ID del donante.
-     */
     //metodo para representar en forma de cadena variables
     @Override
     public String toString() {

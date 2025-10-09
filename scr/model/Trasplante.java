@@ -1,4 +1,4 @@
-package model;
+package scr.model;
 
 /**
  * Clase que representa un trasplante dentro del sistema.
