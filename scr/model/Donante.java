@@ -1,8 +1,12 @@
-package model;
+package scr.model;
 import java.util.Date;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.io.*;
 
 /**
  * Clase que representa a un donante en el sistema.
@@ -146,6 +150,7 @@ public class Donante extends Persona {
         return donantes;
     }
 
+
     /**
      * Guarda todos los donantes en un archivo de texto.
      *
@@ -187,6 +192,8 @@ public class Donante extends Persona {
      * Convierte la información del donante en una línea de texto.
      *
      * @return Cadena de texto con los datos del donante.
+     * Convierte el donante a una línea de texto para guardar en archivo.
+     * @return Cadena con los datos del donante separados por punto y coma.
      */
     public String toArchivo() {
         return getName() + ";" + getAge() + ";" + getId() + ";" + getBloodType() + ";" +
@@ -200,6 +207,9 @@ public class Donante extends Persona {
      * @param linea Línea con los datos del donante.
      * @return Objeto Donante o null si ocurre un error.
      * @throws Exception Si hay un error al convertir los datos.
+     * Crea un donante desde una línea de texto.
+     * @param linea Línea de texto con los datos del donante.
+     * @return Instancia de {@link Donante} si el formato es válido, null si hay error.
      */
     public static Donante fromArchivo(String linea) {
         try {
@@ -224,6 +234,12 @@ public class Donante extends Persona {
      *
      * @return Cadena con el nombre e identificación.
      */
+
+     /** 
+     * Representa el donante como cadena para mostrar en listas.
+     * @return Cadena con nombre e ID del donante.
+     */
+    //metodo para representar en forma de cadena variables
     @Override
     public String toString() {
         return getName() + " (ID: " + getId() + ")";

@@ -162,4 +162,34 @@ public class Trasplante {
                " entre donante: " + donor + " y receptor: " + receiver +
                (rejectionReason != null ? ". Motivo de rechazo: " + rejectionReason : "");
     }
+
+    /**
+     * Convierte el trasplante a una línea de texto para guardar en archivo.
+     * @return Cadena con los datos del trasplante separados por punto y coma.
+     */
+    public String toArchivo() {
+        return organType + ";" + donor + ";" + receiver + ";" + rejectionHistory + ";" + rejectionReason;
+    }
+
+    /**
+     * Crea un trasplante desde una línea de texto.
+     * @param linea Línea de texto con los datos del trasplante.
+     * @return Instancia de {@link Trasplante} si el formato es válido, null si hay error.
+     */
+    public static Trasplante fromArchivo(String linea) {
+        String[] partes = linea.split(";");
+        if (partes.length != 5) {
+            return null;
+        }
+        return new Trasplante(partes[0], partes[1], partes[2], partes[3], partes[4]);
+    }
+
+    /**
+     * Representa el trasplante como cadena para mostrar en listas.
+     * @return Cadena con resumen del trasplante.
+     */
+    @Override
+    public String toString() {
+        return resumen();
+    }
 }

@@ -1,7 +1,12 @@
-package model;
+package scr.model;
 
-import java.io.*;
-import java.util.*;
+import java.util.List;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Clase que representa un paciente, heredando de la clase Persona.
@@ -266,4 +271,5 @@ public class Paciente extends Persona {
             return null;
         }
     }
+
 }
