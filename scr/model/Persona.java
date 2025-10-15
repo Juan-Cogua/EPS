@@ -1,4 +1,4 @@
-package scr.model;
+package model;
 
 /**
  * Clase base para personas en el sistema EPS.

@@ -1,0 +1,4 @@
+20/10/2025;09:00;Hospital San José;Camila Herrera
+25/10/2025;11:15;EPS Norte;Jorge Salazar
+28/10/2025;16:00;Clínica del Sur;Natalia Vargas
+30/10/2025;08:45;Centro Médico Occidente;Sandra Molina

@@ -184,10 +184,24 @@ public class Cita {
      * 
      * @return Cadena con el resumen de la cita
      */
-    public String resumen() {
-        return "Cita de " + paciente.getName() + " en " + location + 
-               " el " + date + " a las " + time +
-               (confirmada ? " [CONFIRMADA]" : "") +
-               (cancelada ? " [CANCELADA]" : "");
-    }
+ /**
+ * Genera un resumen legible de la cita con formato amigable.
+ *
+ * @return Cadena con el resumen de la cita
+ */
+public String resumen() {
+    java.text.SimpleDateFormat formatoFecha = new java.text.SimpleDateFormat("dd/MM/yyyy");
+    java.text.SimpleDateFormat formatoHora = new java.text.SimpleDateFormat("HH:mm");
+
+    String estado = "";
+    if (confirmada) estado = " [CONFIRMADA]";
+    if (cancelada) estado = " [CANCELADA]";
+
+    return "Dia: " + formatoFecha.format(date) +
+           "Hora: " + formatoHora.format(time) +
+           " - " + paciente.getName() +
+           " - " + location +
+           estado;
+}
+
 }
