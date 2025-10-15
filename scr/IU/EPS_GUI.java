@@ -1,15 +1,14 @@
-package scr.IU;
+package IU;
 
 import javax.swing.*;
-
-import scr.model.*;
-
+import model.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;	
+import java.util.List;
+import java.io.*;
 
 /**
  * Clase principal que representa la interfaz gráfica del sistema EPS.
@@ -247,7 +246,6 @@ public class EPS_GUI extends JFrame {
                         modPanel.add(idFieldMod);
                         modPanel.add(new JLabel("Teléfono:"));
                         modPanel.add(phoneFieldMod);
-
                         int result = JOptionPane.showConfirmDialog(
                                 null,
                                 modPanel,
@@ -273,6 +271,13 @@ public class EPS_GUI extends JFrame {
         }
     });
         addButton.addActionListener(e -> {
+            /**
+             * Manejo de excepciones al agregar un paciente.
+             *
+             * @throws NumberFormatException si alguna conversión numérica falla
+             * @throws IllegalArgumentException si algún dato no cumple las validaciones
+             * @throws NullPointerException si hay referencia nula inesperada
+             */
             try {
                 String name = nameField.getText().trim();
                 String id = idField.getText().trim();
@@ -339,66 +344,91 @@ public class EPS_GUI extends JFrame {
                 } else {
                     displayArea.append("[ERROR] No se pudo agregar el paciente. ID duplicado o error interno.\n");
                 }
+            } catch (NumberFormatException nfe) {
+                displayArea.append("[ERROR] Formato numérico inválido al agregar paciente: " + nfe.getMessage() + "\n");
+            } catch (IllegalArgumentException iae) {
+                displayArea.append("[ERROR] Argumento inválido: " + iae.getMessage() + "\n");
+            } catch (NullPointerException npe) {
+                displayArea.append("[ERROR] Referencia nula durante el registro del paciente.\n");
             } catch (Exception ex) {
-                displayArea.append("[ERROR] Excepción al agregar paciente: " + ex.getMessage() + "\n");
+                displayArea.append("[ERROR] Excepción inesperada al agregar paciente: " + ex.getMessage() + "\n");
             }
         });
-
         deleteButton.addActionListener(e -> {
-            String id = idField.getText().trim();
-            if (id.isEmpty()) {
-                displayArea.append("[ERROR] Ingrese un ID para eliminar.\n");
-                return;
-            }
-            List<Paciente> pacientes = Paciente.getPacientes();
-            Paciente toRemove = null;
-            for (Paciente p : pacientes) {
-                if (p.getId().equals(id)) {
-                    toRemove = p;
-                    break;
+            /**
+             * Manejo de excepciones al eliminar paciente desde el formulario.
+             */
+            try {
+                String id = idField.getText().trim();
+                if (id.isEmpty()) {
+                    displayArea.append("[ERROR] Ingrese un ID para eliminar.\n");
+                    return;
                 }
-            }
-            if (toRemove != null) {
-                Paciente.eliminar(toRemove);
-                displayArea.append("[ÉXITO] Paciente eliminado: " + toRemove.getName() + "\n");
-            } else {
-                displayArea.append("[ERROR] No se encontró paciente con ID: " + id + "\n");
-            }
-        });
-
-        showHistoryButton.addActionListener(e -> {
-            String id = idField.getText().trim();
-            if (id.isEmpty()) {
-                displayArea.append("[ERROR] Por favor ingrese el ID del paciente.\n");
-                return;
-            }
-            Paciente paciente = null;
-            for (Paciente p : Paciente.getPacientes()) {
-                if (p.getId().equals(id)) {
-                    paciente = p;
-                    break;
-                }
-            }
-            if (paciente == null) {
-                displayArea.append("[ERROR] No se encontró paciente con ID: " + id + "\n");
-                return;
-            }
-            String historial = paciente.historialCitas();
-            displayArea.append("\nHistorial de Citas - " + paciente.getName() + ":\n" + historial + "\n");
-        });
-
-        listButton.addActionListener(e -> {
-            List<Paciente> pacientes = Paciente.getPacientes();
-            displayArea.append("\n=== LISTA DE PACIENTES ===\n");
-            if (pacientes.isEmpty()) {
-                displayArea.append("No hay pacientes registrados.\n");
-            } else {
+                List<Paciente> pacientes = Paciente.getPacientes();
+                Paciente toRemove = null;
                 for (Paciente p : pacientes) {
-                    displayArea.append(p.resumen() + "\n");
+                    if (p.getId().equals(id)) {
+                        toRemove = p;
+                        break;
+                    }
                 }
+                if (toRemove != null) {
+                    Paciente.eliminar(toRemove);
+                    displayArea.append("[ÉXITO] Paciente eliminado: " + toRemove.getName() + "\n");
+                } else {
+                    displayArea.append("[ERROR] No se encontró paciente con ID: " + id + "\n");
+                }
+            } catch (Exception ex) {
+                displayArea.append("[ERROR] Excepción al eliminar paciente: " + ex.getMessage() + "\n");
             }
-            displayArea.append("Total: " + pacientes.size() + " pacientes\n\n");
         });
+        showHistoryButton.addActionListener(e -> {
+            /**
+             * Manejo de excepciones al mostrar historial de citas.
+             */
+            try {
+                String id = idField.getText().trim();
+                if (id.isEmpty()) {
+                    displayArea.append("[ERROR] Por favor ingrese el ID del paciente.\n");
+                    return;
+                }
+                Paciente paciente = null;
+                for (Paciente p : Paciente.getPacientes()) {
+                    if (p.getId().equals(id)) {
+                        paciente = p;
+                        break;
+                    }
+                }
+                if (paciente == null) {
+                    displayArea.append("[ERROR] No se encontró paciente con ID: " + id + "\n");
+                    return;
+                }
+                String historial = paciente.historialCitas();
+                displayArea.append("\nHistorial de Citas - " + paciente.getName() + ":\n" + historial + "\n");
+            } catch (Exception ex) {
+                displayArea.append("[ERROR] Excepción al obtener historial: " + ex.getMessage() + "\n");
+            }
+        });
+        listButton.addActionListener(e -> {
+            /**
+             * Manejo de excepciones al listar pacientes.
+             */
+            try {
+                List<Paciente> pacientes = Paciente.getPacientes();
+                displayArea.append("\n=== LISTA DE PACIENTES ===\n");
+                if (pacientes.isEmpty()) {
+                    displayArea.append("No hay pacientes registrados.\n");
+                } else {
+                    for (Paciente p : pacientes) {
+                        displayArea.append(p.resumen() + "\n");
+                    }
+                }
+                displayArea.append("Total: " + pacientes.size() + " pacientes\n\n");
+            } catch (Exception ex) {
+                displayArea.append("[ERROR] Excepción al listar pacientes: " + ex.getMessage() + "\n");
+            }
+        });
+
 
         cardPacientePanel.add(elegirPacientePanel, "ELEGIR");
         cardPacientePanel.add(añadirPacientePanel, "AÑADIR");
@@ -413,25 +443,32 @@ public class EPS_GUI extends JFrame {
         eliminarForm.add(eliminarBtn);
         eliminarPacientePanel.add(eliminarForm, BorderLayout.NORTH);
         eliminarBtn.addActionListener(e -> {
-            String id = eliminarIdField.getText().trim();
-            if (id.isEmpty()) {
-                displayArea.append("[ERROR] Ingrese ID para eliminar.\n");
-                return;
-            }
-            List<Paciente> pacientes = Paciente.getPacientes();
-            Paciente toRemove = null;
-            for (Paciente p : pacientes) {
-                if (p.getId().equals(id)) {
-                    toRemove = p;
-                    break;
+            /**
+             * Manejo de excepciones al eliminar paciente mediante panel eliminar.
+             */
+            try {
+                String id = eliminarIdField.getText().trim();
+                if (id.isEmpty()) {
+                    displayArea.append("[ERROR] Ingrese ID para eliminar.\n");
+                    return;
                 }
-            }
-            if (toRemove != null) {
-                Paciente.eliminar(toRemove);
-                displayArea.append("[ÉXITO] Paciente eliminado: " + toRemove.getName() + "\n");
-                eliminarIdField.setText("");
-            } else {
-                displayArea.append("[ERROR] Paciente no encontrado con ID: " + id + "\n");
+                List<Paciente> pacientes = Paciente.getPacientes();
+                Paciente toRemove = null;
+                for (Paciente p : pacientes) {
+                    if (p.getId().equals(id)) {
+                        toRemove = p;
+                        break;
+                    }
+                }
+                if (toRemove != null) {
+                    Paciente.eliminar(toRemove);
+                    displayArea.append("[ÉXITO] Paciente eliminado: " + toRemove.getName() + "\n");
+                    eliminarIdField.setText("");
+                } else {
+                    displayArea.append("[ERROR] Paciente no encontrado con ID: " + id + "\n");
+                }
+            } catch (Exception ex) {
+                displayArea.append("[ERROR] Excepción al eliminar paciente: " + ex.getMessage() + "\n");
             }
         });
         cardPacientePanel.add(eliminarPacientePanel, "ELIMINAR");
@@ -521,60 +558,66 @@ public class EPS_GUI extends JFrame {
         JButton deleteButton = new JButton("Eliminar Donante");
         
         addButton.addActionListener(e -> {
-            String name = nameField.getText().trim();
-            String id = idField.getText().trim();
-            
-            if (name.isEmpty() || id.isEmpty()) {
-                displayArea.append("Error: Nombre e ID son obligatorios.\n");
-                return;
-            }
-            
-            byte age = ((Integer) ageSpinner.getValue()).byteValue();
-            String bloodType = bloodTypeField.getText().trim();
-            String address = addressField.getText().trim();
-            String phone = phoneField.getText().trim();
-            Date birthDate = new Date(); // Simplificado para el ejemplo
-            String donationType = donationTypeField.getText().trim();
-            String healthStatus = healthStatusField.getText().trim();
-            boolean eligibility = eligibilityCheck.isSelected();
-            // Validar ID: máximo 9 caracteres
-            if (id.length() > 9) {
-                JOptionPane.showMessageDialog(panel, "ID debe tener máximo 9 caracteres.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            /**
+             * Manejo de excepciones al agregar un donante.
+             */
+            try {
+                String name = nameField.getText().trim();
+                String id = idField.getText().trim();
 
-            // Validar teléfono: 10 dígitos solo números
-            if (!phone.matches("^\\d{10}$")) {
-                JOptionPane.showMessageDialog(panel, "Teléfono inválido. Debe contener exactamente 10 dígitos numéricos sin espacios.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+                if (name.isEmpty() || id.isEmpty()) {
+                    displayArea.append("Error: Nombre e ID son obligatorios.\n");
+                    return;
+                }
 
-            // Validar tipo de sangre: A, B, AB, O con + o -
-            if (!bloodType.matches("^(A|B|AB|O)[+-]$")) {
-                JOptionPane.showMessageDialog(panel, "Tipo de sangre inválido. Solo se admiten A, B, AB y O con + o - (ejemplo: A+).", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+                byte age = ((Integer) ageSpinner.getValue()).byteValue();
+                String bloodType = bloodTypeField.getText().trim();
+                String address = addressField.getText().trim();
+                String phone = phoneField.getText().trim();
+                Date birthDate = new Date(); // Simplificado para el ejemplo
+                String donationType = donationTypeField.getText().trim();
+                String healthStatus = healthStatusField.getText().trim();
+                boolean eligibility = eligibilityCheck.isSelected();
+                // Validar ID: máximo 9 caracteres
+                if (id.length() > 9) {
+                    JOptionPane.showMessageDialog(panel, "ID debe tener máximo 9 caracteres.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
-            if (name.isEmpty() || id.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "Nombre e ID son obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
+                // Validar teléfono: 10 dígitos solo números
+                if (!phone.matches("^\\d{10}$")) {
+                    JOptionPane.showMessageDialog(panel, "Teléfono inválido. Debe contener exactamente 10 dígitos numéricos sin espacios.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Validar tipo de sangre: A, B, AB, O con + o -
+                if (!bloodType.matches("^(A|B|AB|O)[+-]$")) {
+                    JOptionPane.showMessageDialog(panel, "Tipo de sangre inválido. Solo se admiten A, B, AB y O con + o - (ejemplo: A+).", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                Donante donante = new Donante(name, age, id, bloodType, address, phone,
+                                            birthDate, donationType, healthStatus, eligibility);
+                Donante.añadir(donante);
+                refrescarListasTransplante();
+                displayArea.append("Donante agregado: " + name + " (ID: " + id + ")\n");
+                // Limpiar campos
+                nameField.setText("");
+                idField.setText("");
+                ageSpinner.setValue(18);
+                bloodTypeField.setText("");
+                addressField.setText("");
+                phoneField.setText("");
+                donationTypeField.setText("");
+                healthStatusField.setText("");
+                eligibilityCheck.setSelected(false);
+            } catch (IllegalArgumentException iae) {
+                JOptionPane.showMessageDialog(panel, "Error de argumento inválido: " + iae.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                displayArea.append("[ERROR] Excepción al agregar donante: " + ex.getMessage() + "\n");
             }
-            Donante donante = new Donante(name, age, id, bloodType, address, phone, 
-                                        birthDate, donationType, healthStatus, eligibility);
-            Donante.añadir(donante);
-            refrescarListasTransplante();
-            displayArea.append("Donante agregado: " + name + " (ID: " + id + ")\n");
-            // Limpiar campos
-            nameField.setText("");
-            idField.setText("");
-            ageSpinner.setValue(18);
-            bloodTypeField.setText("");
-            addressField.setText("");
-            phoneField.setText("");
-            donationTypeField.setText("");
-            healthStatusField.setText("");
-            eligibilityCheck.setSelected(false);
         });
+
         
         listButton.addActionListener(e -> {
             List<Donante> donantes = Donante.getDonantes();
@@ -592,26 +635,33 @@ public class EPS_GUI extends JFrame {
         });
         
         deleteButton.addActionListener(e -> {
-            String id = idField.getText().trim();
-            if (id.isEmpty()) {
-                displayArea.append("Error: Ingrese un ID para eliminar.\n");
-                return;
-            }
-            
-            List<Donante> donantes = Donante.getDonantes();
-            Donante toRemove = null;
-            for (Donante d : donantes) {
-                if (d.getId().equals(id)) {
-                    toRemove = d;
-                    break;
+            /**
+             * Manejo de excepciones al eliminar donante.
+             */
+            try {
+                String id = idField.getText().trim();
+                if (id.isEmpty()) {
+                    displayArea.append("Error: Ingrese un ID para eliminar.\n");
+                    return;
                 }
-            }
-            
-            if (toRemove != null) {
-                Donante.eliminar(toRemove);
-                displayArea.append("Donante eliminado: " + toRemove.getName() + "\n");
-            } else {
-                displayArea.append("No se encontró donante con ID: " + id + "\n");
+
+                List<Donante> donantes = Donante.getDonantes();
+                Donante toRemove = null;
+                for (Donante d : donantes) {
+                    if (d.getId().equals(id)) {
+                        toRemove = d;
+                        break;
+                    }
+                }
+
+                if (toRemove != null) {
+                    Donante.eliminar(toRemove);
+                    displayArea.append("Donante eliminado: " + toRemove.getName() + "\n");
+                } else {
+                    displayArea.append("No se encontró donante con ID: " + id + "\n");
+                }
+            } catch (Exception ex) {
+                displayArea.append("[ERROR] Excepción al eliminar donante: " + ex.getMessage() + "\n");
             }
         });
         
@@ -688,132 +738,163 @@ public class EPS_GUI extends JFrame {
 
         // Acción para crear cita
         createButton.addActionListener(e -> {
-            String pacienteId = pacienteIdField.getText().trim();
-            String location = locationField.getText().trim();
+            /**
+             * Manejo de excepciones al crear una cita.
+             * @throws IllegalArgumentException si el ID del paciente no es válido
+             */
+            try {
+                String pacienteId = pacienteIdField.getText().trim();
+                String location = locationField.getText().trim();
 
-         // Validar ID paciente: máximo 9 caracteres
-            if (pacienteId.length() > 9) {
-                JOptionPane.showMessageDialog(panel, "ID del paciente debe tener máximo 9 caracteres.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (pacienteId.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "El ID del paciente es obligatorio.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            // Buscar paciente
-            Paciente paciente = null;
-            for (Paciente p : Paciente.getPacientes()) {
-                if (p.getId().equals(pacienteId)) {
-                    paciente = p;
-                    break;
+                // Validar ID paciente: máximo 9 caracteres
+                if (pacienteId.length() > 9) {
+                    JOptionPane.showMessageDialog(panel, "ID del paciente debe tener máximo 9 caracteres.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
+
+                if (pacienteId.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "El ID del paciente es obligatorio.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                // Buscar paciente
+                Paciente paciente = null;
+                for (Paciente p : Paciente.getPacientes()) {
+                    if (p.getId().equals(pacienteId)) {
+                        paciente = p;
+                        break;
+                    }
+                }
+                if (paciente == null) {
+                    JOptionPane.showMessageDialog(panel, "No se encontró paciente con ID: " + pacienteId, "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                Date fecha = (Date) dateSpinner.getValue();
+                Date hora = (Date) timeSpinner.getValue();
+
+                // Crear cita y agregarla al paciente
+                Cita cita = new Cita(fecha, hora, location, paciente);
+                paciente.agregarCita(cita);
+
+                JOptionPane.showMessageDialog(panel, "Cita creada: " + cita.resumen(), "Éxito", JOptionPane.INFORMATION_MESSAGE);
+
+                // Limpiar campos
+                pacienteIdField.setText("");
+                locationField.setText("");
+            } catch (IllegalArgumentException iae) {
+                JOptionPane.showMessageDialog(panel, "Error: " + iae.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                displayArea.append("[ERROR] Excepción al crear cita: " + ex.getMessage() + "\n");
             }
-            if (paciente == null) {
-                JOptionPane.showMessageDialog(panel, "No se encontró paciente con ID: " + pacienteId, "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            Date fecha = (Date) dateSpinner.getValue();
-            Date hora = (Date) timeSpinner.getValue();
-
-            // Crear cita y agregarla al paciente
-            Cita cita = new Cita(fecha, hora, location, paciente);
-            paciente.agregarCita(cita);
-
-            JOptionPane.showMessageDialog(panel, "Cita creada: " + cita.resumen(), "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-            // Limpiar campos
-            pacienteIdField.setText("");
-            locationField.setText("");
         });
+
 
         // Acción para listar citas (en displayArea)
         listButton.addActionListener(e -> {
-            displayArea.append("\n=== TODAS LAS CITAS ===\n");
-            List<Paciente> pacientes = Paciente.getPacientes();
-            int totalCitas = 0;
+            /**
+             * Manejo de excepciones al listar citas.
+             */
+            try {
+                displayArea.append("\n=== TODAS LAS CITAS ===\n");
+                List<Paciente> pacientes = Paciente.getPacientes();
+                int totalCitas = 0;
 
-            for (Paciente p : pacientes) {
-                List<Cita> citas = p.getCitas();
-                if (!citas.isEmpty()) {
-                    displayArea.append("Paciente: " + p.getName() + "\n");
-                    for (Cita c : citas) {
-                        displayArea.append("  " + c.resumen() + "\n");
-                        totalCitas++;
+                for (Paciente p : pacientes) {
+                    List<Cita> citas = p.getCitas();
+                    if (!citas.isEmpty()) {
+                        displayArea.append("Paciente: " + p.getName() + "\n");
+                        for (Cita c : citas) {
+                            displayArea.append("  " + c.resumen() + "\n");
+                            totalCitas++;
+                        }
                     }
                 }
-            }
 
-            if (totalCitas == 0) {
-                displayArea.append("No hay citas registradas.\n");
-            }
-            displayArea.append("Total de citas: " + totalCitas + "\n\n");
-        });
-        cancelButton.addActionListener(e -> {
-            String pacienteId = pacienteIdField.getText().trim();
-            if (pacienteId.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "Ingrese ID del paciente para cancelar cita.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            Paciente paciente = null;
-            for (Paciente p : Paciente.getPacientes()) {
-                if (p.getId().equals(pacienteId)) {
-                    paciente = p;
-                    break;
+                if (totalCitas == 0) {
+                    displayArea.append("No hay citas registradas.\n");
                 }
+                displayArea.append("Total de citas: " + totalCitas + "\n\n");
+            } catch (Exception ex) {
+                displayArea.append("[ERROR] Excepción al listar citas: " + ex.getMessage() + "\n");
             }
-            if (paciente == null) {
-                JOptionPane.showMessageDialog(panel, "Paciente no encontrado: " + pacienteId, "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            List<Cita> citas = paciente.getCitas();
-            if (citas.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "Paciente no tiene citas para cancelar.", "Información", JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-            Cita ultimaCita = citas.get(citas.size() - 1);
-            ultimaCita.cancelarCita();
-            JOptionPane.showMessageDialog(panel, "Cita cancelada:\n" + ultimaCita.resumen(), "Éxito", JOptionPane.INFORMATION_MESSAGE);
         });
+        //Acción para listar citas
+        cancelButton.addActionListener(e -> {
+            /**
+             * Manejo de excepciones al cancelar cita.
+             */
+            try {
+                String pacienteId = pacienteIdField.getText().trim();
+                if (pacienteId.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Ingrese ID del paciente para cancelar cita.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                Paciente paciente = null;
+                for (Paciente p : Paciente.getPacientes()) {
+                    if (p.getId().equals(pacienteId)) {
+                        paciente = p;
+                        break;
+                    }
+                }
+                if (paciente == null) {
+                    JOptionPane.showMessageDialog(panel, "Paciente no encontrado: " + pacienteId, "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                List<Cita> citas = paciente.getCitas();
+                if (citas.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Paciente no tiene citas para cancelar.", "Información", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                Cita ultimaCita = citas.get(citas.size() - 1);
+                ultimaCita.cancelarCita();
+                JOptionPane.showMessageDialog(panel, "Cita cancelada:\n" + ultimaCita.resumen(), "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panel, "Error al cancelar cita: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
         JButton rescheduleButton = new JButton("Reprogramar Cita");
         buttonPanel.add(rescheduleButton);
 
         rescheduleButton.addActionListener(e -> {
-            String pacienteId = pacienteIdField.getText().trim();
-            if (pacienteId.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "Ingrese ID del paciente para reprogramar cita.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            Paciente paciente = null;
-            for (Paciente p : Paciente.getPacientes()) {
-                if (p.getId().equals(pacienteId)) {
-                    paciente = p;
-                    break;
+            /**
+             * Manejo de excepciones al reprogramar cita.
+             */
+            try {
+                String pacienteId = pacienteIdField.getText().trim();
+                if (pacienteId.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Ingrese ID del paciente para reprogramar cita.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
-            }
-            if (paciente == null) {
-                JOptionPane.showMessageDialog(panel, "Paciente no encontrado: " + pacienteId, "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            List<Cita> citas = paciente.getCitas();
-            if (citas.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "Paciente no tiene citas para reprogramar.", "Información", JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-            Date nuevaFecha = (Date) dateSpinner.getValue();
-            Date nuevaHora = (Date) timeSpinner.getValue();
+                Paciente paciente = null;
+                for (Paciente p : Paciente.getPacientes()) {
+                    if (p.getId().equals(pacienteId)) {
+                        paciente = p;
+                        break;
+                    }
+                }
+                if (paciente == null) {
+                    JOptionPane.showMessageDialog(panel, "Paciente no encontrado: " + pacienteId, "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                List<Cita> citas = paciente.getCitas();
+                if (citas.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Paciente no tiene citas para reprogramar.", "Información", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                Date nuevaFecha = (Date) dateSpinner.getValue();
+                Date nuevaHora = (Date) timeSpinner.getValue();
 
-            // Reprogramar la última cita
-            Cita ultimaCita = citas.get(citas.size() - 1);
-            ultimaCita.reprogramarCita(nuevaFecha, nuevaHora);
+                // Reprogramar la última cita
+                Cita ultimaCita = citas.get(citas.size() - 1);
+                ultimaCita.reprogramarCita(nuevaFecha, nuevaHora);
 
-            JOptionPane.showMessageDialog(panel, "Cita reprogramada:\n" + ultimaCita.resumen(), "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(panel, "Cita reprogramada:\n" + ultimaCita.resumen(), "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panel, "Error al reprogramar cita: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
         });
 		return panel;
-
     }
-
-
     /**
      * Crea el panel de gestión de trasplantes.
      *
@@ -854,43 +935,61 @@ public class EPS_GUI extends JFrame {
         panel.add(buttonPanel, BorderLayout.NORTH);
 
         crearBtn.addActionListener(e -> {
-            Donante don = listaDonantes.getSelectedValue();
-            Paciente pac = listaPacientes.getSelectedValue();
-            if (don == null || pac == null) {
-                displayAreaTransplante.append("Seleccione donante y paciente.\n");
-                return;
+            /**
+             * Manejo de excepciones al crear trasplante.
+             */
+            try {
+                Donante don = listaDonantes.getSelectedValue();
+                Paciente pac = listaPacientes.getSelectedValue();
+                if (don == null || pac == null) {
+                    displayAreaTransplante.append("Seleccione donante y paciente.\n");
+                    return;
+                }
+                displayAreaTransplante.append("Trasplante creado: " + don + " -> " + pac + "\n");
+            } catch (Exception ex) {
+                displayAreaTransplante.append("[ERROR] Excepción al crear trasplante: " + ex.getMessage() + "\n");
             }
-            displayAreaTransplante.append("Trasplante creado: " + don + " -> " + pac + "\n");
         });
-
         validarBtn.addActionListener(e -> {
-            Donante don = listaDonantes.getSelectedValue();
-            Paciente pac = listaPacientes.getSelectedValue();
-            if (don == null || pac == null) {
-                displayAreaTransplante.append("Seleccione donante y paciente.\n");
-                return;
-            }
+            /**
+             * Manejo de excepciones al validar compatibilidad.
+             */
+            try {
+                Donante don = listaDonantes.getSelectedValue();
+                Paciente pac = listaPacientes.getSelectedValue();
+                if (don == null || pac == null) {
+                    displayAreaTransplante.append("Seleccione donante y paciente.\n");
+                    return;
+                }
 
-            if (esCompatibleSangre(don.getBloodType(), pac.getBloodType())) {
-                displayAreaTransplante.append(
-                    "Compatibilidad sanguínea confirmada: Donante " 
-                    + don.getBloodType() + " ¬ Paciente " + pac.getBloodType() + "\n");
-            } else {
-                displayAreaTransplante.append(
-                    "No hay compatibilidad sanguínea: Donante " 
-                    + don.getBloodType() + " ¬ Paciente " + pac.getBloodType() + "\n");
+                if (esCompatibleSangre(don.getBloodType(), pac.getBloodType())) {
+                    displayAreaTransplante.append(
+                        "Compatibilidad sanguínea confirmada: Donante "
+                        + don.getBloodType() + " ¬ Paciente " + pac.getBloodType() + "\n");
+                } else {
+                    displayAreaTransplante.append(
+                        "No hay compatibilidad sanguínea: Donante "
+                        + don.getBloodType() + " ¬ Paciente " + pac.getBloodType() + "\n");
+                }
+            } catch (Exception ex) {
+                displayAreaTransplante.append("[ERROR] Excepción al validar compatibilidad: " + ex.getMessage() + "\n");
             }
         });
-
         rechazoBtn.addActionListener(e -> {
-            Paciente pac = listaPacientes.getSelectedValue();
-            if (pac == null) {
-                displayAreaTransplante.append("Seleccione paciente.\n");
-                return;
+            /**
+             * Manejo de excepciones al registrar rechazo.
+             */
+            try {
+                Paciente pac = listaPacientes.getSelectedValue();
+                if (pac == null) {
+                    displayAreaTransplante.append("Seleccione paciente.\n");
+                    return;
+                }
+                displayAreaTransplante.append("Rechazo registrado para paciente: " + pac + "\n");
+            } catch (Exception ex) {
+                displayAreaTransplante.append("[ERROR] Excepción al registrar rechazo: " + ex.getMessage() + "\n");
             }
-            displayAreaTransplante.append("Rechazo registrado para paciente: " + pac + "\n");
         });
-
         return panel;
     }
 
@@ -931,21 +1030,31 @@ public class EPS_GUI extends JFrame {
         }
         return false;
     }
-
-
     /**
      * Actualiza las listas de donantes y pacientes en el panel de trasplantes.
+     *
+     * Maneja NullPointerException si los modelos no están inicializados y captura
+     * RuntimeException para reportar problemas inesperados.
      */
     public void refrescarListasTransplante() {
-        modeloDonantes.clear();
-        for (Donante d : Donante.getDonantes()) {
-            modeloDonantes.addElement(d);
-        }
-        modeloPacientes.clear();
-        for (Paciente p : Paciente.getPacientes()) {
-            modeloPacientes.addElement(p);
+        try {
+            modeloDonantes.clear();
+            for (Donante d : Donante.getDonantes()) {
+                modeloDonantes.addElement(d);
+            }
+            modeloPacientes.clear();
+            for (Paciente p : Paciente.getPacientes()) {
+                modeloPacientes.addElement(p);
+            }
+        } catch (NullPointerException npe) {
+            // Asegurar inicialización mínima para evitar NPEs cuando se llama temprano
+            if (modeloDonantes == null) modeloDonantes = new DefaultListModel<>();
+            if (modeloPacientes == null) modeloPacientes = new DefaultListModel<>();
+        } catch (RuntimeException re) {
+            displayArea.append("[ERROR] No se pudieron refrescar las listas: " + re.getMessage() + "\n");
         }
     }
+
     /**
      * Configura las propiedades de la ventana principal.
      */
