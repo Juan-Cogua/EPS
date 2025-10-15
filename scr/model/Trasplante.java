@@ -1,5 +1,4 @@
-package scr.model;
-
+package model;
 /**
  * Clase que representa un trasplante dentro del sistema.
  * Contiene información sobre el órgano trasplantado, el donante, el receptor
@@ -7,23 +6,14 @@ package scr.model;
  * 
  * @author Juan Cogua
  * @author Andres Rojas
- * @version 1.0
+ * @version 1.0 (Mejorado con manejo de excepciones específicas)
  */
 public class Trasplante {
 
-    /** Tipo de órgano trasplantado. */
     private String organType;
-
-    /** Donante del órgano. */
     private String donor;
-
-    /** Receptor del órgano. */
     private String receiver;
-
-    /** Historial de rechazos del trasplante. */
     private String rejectionHistory;
-
-    /** Motivo del rechazo, si lo hay. */
     private String rejectionReason;
 
     /**
@@ -34,103 +24,73 @@ public class Trasplante {
      * @param receiver Nombre del receptor.
      * @param rejectionHistory Historial de rechazos previos.
      * @param rejectionReason Motivo de rechazo.
+     * @throws IllegalArgumentException si organType, donor o receiver están vacíos
      */
     public Trasplante(String organType, String donor, String receiver, String rejectionHistory, String rejectionReason) {
+        if (organType == null || organType.trim().isEmpty()) {
+            throw new IllegalArgumentException("El tipo de órgano no puede estar vacío.");
+        }
+        if (donor == null || donor.trim().isEmpty()) {
+            throw new IllegalArgumentException("El donante no puede estar vacío.");
+        }
+        if (receiver == null || receiver.trim().isEmpty()) {
+            throw new IllegalArgumentException("El receptor no puede estar vacío.");
+        }
+        
         this.organType = organType;
         this.donor = donor;
         this.receiver = receiver;
-        this.rejectionHistory = rejectionHistory;
-        this.rejectionReason = rejectionReason;
+        this.rejectionHistory = rejectionHistory != null ? rejectionHistory : "";
+        this.rejectionReason = rejectionReason != null ? rejectionReason : "";
     }
 
-    /**
-     * Obtiene el tipo de órgano trasplantado.
-     *
-     * @return Tipo de órgano.
-     */
     public String getOrganType() {
         return organType;
     }
 
-    /**
-     * Establece el tipo de órgano trasplantado.
-     *
-     * @param organType Tipo de órgano.
-     */
     public void setOrganType(String organType) {
+        if (organType == null || organType.trim().isEmpty()) {
+            throw new IllegalArgumentException("El tipo de órgano no puede estar vacío.");
+        }
         this.organType = organType;
     }
 
-    /**
-     * Obtiene el nombre del donante.
-     *
-     * @return Nombre del donante.
-     */
     public String getDonor() {
         return donor;
     }
 
-    /**
-     * Establece el nombre del donante.
-     *
-     * @param donor Nombre del donante.
-     */
     public void setDonor(String donor) {
+        if (donor == null || donor.trim().isEmpty()) {
+            throw new IllegalArgumentException("El donante no puede estar vacío.");
+        }
         this.donor = donor;
     }
 
-    /**
-     * Obtiene el nombre del receptor.
-     *
-     * @return Nombre del receptor.
-     */
     public String getReceiver() {
         return receiver;
     }
 
-    /**
-     * Establece el nombre del receptor.
-     *
-     * @param receiver Nombre del receptor.
-     */
     public void setReceiver(String receiver) {
+        if (receiver == null || receiver.trim().isEmpty()) {
+            throw new IllegalArgumentException("El receptor no puede estar vacío.");
+        }
         this.receiver = receiver;
     }
 
-    /**
-     * Obtiene el historial de rechazos del trasplante.
-     *
-     * @return Historial de rechazos.
-     */
     public String getRejectionHistory() {
         return rejectionHistory;
     }
 
-    /**
-     * Establece el historial de rechazos del trasplante.
-     *
-     * @param rejectionHistory Historial de rechazos.
-     */
     public void setRejectionHistory(String rejectionHistory) {
-        this.rejectionHistory = rejectionHistory;
+        this.rejectionHistory = rejectionHistory != null ? rejectionHistory : "";
     }
 
-    /**
-     * Obtiene el motivo del rechazo, si existe.
-     *
-     * @return Motivo del rechazo.
-     */
     public String getRejectionReason() {
         return rejectionReason;
     }
 
-    /**
-     * Establece el motivo del rechazo.
-     *
-     * @param rejectionReason Motivo del rechazo.
-     */
     public void setRejectionReason(String rejectionReason) {
-        this.rejectionReason = rejectionReason;
+        this.rejectionReason = rejectionReason != null ? rejectionReason : "";
     }
 
     /**
@@ -146,8 +106,12 @@ public class Trasplante {
      * Registra un rechazo del trasplante con su motivo.
      *
      * @param motivo Motivo del rechazo.
+     * @throws IllegalArgumentException si el motivo está vacío
      */
     public void registrarRechazo(String motivo) {
+        if (motivo == null || motivo.trim().isEmpty()) {
+            throw new IllegalArgumentException("El motivo del rechazo no puede estar vacío.");
+        }
         this.rejectionHistory = "Rechazo previo registrado";
         this.rejectionReason = motivo;
     }
@@ -160,7 +124,8 @@ public class Trasplante {
     public String resumen() {
         return "Trasplante de " + organType + 
                " entre donante: " + donor + " y receptor: " + receiver +
-               (rejectionReason != null ? ". Motivo de rechazo: " + rejectionReason : "");
+               (rejectionReason != null && !rejectionReason.isEmpty() ? 
+                   ". Motivo de rechazo: " + rejectionReason : "");
     }
 
     /**
@@ -173,21 +138,53 @@ public class Trasplante {
 
     /**
      * Crea un trasplante desde una línea de texto.
+     * 
      * @param linea Línea de texto con los datos del trasplante.
-     * @return Instancia de {@link Trasplante} si el formato es válido, null si hay error.
+     * @return Instancia de Trasplante si el formato es válido, null si hay error.
      */
     public static Trasplante fromArchivo(String linea) {
-        String[] partes = linea.split(";");
-        if (partes.length != 5) {
+        if (linea == null || linea.trim().isEmpty()) {
+            System.err.println("La línea está vacía o es null.");
             return null;
         }
-        return new Trasplante(partes[0], partes[1], partes[2], partes[3], partes[4]);
+        
+        try {
+            String[] partes = linea.split(";");
+            
+            // Validar que tenga exactamente 5 campos
+            if (partes.length != 5) {
+                System.err.println("Formato inválido: se esperaban 5 campos, se encontraron " + partes.length);
+                return null;
+            }
+            
+            // Validar que los campos obligatorios no estén vacíos
+            if (partes[0].trim().isEmpty()) {
+                System.err.println("Error: El tipo de órgano no puede estar vacío.");
+                return null;
+            }
+            if (partes[1].trim().isEmpty()) {
+                System.err.println("Error: El donante no puede estar vacío.");
+                return null;
+            }
+            if (partes[2].trim().isEmpty()) {
+                System.err.println("Error: El receptor no puede estar vacío.");
+                return null;
+            }
+            
+            return new Trasplante(partes[0], partes[1], partes[2], partes[3], partes[4]);
+            
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.err.println("Error: Acceso a índice fuera de rango al procesar la línea.");
+            return null;
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error: Argumento inválido - " + e.getMessage());
+            return null;
+        } catch (Exception e) {
+            System.err.println("Error inesperado al parsear trasplante: " + e.getMessage());
+            return null;
+        }
     }
 
-    /**
-     * Representa el trasplante como cadena para mostrar en listas.
-     * @return Cadena con resumen del trasplante.
-     */
     @Override
     public String toString() {
         return resumen();
