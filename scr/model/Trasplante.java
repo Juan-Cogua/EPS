@@ -11,7 +11,7 @@ import java.util.Date;
  * 
  * @author Juan
  * @author Andres
- * @version 2.0 (Actualizado con fecha y manejo de archivo completo)
+ * @version 1.1 (Actualizado con fecha y manejo de archivo completo)
  */
 public class Trasplante {
 

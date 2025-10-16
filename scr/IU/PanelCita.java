@@ -1,203 +1,136 @@
 package IU;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.text.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
-import model.*;
+import model.Cita;
+import model.Paciente;
+import loaders.CitaLoader;
+import java.awt.*;
+import java.util.List;
 
 /**
- * Panel para gestionar citas médicas.
- * Permite crear, mostrar y eliminar automáticamente citas pasadas.
- * 
- * @author Juan Cogua
- * @author Andres Rojas
- * @version 1.0
+ * Panel para la gestión de citas médicas.
+ * Maneja únicamente la interfaz gráfica.
+ * @version 1.1 
+ * @author Juan
+ * @author Andres
  */
 public class PanelCita extends JPanel {
 
-    private JTextField txtNombrePaciente, txtFecha, txtHora, txtLugar;
-    private JTextArea areaHistorial;
-    private ArrayList<Cita> listaCitas = new ArrayList<>();
-    private final String RUTA_ARCHIVO = "Cita.txt";
-    private final SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
-    private final SimpleDateFormat formatoHora = new SimpleDateFormat("HH:mm");
+    private JTextField txtFecha, txtHora, txtLugar, txtIdPaciente;
+    private JTextArea areaCitas;
+    private List<Cita> listaCitas;
+
+    private static final SimpleDateFormat FORMATO_FECHA = new SimpleDateFormat("dd/MM/yyyy");
+    private static final SimpleDateFormat FORMATO_HORA = new SimpleDateFormat("HH:mm");
 
     public PanelCita() {
         setLayout(new BorderLayout(10, 10));
+        setBackground(Color.WHITE);
 
-        // ----- PANEL DE ENTRADA -----
-        JPanel panelEntrada = new JPanel(new GridLayout(5, 2, 10, 10));
+        listaCitas = CitaLoader.cargarCitas();
 
-        txtNombrePaciente = new JTextField();
+        // --- Panel superior de entrada ---
+        JPanel panelEntrada = new JPanel(new GridLayout(5, 2, 5, 5));
+
         txtFecha = new JTextField();
         txtHora = new JTextField();
         txtLugar = new JTextField();
+        txtIdPaciente = new JTextField();
 
-        JButton btnGenerar = new JButton("Generar Cita");
-        JButton btnActualizar = new JButton("Actualizar (eliminar pasadas)");
+        JButton btnAgregar = new JButton("Agregar Cita");
+        JButton btnEliminar = new JButton("Eliminar Cita");
 
-        panelEntrada.add(new JLabel("Nombre del Paciente:"));
-        panelEntrada.add(txtNombrePaciente);
         panelEntrada.add(new JLabel("Fecha (dd/MM/yyyy):"));
         panelEntrada.add(txtFecha);
         panelEntrada.add(new JLabel("Hora (HH:mm):"));
         panelEntrada.add(txtHora);
         panelEntrada.add(new JLabel("Lugar:"));
         panelEntrada.add(txtLugar);
-        panelEntrada.add(btnGenerar);
-        panelEntrada.add(btnActualizar);
+        panelEntrada.add(new JLabel("ID Paciente:"));
+        panelEntrada.add(txtIdPaciente);
+        panelEntrada.add(btnAgregar);
+        panelEntrada.add(btnEliminar);
 
         add(panelEntrada, BorderLayout.NORTH);
 
-        // ----- PANEL HISTORIAL -----
-        areaHistorial = new JTextArea(10, 40);
-        areaHistorial.setEditable(false);
-        JScrollPane scroll = new JScrollPane(areaHistorial);
+        // --- Área de visualización ---
+        areaCitas = new JTextArea(12, 40);
+        areaCitas.setEditable(false);
+        JScrollPane scroll = new JScrollPane(areaCitas);
         add(scroll, BorderLayout.CENTER);
 
-        // ----- CARGAR CITAS -----
-        cargarCitas();
-        actualizarHistorial();
+        actualizarArea();
 
-        // Acción: crear cita
-        btnGenerar.addActionListener(e -> generarCita());
-
-        // Acción: eliminar citas pasadas
-        btnActualizar.addActionListener(e -> {
-            eliminarCitasPasadas();
-            guardarCitas();
-            actualizarHistorial();
-        });
+        // --- Acciones ---
+        btnAgregar.addActionListener(e -> agregarCita());
+        btnEliminar.addActionListener(e -> eliminarCita());
     }
 
-    /** Genera una nueva cita */
-    private void generarCita() {
+    private void agregarCita() {
         try {
-            String nombre = txtNombrePaciente.getText().trim();
-            String fechaStr = txtFecha.getText().trim();
-            String horaStr = txtHora.getText().trim();
+            Date fecha = FORMATO_FECHA.parse(txtFecha.getText().trim());
+            Date hora = FORMATO_HORA.parse(txtHora.getText().trim());
             String lugar = txtLugar.getText().trim();
+            String idPaciente = txtIdPaciente.getText().trim();
 
-            if (nombre.isEmpty() || fechaStr.isEmpty() || horaStr.isEmpty() || lugar.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor complete todos los campos.",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+            if (lugar.isEmpty() || idPaciente.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Debe ingresar lugar e ID de paciente.");
                 return;
             }
 
-            Date fecha = formatoFecha.parse(fechaStr);
-            Date hora = formatoHora.parse(horaStr);
+            Paciente paciente = Paciente.getPacientes().stream()
+                    .filter(p -> p.getId().equals(idPaciente))
+                    .findFirst()
+                    .orElse(null);
 
-            // Crear un paciente temporal con datos mínimos
-            Paciente paciente = new Paciente(
-                    nombre,
-                    (byte) 0,
-                    "N/A",
-                    "N/A",
-                    "N/A",
-                    "N/A",
-                    0.0,
-                    0.0,
-                    new ArrayList<>(),
-                    new ArrayList<>()
-            );
-
-            Cita cita = new Cita(fecha, hora, lugar, paciente);
-            cita.confirmarCita();
-            listaCitas.add(cita);
-            guardarCitas();
-            actualizarHistorial();
-
-            JOptionPane.showMessageDialog(this, "✅ Cita creada exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-            // Limpiar campos
-            txtNombrePaciente.setText("");
-            txtFecha.setText("");
-            txtHora.setText("");
-            txtLugar.setText("");
-
-        } catch (ParseException e) {
-            JOptionPane.showMessageDialog(this, "Formato de fecha u hora inválido.\nUse dd/MM/yyyy y HH:mm",
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al crear la cita: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    /** Actualiza el área de historial con todas las citas */
-    private void actualizarHistorial() {
-        areaHistorial.setText("");
-        if (listaCitas.isEmpty()) {
-            areaHistorial.append("No hay citas registradas.\n");
-        } else {
-            for (Cita c : listaCitas) {
-                areaHistorial.append(c.resumen() + "\n");
+            if (paciente == null) {
+                JOptionPane.showMessageDialog(this, "No se encontró el paciente con ese ID.");
+                return;
             }
+
+            Cita nueva = new Cita(fecha, hora, lugar, paciente);
+            listaCitas.add(nueva);
+            CitaLoader.guardarCitas(listaCitas);
+
+            limpiarCampos();
+            actualizarArea();
+            JOptionPane.showMessageDialog(this, "Cita agregada correctamente.");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al agregar cita: " + ex.getMessage());
         }
     }
 
-    /** Elimina las citas con fecha anterior a la actual */
-    private void eliminarCitasPasadas() {
-        Date hoy = new Date();
-        listaCitas.removeIf(c -> c.getDate().before(hoy));
-    }
+    private void eliminarCita() {
+        try {
+            Date fecha = FORMATO_FECHA.parse(txtFecha.getText().trim());
+            String idPaciente = txtIdPaciente.getText().trim();
 
-    /** Guarda todas las citas en el archivo Cita.txt */
-    private void guardarCitas() {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(RUTA_ARCHIVO))) {
-            for (Cita c : listaCitas) {
-                bw.write(formatoFecha.format(c.getDate()) + ";" +
-                        formatoHora.format(c.getTime()) + ";" +
-                        c.getLocation() + ";" +
-                        c.getPaciente().getName());
-                bw.newLine();
+            boolean eliminado = CitaLoader.eliminarCita(idPaciente, fecha);
+            if (eliminado) {
+                listaCitas = CitaLoader.cargarCitas();
+                actualizarArea();
+                JOptionPane.showMessageDialog(this, "🗑 Cita eliminada correctamente.");
+            } else {
+                JOptionPane.showMessageDialog(this, "⚠ No se encontró cita con esos datos.");
             }
-        } catch (IOException e) {
-            System.err.println("Error al guardar citas: " + e.getMessage());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "⚠ Error al eliminar cita: " + ex.getMessage());
         }
     }
 
-    /** Carga las citas desde el archivo Cita.txt */
-    private void cargarCitas() {
-        listaCitas.clear();
-        File archivo = new File(RUTA_ARCHIVO);
-        if (!archivo.exists()) {
-            System.out.println("Archivo de citas no encontrado. Se creará uno nuevo al guardar.");
-            return;
+    private void actualizarArea() {
+        areaCitas.setText("");
+        for (Cita c : listaCitas) {
+            areaCitas.append(c.resumen() + "\n");
         }
+    }
 
-        try (BufferedReader br = new BufferedReader(new FileReader(RUTA_ARCHIVO))) {
-            String linea;
-            while ((linea = br.readLine()) != null) {
-                String[] partes = linea.split(";");
-                if (partes.length < 4) continue;
-
-                Date fecha = formatoFecha.parse(partes[0]);
-                Date hora = formatoHora.parse(partes[1]);
-                String lugar = partes[2];
-                String nombrePaciente = partes[3];
-
-                Paciente paciente = new Paciente(
-                        nombrePaciente,
-                        (byte) 0,
-                        "N/A",
-                        "N/A",
-                        "N/A",
-                        "N/A",
-                        0.0,
-                        0.0,
-                        new ArrayList<>(),
-                        new ArrayList<>()
-                );
-
-                Cita cita = new Cita(fecha, hora, lugar, paciente);
-                listaCitas.add(cita);
-            }
-        } catch (IOException | ParseException e) {
-            System.err.println("Error al cargar citas: " + e.getMessage());
-        }
+    private void limpiarCampos() {
+        txtFecha.setText("");
+        txtHora.setText("");
+        txtLugar.setText("");
+        txtIdPaciente.setText("");
     }
 }

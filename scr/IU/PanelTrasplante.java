@@ -1,279 +1,155 @@
 package IU;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import model.*;
-import java.io.*;
+import java.awt.*;
+import java.util.List;
+   
+
+import model.Trasplante;
+import model.Donante;
+import model.Paciente;
+import loaders.TrasplanteLoader;
 
 /**
- * Panel encargado de gestionar los trasplantes.
- * Muestra pacientes, donantes y permite verificar compatibilidad, crear,
- * rechazar y eliminar trasplantes con registro en archivo.
- * 
+ * Panel para la gestión de trasplantes.
+ * Maneja únicamente la interfaz gráfica.
+ * @version 1.1 
  * @author Juan
  * @author Andres
  */
+
 public class PanelTrasplante extends JPanel {
 
-    private DefaultListModel<Donante> modeloDonantes = new DefaultListModel<>();
-    private DefaultListModel<Paciente> modeloPacientes = new DefaultListModel<>();
-    private DefaultListModel<String> modeloHistorial = new DefaultListModel<>();
+    private JTextField txtOrgano, txtDonante, txtReceptor, txtHistorial, txtMotivo, txtFecha;
+    private JTextArea areaTrasplantes;
+    private List<Trasplante> listaTrasplantes;
 
-    private JList<Donante> listaDonantes;
-    private JList<Paciente> listaPacientes;
-    private JList<String> listaHistorial;
-    private JTextArea areaInfo;
-    private JTextField txtOrgan;
-    private JButton btnVerificar, btnCrear, btnRechazar, btnEliminar;
-
-    private ArrayList<Trasplante> trasplantes = new ArrayList<>();
-    private final String RUTA = "Trasplante.txt";
+    private static final SimpleDateFormat FORMATO_FECHA = new SimpleDateFormat("dd/MM/yyyy");
 
     public PanelTrasplante() {
         setLayout(new BorderLayout(10, 10));
         setBackground(Color.WHITE);
 
-        // --- Panel Izquierdo (Pacientes)
-        modeloPacientes.clear();
-        for (Paciente p : Paciente.getPacientes()) modeloPacientes.addElement(p);
-        listaPacientes = new JList<>(modeloPacientes);
-        listaPacientes.setBorder(BorderFactory.createTitledBorder("🧍 Pacientes"));
-        listaPacientes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        listaPacientes.setCellRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                          boolean isSelected, boolean cellHasFocus) {
-                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof Paciente p) {
-                    label.setText(String.format("%s (ID: %s) | Sangre: %s",
-                            p.getName(), p.getId(), p.getBloodType()));
-                }
-                return label;
-            }
-        });
+        listaTrasplantes = TrasplanteLoader.cargarTrasplantes();
 
-        // --- Panel Derecho (Donantes)
-        modeloDonantes.clear();
-        for (Donante d : Donante.getDonantes()) modeloDonantes.addElement(d);
-        listaDonantes = new JList<>(modeloDonantes);
-        listaDonantes.setBorder(BorderFactory.createTitledBorder("🩸 Donantes"));
-        listaDonantes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        // --- Panel de entrada ---
+        JPanel panelEntrada = new JPanel(new GridLayout(7, 2, 5, 5));
 
-        // ✅ Personalizar visualización (nombre + sangre + tipo de donación u órgano específico)
-        listaDonantes.setCellRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                          boolean isSelected, boolean cellHasFocus) {
-                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof Donante d) {
-                    String tipoDonacion = (d.getDonationType() == null || d.getDonationType().trim().isEmpty())
-                            ? "Sangre" : d.getDonationType().trim();
-                    String organo = d.getOrgano() != null && !d.getOrgano().trim().isEmpty()
-                            ? d.getOrgano().trim() : tipoDonacion;
+        txtOrgano = new JTextField();
+        txtDonante = new JTextField();
+        txtReceptor = new JTextField();
+        txtHistorial = new JTextField();
+        txtMotivo = new JTextField();
+        txtFecha = new JTextField();
 
-                    label.setText(String.format("%s (ID: %s) | Sangre: %s | Dona: %s",
-                            d.getName(), d.getId(), d.getBloodType(), organo));
-                }
-                return label;
-            }
-        });
+        JButton btnAgregar = new JButton("Agregar Trasplante");
+        JButton btnEliminar = new JButton("Eliminar Trasplante");
 
-        JPanel panelListas = new JPanel(new GridLayout(1, 2, 10, 10));
-        panelListas.add(new JScrollPane(listaPacientes));
-        panelListas.add(new JScrollPane(listaDonantes));
+        panelEntrada.add(new JLabel("Órgano:"));
+        panelEntrada.add(txtOrgano);
+        panelEntrada.add(new JLabel("Nombre Donante:"));
+        panelEntrada.add(txtDonante);
+        panelEntrada.add(new JLabel("Nombre Receptor:"));
+        panelEntrada.add(txtReceptor);
+        panelEntrada.add(new JLabel("Estado (Aprobado/Rechazado):"));
+        panelEntrada.add(txtHistorial);
+        panelEntrada.add(new JLabel("Motivo Rechazo (si aplica):"));
+        panelEntrada.add(txtMotivo);
+        panelEntrada.add(new JLabel("Fecha (dd/MM/yyyy):"));
+        panelEntrada.add(txtFecha);
+        panelEntrada.add(btnAgregar);
+        panelEntrada.add(btnEliminar);
 
-        // --- Centro: controles
-        JPanel panelCentro = new JPanel(new GridLayout(5, 1, 5, 5));
-        txtOrgan = new JTextField();
-        btnVerificar = new JButton("Verificar Compatibilidad");
-        btnCrear = new JButton("Crear Trasplante");
-        btnRechazar = new JButton("Registrar Rechazo");
-        btnEliminar = new JButton("Eliminar Trasplante");
+        add(panelEntrada, BorderLayout.NORTH);
 
-        panelCentro.add(new JLabel("Órgano o tipo de donación:"));
-        panelCentro.add(txtOrgan);
-        panelCentro.add(btnVerificar);
-        panelCentro.add(btnCrear);
-        panelCentro.add(btnRechazar);
-        panelCentro.add(btnEliminar);
+        // --- Área de visualización ---
+        areaTrasplantes = new JTextArea(12, 40);
+        areaTrasplantes.setEditable(false);
+        JScrollPane scroll = new JScrollPane(areaTrasplantes);
+        add(scroll, BorderLayout.CENTER);
 
-        // --- Panel inferior: historial e info
-        modeloHistorial.clear();
-        listaHistorial = new JList<>(modeloHistorial);
-        listaHistorial.setBorder(BorderFactory.createTitledBorder("📜 Historial de trasplantes"));
-        JScrollPane scrollHistorial = new JScrollPane(listaHistorial);
+        actualizarArea();
 
-        areaInfo = new JTextArea(5, 40);
-        areaInfo.setEditable(false);
-        JScrollPane scrollInfo = new JScrollPane(areaInfo);
-        scrollInfo.setBorder(BorderFactory.createTitledBorder("🧠 Información"));
-
-        JPanel panelInferior = new JPanel(new GridLayout(1, 2, 10, 10));
-        panelInferior.add(scrollHistorial);
-        panelInferior.add(scrollInfo);
-
-        add(panelListas, BorderLayout.NORTH);
-        add(panelCentro, BorderLayout.CENTER);
-        add(panelInferior, BorderLayout.SOUTH);
-
-        cargarTrasplantes();
-
-        btnVerificar.addActionListener(e -> verificarCompatibilidad());
-        btnCrear.addActionListener(e -> crearTrasplante());
-        btnRechazar.addActionListener(e -> registrarRechazo());
+        // --- Eventos ---
+        btnAgregar.addActionListener(e -> agregarTrasplante());
         btnEliminar.addActionListener(e -> eliminarTrasplante());
     }
 
-   private void verificarCompatibilidad() {
-    Donante donante = listaDonantes.getSelectedValue();
-    Paciente paciente = listaPacientes.getSelectedValue();
-    String tipoSolicitado = txtOrgan.getText().trim().toLowerCase();
-    areaInfo.setText("");
+    private void agregarTrasplante() {
+        try {
+            String organo = txtOrgano.getText().trim();
+            String donanteNombre = txtDonante.getText().trim();
+            String receptorNombre = txtReceptor.getText().trim();
+            String historial = txtHistorial.getText().trim();
+            String motivo = txtMotivo.getText().trim();
+            Date fecha = FORMATO_FECHA.parse(txtFecha.getText().trim());
 
-    if (donante == null || paciente == null) {
-        JOptionPane.showMessageDialog(this, "Seleccione un paciente y un donante.",
-                "Advertencia", JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-
-    if (tipoSolicitado.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Ingrese 'Sangre' o el órgano que desea trasplantar.",
-                "Aviso", JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-
-    String sangreDonante = donante.getBloodType().trim();
-    String sangrePaciente = paciente.getBloodType().trim();
-    String organoDonante = (donante.getOrgano() != null) ? donante.getOrgano().trim().toLowerCase() : "";
-
-    // 🩸 Caso 1️⃣ — Donación de sangre
-    if (tipoSolicitado.equalsIgnoreCase("sangre")) {
-        if (sangreDonante.equalsIgnoreCase(sangrePaciente)) {
-            areaInfo.append("✅ Compatible\n");
-            areaInfo.append("Tipo de sangre Donante: " + sangreDonante + "\n");
-            areaInfo.append("Tipo de sangre Paciente: " + sangrePaciente + "\n");
-            areaInfo.append("Tipo de donación: Sangre\n");
-        } else {
-            areaInfo.append("❌ Incompatible por tipo de sangre.\n");
-            areaInfo.append("Donante: " + sangreDonante + " / Paciente: " + sangrePaciente + "\n");
-        }
-
-    // 🫀 Caso 2️⃣ — Donación de órgano
-    } else {
-        if (organoDonante.isEmpty()) {
-            areaInfo.append("❌ Este donante no tiene registrado un órgano específico.\n");
-        } else if (!organoDonante.equals(tipoSolicitado)) {
-            areaInfo.append("❌ El donante ofrece otro órgano: " + donante.getOrgano() + "\n");
-        } else {
-            if (sangreDonante.equalsIgnoreCase(sangrePaciente)) {
-                areaInfo.append("✅ Compatible\n");
-                areaInfo.append("Tipo de sangre Donante: " + sangreDonante + "\n");
-                areaInfo.append("Tipo de sangre Paciente: " + sangrePaciente + "\n");
-                areaInfo.append("Órgano donado: " + donante.getOrgano() + "\n");
-            } else {
-                areaInfo.append("❌ Incompatible por tipo de sangre.\n");
-                areaInfo.append("Donante: " + sangreDonante + " / Paciente: " + sangrePaciente + "\n");
+            if (organo.isEmpty() || donanteNombre.isEmpty() || receptorNombre.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Debe ingresar órgano, donante y receptor.");
+                return;
             }
+
+            Donante donante = Donante.getDonantes().stream()
+                    .filter(d -> d.getName().equalsIgnoreCase(donanteNombre))
+                    .findFirst()
+                    .orElse(null);
+
+            Paciente receptor = Paciente.getPacientes().stream()
+                    .filter(p -> p.getName().equalsIgnoreCase(receptorNombre))
+                    .findFirst()
+                    .orElse(null);
+
+            if (donante == null || receptor == null) {
+                JOptionPane.showMessageDialog(this, "No se encontró el donante o el receptor.");
+                return;
+            }
+
+            Trasplante nuevo = new Trasplante(organo, donante, receptor, historial, motivo, fecha);
+            listaTrasplantes.add(nuevo);
+            TrasplanteLoader.guardarTrasplantes(listaTrasplantes);
+
+            limpiarCampos();
+            actualizarArea();
+            JOptionPane.showMessageDialog(this, "Trasplante agregado correctamente.");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al agregar trasplante: " + ex.getMessage());
         }
-    }
-}
-
-
-    private void crearTrasplante() {
-        Donante d = listaDonantes.getSelectedValue();
-        Paciente p = listaPacientes.getSelectedValue();
-        String organ = txtOrgan.getText().trim();
-
-        if (d == null || p == null || organ.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Selecciona donante, paciente y órgano.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        Trasplante t = new Trasplante(organ, d, p, "Aprobado", "", new Date());
-        if (!t.esCompatible()) {
-            JOptionPane.showMessageDialog(this, "El trasplante no es compatible.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        trasplantes.add(t);
-        modeloHistorial.addElement(formatoResumen(t));
-        guardarTrasplantes();
-        areaInfo.setText("✅ Trasplante registrado exitosamente.");
-    }
-
-    private void registrarRechazo() {
-        int index = listaHistorial.getSelectedIndex();
-        if (index == -1) {
-            JOptionPane.showMessageDialog(this, "Selecciona un trasplante en el historial.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        String motivo = JOptionPane.showInputDialog(this, "Motivo del rechazo:");
-        if (motivo == null || motivo.trim().isEmpty()) return;
-
-        Trasplante t = trasplantes.get(index);
-        t.registrarRechazo(motivo);
-        modeloHistorial.set(index, formatoResumen(t));
-        guardarTrasplantes();
-        areaInfo.setText("⚠️ Rechazo registrado: " + motivo);
     }
 
     private void eliminarTrasplante() {
-        int index = listaHistorial.getSelectedIndex();
-        if (index == -1) {
-            JOptionPane.showMessageDialog(this, "Selecciona un trasplante para eliminar.", "Error", JOptionPane.ERROR_MESSAGE);
+        String donante = txtDonante.getText().trim();
+        String receptor = txtReceptor.getText().trim();
+
+        if (donante.isEmpty() || receptor.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Debe ingresar nombre de donante y receptor.");
             return;
         }
 
-        trasplantes.remove(index);
-        modeloHistorial.remove(index);
-        guardarTrasplantes();
-        areaInfo.setText("🗑️ Trasplante eliminado correctamente.");
-    }
-
-    private void cargarTrasplantes() {
-        trasplantes.clear();
-        modeloHistorial.clear();
-
-        File archivo = new File(RUTA);
-        if (!archivo.exists()) return;
-
-        try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
-            String linea;
-            while ((linea = br.readLine()) != null) {
-                Trasplante t = Trasplante.fromArchivo(linea);
-                if (t != null && t.getDonor() != null && t.getReceiver() != null) {
-                    trasplantes.add(t);
-                    modeloHistorial.addElement(formatoResumen(t));
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        boolean eliminado = TrasplanteLoader.eliminarTrasplante(donante, receptor);
+        if (eliminado) {
+            listaTrasplantes = TrasplanteLoader.cargarTrasplantes();
+            actualizarArea();
+            JOptionPane.showMessageDialog(this, "🗑 Trasplante eliminado correctamente.");
+        } else {
+            JOptionPane.showMessageDialog(this, "⚠ No se encontró un trasplante con esos nombres.");
         }
     }
 
-    private void guardarTrasplantes() {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(RUTA))) {
-            for (Trasplante t : trasplantes) {
-                bw.write(t.toArchivo());
-                bw.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void actualizarArea() {
+        areaTrasplantes.setText("");
+        for (Trasplante t : listaTrasplantes) {
+            areaTrasplantes.append(t.resumen() + "\n");
         }
     }
 
-    private String formatoResumen(Trasplante t) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        String estado = t.getRejectionHistory().isEmpty() ? "Aprobado" : t.getRejectionHistory();
-        String motivo = t.getRejectionReason().isEmpty() ? "" : " (" + t.getRejectionReason() + ")";
-        return String.format("[%s] %s → %s [%s]%s",
-                sdf.format(t.getFecha()),
-                t.getDonor().getName(),
-                t.getReceiver().getName(),
-                estado, motivo);
+    private void limpiarCampos() {
+        txtOrgano.setText("");
+        txtDonante.setText("");
+        txtReceptor.setText("");
+        txtHistorial.setText("");
+        txtMotivo.setText("");
+        txtFecha.setText("");
     }
 }
