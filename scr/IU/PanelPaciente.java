@@ -3,106 +3,172 @@ package IU;
 import javax.swing.*;
 import java.util.*;
 import model.Paciente;
-import model.Cita;
 import loaders.PacienteLoader;
 import java.awt.*;
 import java.util.List;
-
+import javax.swing.border.TitledBorder;
 
 /**
  * Panel encargado de la gestión de pacientes.
  * Interfaz visual separada de la lógica de persistencia.
- * @version 1.1 
+ * @version 1.4 (Mejorado: JComboBox Tipo Sangre, Diseño Armonioso)
  * @author Juan
  * @author Andres
  */
 public class PanelPaciente extends JPanel {
 
     private JTextArea areaPacientes;
-    private JTextField txtNombre, txtEdad, txtID, txtTipoSangre, txtDireccion, txtTelefono, txtPeso, txtAltura, txtAlergias;
+    private JTextField txtNombre, txtEdad, txtID, txtDireccion, txtTelefono, txtAlergias;
+    private JComboBox<String> cmbTipoSangre; // JComboBox para Tipo de Sangre
+    private JSpinner spinnerPeso; 
+    private JSpinner spinnerAltura; 
     private ArrayList<Paciente> listaPacientes;
 
+    // Tipos de sangre disponibles
+    private static final String[] TIPOS_SANGRE = {"O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"};
+    
+    // --- Colores y Fuentes Unificadas (Monocromático/Sutil) ---
+    private static final Color COLOR_BASE = new Color(245, 245, 250); // Fondo claro
+    private static final Color COLOR_CONTENEDOR = Color.WHITE; // Fondo de paneles internos
+    private static final Color COLOR_BORDE = new Color(180, 180, 180); // Gris claro
+    private static final Color COLOR_BOTON = new Color(80, 100, 120); // Azul Grisáceo Sutil
+    private static final Color COLOR_TEXTO_BOTON = Color.WHITE;
+    private static final Font FUENTE_TITULO = new Font("Segoe UI", Font.BOLD, 14);
+
+
     public PanelPaciente() {
-        setLayout(new BorderLayout(10, 10));
-        setBackground(Color.WHITE);
+        setLayout(new BorderLayout(15, 15));
+        setBackground(COLOR_BASE); 
 
         listaPacientes = PacienteLoader.cargarPacientes();
 
-        // 🔹 Panel de entrada
-        JPanel panelEntrada = new JPanel(new GridLayout(10, 2, 5, 5));
+        // 🔹 Panel de entrada (Formulario)
+        JPanel panelEntrada = new JPanel(new GridLayout(10, 2, 10, 10)); 
+        panelEntrada.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDE, 1), 
+            "Datos del Paciente", 
+            TitledBorder.LEFT, 
+            TitledBorder.TOP, 
+            FUENTE_TITULO)); 
+        panelEntrada.setBackground(COLOR_CONTENEDOR);
+
 
         txtNombre = new JTextField();
         txtEdad = new JTextField();
         txtID = new JTextField();
-        txtTipoSangre = new JTextField();
         txtDireccion = new JTextField();
         txtTelefono = new JTextField();
-        txtPeso = new JTextField();
-        txtAltura = new JTextField();
         txtAlergias = new JTextField();
+        
+        // Configuración del JComboBox
+        cmbTipoSangre = new JComboBox<>(TIPOS_SANGRE);
+        cmbTipoSangre.setSelectedIndex(0); 
 
+        // Configuración de JSpinner para Peso
+        SpinnerModel modelPeso = new SpinnerNumberModel(70.0, 30.0, 300.0, 0.1);
+        spinnerPeso = new JSpinner(modelPeso);
+        ((JSpinner.DefaultEditor) spinnerPeso.getEditor()).getTextField().setEditable(true);
+
+        // Configuración de JSpinner para Altura
+        SpinnerModel modelAltura = new SpinnerNumberModel(1.70, 0.5, 2.5, 0.01);
+        spinnerAltura = new JSpinner(modelAltura);
+        ((JSpinner.DefaultEditor) spinnerAltura.getEditor()).getTextField().setEditable(true);
+
+
+        // --- Agregar componentes al panel de entrada ---
+        panelEntrada.add(new JLabel("Nombre:"));
+        panelEntrada.add(txtNombre);
+        panelEntrada.add(new JLabel("Edad:"));
+        panelEntrada.add(txtEdad);
+        panelEntrada.add(new JLabel("Identificación:"));
+        panelEntrada.add(txtID);
+        panelEntrada.add(new JLabel("Tipo de Sangre:"));
+        panelEntrada.add(cmbTipoSangre); 
+        panelEntrada.add(new JLabel("Dirección:"));
+        panelEntrada.add(txtDireccion);
+        panelEntrada.add(new JLabel("Teléfono:"));
+        panelEntrada.add(txtTelefono);
+        panelEntrada.add(new JLabel("Peso (kg):"));
+        panelEntrada.add(spinnerPeso); 
+        panelEntrada.add(new JLabel("Altura (m):"));
+        panelEntrada.add(spinnerAltura); 
+        panelEntrada.add(new JLabel("Alergias (sep. por ','):"));
+        panelEntrada.add(txtAlergias);
+
+        // 🔹 Panel de botones 
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        panelBotones.setBackground(COLOR_BASE);
         JButton btnAgregar = new JButton("Agregar Paciente");
         JButton btnEliminar = new JButton("Eliminar Paciente");
+        
+        // Aplicar estilo de botón unificado
+        btnAgregar.setBackground(COLOR_BOTON);
+        btnAgregar.setForeground(COLOR_TEXTO_BOTON);
+        btnEliminar.setBackground(COLOR_BOTON);
+        btnEliminar.setForeground(COLOR_TEXTO_BOTON);
+        
+        panelBotones.add(btnAgregar);
+        panelBotones.add(btnEliminar);
 
-        panelEntrada.add(new JLabel("Nombre:")); panelEntrada.add(txtNombre);
-        panelEntrada.add(new JLabel("Edad:")); panelEntrada.add(txtEdad);
-        panelEntrada.add(new JLabel("Identificación:")); panelEntrada.add(txtID);
-        panelEntrada.add(new JLabel("Tipo de Sangre:")); panelEntrada.add(txtTipoSangre);
-        panelEntrada.add(new JLabel("Dirección:")); panelEntrada.add(txtDireccion);
-        panelEntrada.add(new JLabel("Teléfono:")); panelEntrada.add(txtTelefono);
-        panelEntrada.add(new JLabel("Peso (kg):")); panelEntrada.add(txtPeso);
-        panelEntrada.add(new JLabel("Altura (m):")); panelEntrada.add(txtAltura);
-        panelEntrada.add(new JLabel("Alergias (separadas por comas):")); panelEntrada.add(txtAlergias);
-        panelEntrada.add(btnAgregar); panelEntrada.add(btnEliminar);
-
-        add(panelEntrada, BorderLayout.NORTH);
-
-        // 🔹 Área de visualización
-        areaPacientes = new JTextArea(12, 40);
+        // 🔹 Área de texto para mostrar pacientes
+        areaPacientes = new JTextArea(10, 40);
         areaPacientes.setEditable(false);
-        JScrollPane scroll = new JScrollPane(areaPacientes);
-        add(scroll, BorderLayout.CENTER);
+        JScrollPane scrollPacientes = new JScrollPane(areaPacientes);
+        scrollPacientes.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDE, 1), 
+            "Lista de Pacientes", 
+            TitledBorder.LEFT, 
+            TitledBorder.TOP,
+            FUENTE_TITULO));
+
+        // 🔹 Organización final del Panel
+        add(panelEntrada, BorderLayout.NORTH);
+        add(panelBotones, BorderLayout.CENTER);
+        add(scrollPacientes, BorderLayout.SOUTH);
 
         actualizarArea();
 
-        // 🔹 Eventos
         btnAgregar.addActionListener(e -> agregarPaciente());
         btnEliminar.addActionListener(e -> eliminarPaciente());
     }
 
     /**
-     * Agrega un paciente nuevo a la lista y al archivo.
+     * Agrega un nuevo paciente a la lista y al archivo.
      */
     private void agregarPaciente() {
         try {
             String nombre = txtNombre.getText().trim();
             byte edad = Byte.parseByte(txtEdad.getText().trim());
             String id = txtID.getText().trim();
-            String tipoSangre = txtTipoSangre.getText().trim();
+            
+            // Obtener valor del JComboBox
+            String tipoSangre = (String) cmbTipoSangre.getSelectedItem(); 
+            
             String direccion = txtDireccion.getText().trim();
             String telefono = txtTelefono.getText().trim();
-            double peso = Double.parseDouble(txtPeso.getText().trim());
-            double altura = Double.parseDouble(txtAltura.getText().trim());
-            List<String> alergias = new ArrayList<>();
-
-            if (!txtAlergias.getText().trim().isEmpty()) {
-                for (String a : txtAlergias.getText().split(",")) {
-                    alergias.add(a.trim());
-                }
+            
+            double peso = ((Number) spinnerPeso.getValue()).doubleValue();
+            double altura = ((Number) spinnerAltura.getValue()).doubleValue();
+            
+            String alergiasStr = txtAlergias.getText().trim();
+            List<String> alergiasList = new ArrayList<>();
+            if (!alergiasStr.isEmpty()) {
+                for (String a : alergiasStr.split(",")) alergiasList.add(a.trim());
             }
 
-            Paciente nuevo = new Paciente(nombre, edad, id, tipoSangre, direccion, telefono, peso, altura, alergias, new ArrayList<Cita>());
+            Paciente nuevo = new Paciente(nombre, edad, id, tipoSangre, direccion, telefono,
+                                          peso, altura, alergiasList, new ArrayList<>());
 
-            listaPacientes.add(nuevo);
-            PacienteLoader.guardarPacientes(listaPacientes);
+            PacienteLoader.agregarPaciente(nuevo);
+            listaPacientes = PacienteLoader.cargarPacientes(); 
 
             limpiarCampos();
             actualizarArea();
             JOptionPane.showMessageDialog(this, "Paciente agregado correctamente.");
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Edad, peso y altura deben ser valores numéricos.");
+            JOptionPane.showMessageDialog(this, "Error de formato: Edad, Peso o Altura deben ser números válidos.", "Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al agregar paciente: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Error al agregar paciente: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -120,9 +186,9 @@ public class PanelPaciente extends JPanel {
         if (eliminado) {
             listaPacientes = PacienteLoader.cargarPacientes();
             actualizarArea();
-            JOptionPane.showMessageDialog(this, "🗑 Paciente eliminado correctamente.");
+            JOptionPane.showMessageDialog(this, "Paciente eliminado correctamente.");
         } else {
-            JOptionPane.showMessageDialog(this, "⚠ No se encontró un paciente con ese ID.");
+            JOptionPane.showMessageDialog(this, "No se encontró un paciente con ese ID.");
         }
     }
 
@@ -142,11 +208,11 @@ public class PanelPaciente extends JPanel {
         txtNombre.setText("");
         txtEdad.setText("");
         txtID.setText("");
-        txtTipoSangre.setText("");
+        cmbTipoSangre.setSelectedIndex(0); // Reset ComboBox
         txtDireccion.setText("");
         txtTelefono.setText("");
-        txtPeso.setText("");
-        txtAltura.setText("");
+        spinnerPeso.setValue(70.0);
+        spinnerAltura.setValue(1.70);
         txtAlergias.setText("");
     }
 }

@@ -7,7 +7,7 @@ import java.util.*;
 
 /**
  * Clase encargada de la persistencia de trasplantes.
- * @version 1.1 
+ * @version 1.2 (Modificado: Eliminación por ID, Persistencia ajustada a 7 campos)
  * @author Juan
  * @author Andres
  */
@@ -15,11 +15,11 @@ import java.util.*;
 public class TrasplanteLoader {
 
     private static final String RUTA_ARCHIVO = "Trasplante.txt";
-    private static final SimpleDateFormat FORMATO_FECHA = new SimpleDateFormat("dd/MM/yyyy");
+    // El FORMATO_FECHA ya no se necesita aquí si lo manejas en Trasplante.java
 
     /**
      * Carga todos los trasplantes desde el archivo.
-     * 
+     *
      * @return Lista de trasplantes cargados.
      */
     public static List<Trasplante> cargarTrasplantes() {
@@ -34,7 +34,7 @@ public class TrasplanteLoader {
         try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                Trasplante t = Trasplante.fromArchivo(linea);
+                Trasplante t = Trasplante.fromArchivo(linea); // Llama al fromArchivo corregido
                 if (t != null) lista.add(t);
             }
         } catch (IOException e) {
@@ -46,13 +46,13 @@ public class TrasplanteLoader {
 
     /**
      * Guarda todos los trasplantes en el archivo de texto.
-     * 
+     *
      * @param trasplantes Lista de trasplantes a guardar.
      */
     public static void guardarTrasplantes(List<Trasplante> trasplantes) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(RUTA_ARCHIVO))) {
             for (Trasplante t : trasplantes) {
-                bw.write(t.toArchivo());
+                bw.write(t.toArchivo()); // Llama al toArchivo corregido (7 campos)
                 bw.newLine();
             }
         } catch (IOException e) {
@@ -61,19 +61,21 @@ public class TrasplanteLoader {
     }
 
     /**
-     * Elimina un trasplante basado en el nombre del donante y receptor.
-     * 
-     * @param nombreDonante Nombre del donante.
-     * @param nombreReceptor Nombre del receptor.
+     * Elimina un trasplante basado en el ID del donante y receptor.
+     *
+     * @param idDonante ID del donante.
+     * @param idReceptor ID del receptor.
      * @return true si se eliminó, false si no se encontró.
      */
-    public static boolean eliminarTrasplante(String nombreDonante, String nombreReceptor) {
+    public static boolean eliminarTrasplante(String idDonante, String idReceptor) {
         List<Trasplante> lista = cargarTrasplantes();
         boolean eliminado = lista.removeIf(t ->
-                t.getDonor().getName().equalsIgnoreCase(nombreDonante)
-             && t.getReceiver().getName().equalsIgnoreCase(nombreReceptor)
-        );
-        if (eliminado) guardarTrasplantes(lista);
+                t.getDonor().getId().equalsIgnoreCase(idDonante) // ⚠️ Usar ID
+             && t.getReceiver().getId().equalsIgnoreCase(idReceptor)); // ⚠️ Usar ID
+
+        if (eliminado) {
+            guardarTrasplantes(lista);
+        }
         return eliminado;
     }
 }

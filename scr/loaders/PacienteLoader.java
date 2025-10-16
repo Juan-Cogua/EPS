@@ -7,7 +7,7 @@ import model.Paciente;
 
 /**
  * Clase encargada de la persistencia de pacientes.
- * @version 1.1 
+ * @version 1.2 (Modificado: Añadido buscarPacientePorId)
  * @author Juan
  * @author Andres
  */
@@ -20,6 +20,7 @@ public class PacienteLoader {
      * @return Lista de pacientes cargada del archivo
      */
     public static ArrayList<Paciente> cargarPacientes() {
+        // ... (código existente)
         ArrayList<Paciente> lista = new ArrayList<>();
         File archivo = new File(RUTA);
 
@@ -42,6 +43,22 @@ public class PacienteLoader {
         return lista;
     }
 
+    /**
+     * Busca un paciente por su ID en la lista cargada (solución al bug de CitaLoader).
+     * @param id Identificación del paciente
+     * @return El paciente encontrado o null si no existe.
+     */
+    public static Paciente buscarPacientePorId(String id) {
+        // Se carga la lista fresca para asegurar que siempre se busque en la versión actualizada
+        ArrayList<Paciente> lista = cargarPacientes(); 
+        for (Paciente p : lista) {
+            if (p.getId().equalsIgnoreCase(id)) {
+                return p;
+            }
+        }
+        return null;
+    }
+    
     /**
      * Guarda la lista de pacientes en el archivo Paciente.txt
      * @param lista lista de pacientes a guardar

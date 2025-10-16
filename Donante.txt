@@ -8,3 +8,4 @@ Laura Gómez;33;D007;O-;Calle 9 #11-21;3174455667;Órganos;Excelente;1;Páncreas
 David Romero;38;D008;A+;Carrera 12 #44-30;3129988776;Sangre;Buena;1;Corazon
 Eliana Cruz;41;D009;B-;Diagonal 6 #3-19;3007766554;Órganos;Buena;0;Corazón
 Andrés Ríos;24;D010;O+;Carrera 5 #55-22;3013344556;Sangre;Excelente;1;Páncreas
+jUAN;14;123;AA;wdgfer;2222222222;Organo;estavle;1;Corazon

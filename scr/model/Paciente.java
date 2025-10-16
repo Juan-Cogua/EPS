@@ -117,8 +117,15 @@ public class Paciente extends Persona {
         }
     }
 
+    /**
+     * MODIFICACIÓN: Muestra el nombre, ID y la lista de alergias.
+     */
     @Override
     public String toString() {
-        return getName() + " (ID: " + getId() + ")";
+        String alergiasStr = String.join(", ", getAllergies());
+        if (alergiasStr.isEmpty()) {
+             alergiasStr = "No registradas"; 
+        }
+        return getName() + " (ID: " + getId() + ")" + " (alergias: " + alergiasStr + ")";
     }
 }

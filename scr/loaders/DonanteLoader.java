@@ -28,24 +28,25 @@ public class DonanteLoader {
             while ((linea = br.readLine()) != null) {
                 if (linea.trim().isEmpty()) continue;
                 String[] datos = linea.split(";");
-                if (datos.length >= 10) {
+                // Verifica que haya 10 campos en el archivo (asumiendo que la fecha no se guarda)
+                if (datos.length >= 10) { 
                     try {
                         Donante d = new Donante(
-                                datos[0],                            // nombre
-                                Byte.parseByte(datos[1]),            // edad
-                                datos[2],                            // id
-                                datos[3],                            // tipo sangre
-                                datos[4],                            // dirección
-                                datos[5],                            // teléfono
-                                new Date(),                          // birthDate (placeholder)
-                                datos[6],                            // tipo de donación
-                                datos[7],                            // estado de salud
-                                datos[8].equals("1"),                // elegible
-                                datos[9]                             // órgano
+                                datos[0],                            // 1. nombre
+                                Byte.parseByte(datos[1]),            // 2. edad
+                                datos[2],                            // 3. id
+                                datos[3],                            // 4. tipo sangre
+                                datos[4],                            // 5. dirección
+                                datos[5],                            // 6. teléfono
+                                new java.util.Date(),                // 7. ⚠️ Fecha de Nacimiento (Temporal: Se añade una fecha por defecto)
+                                datos[6],                            // 8. tipo donación
+                                datos[7],                            // 9. estado salud
+                                datos[8].equals("1"),                // 10. elegibilidad
+                                datos[9]                             // 11. órgano
                         );
                         lista.add(d);
                     } catch (Exception e) {
-                        System.err.println(" Error al leer línea: " + linea);
+                        System.err.println("Error al procesar línea de donante: " + linea + ". Error: " + e.getMessage());
                     }
                 }
             }
@@ -59,6 +60,7 @@ public class DonanteLoader {
     public static void guardarDonantes(List<Donante> lista) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(RUTA))) {
             for (Donante d : lista) {
+                // Se guardan los 10 campos que se asume maneja el archivo Donante.txt
                 pw.println(String.join(";",
                         d.getName(),
                         String.valueOf(d.getAge()),
@@ -79,8 +81,13 @@ public class DonanteLoader {
 
     public static void agregarDonante(Donante nuevo) {
         ArrayList<Donante> lista = cargarDonantes();
-        lista.add(nuevo);
-        guardarDonantes(lista);
+        // Se previene duplicidad por ID
+        if (lista.stream().noneMatch(d -> d.getId().equalsIgnoreCase(nuevo.getId()))) {
+            lista.add(nuevo);
+            guardarDonantes(lista);
+        } else {
+             System.err.println("Error: El ID del donante ya existe.");
+        }
     }
 
     public static boolean eliminarDonante(String id) {
@@ -88,5 +95,15 @@ public class DonanteLoader {
         boolean eliminado = lista.removeIf(d -> d.getId().equalsIgnoreCase(id));
         if (eliminado) guardarDonantes(lista);
         return eliminado;
+    }
+    
+    public static Donante buscarDonantePorId(String id) {
+        ArrayList<Donante> lista = cargarDonantes();
+        for (Donante d : lista) {
+            if (d.getId().equalsIgnoreCase(id)) {
+                return d;
+            }
+        }
+        return null;
     }
 }

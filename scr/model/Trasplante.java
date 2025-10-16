@@ -3,37 +3,42 @@ package model;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+// Importamos los loaders para la carga estática (usado en fromArchivo)
+import loaders.DonanteLoader;
+import loaders.PacienteLoader;
 
 /**
  * Clase que representa un trasplante dentro del sistema.
  * Contiene información sobre el órgano trasplantado, el donante, el receptor,
- * fecha del procedimiento y posibles rechazos asociados.
- * 
+ * fecha del procedimiento, estado y posibles rechazos asociados.
+ *
  * @author Juan
  * @author Andres
- * @version 1.1 (Actualizado con fecha y manejo de archivo completo)
+ * @version 1.2 (Añadido campo 'estado' y constructor de 7 argumentos)
  */
 public class Trasplante {
 
     private String organType;
     private Donante donor;
     private Paciente receiver;
-    private String rejectionHistory;
+    private String estado; // Nuevo campo: Aprobado, Pendiente, Rechazado
+    private String historialClinico; // Antes 'rejectionHistory', ahora usado para Historial Clínico
     private String rejectionReason;
     private Date fecha;
 
     /**
-     * Constructor principal de la clase Trasplante.
+     * Constructor principal de la clase Trasplante (7 argumentos).
      *
      * @param organType Tipo de órgano trasplantado.
      * @param donor Donante que participa en el trasplante.
      * @param receiver Paciente receptor.
-     * @param rejectionHistory Estado del trasplante ("Aprobado" o "Rechazado").
+     * @param estado Estado del trasplante ("Pendiente", "Aprobado", "Rechazado").
+     * @param historialClinico Registro del historial clínico del procedimiento.
      * @param rejectionReason Motivo del rechazo (si aplica).
      * @param fecha Fecha del trasplante.
      */
     public Trasplante(String organType, Donante donor, Paciente receiver,
-                      String rejectionHistory, String rejectionReason, Date fecha) {
+                      String estado, String historialClinico, String rejectionReason, Date fecha) {
 
         if (organType == null || organType.trim().isEmpty())
             throw new IllegalArgumentException("El tipo de órgano no puede estar vacío.");
@@ -41,151 +46,113 @@ public class Trasplante {
             throw new NullPointerException("El donante no puede ser null.");
         if (receiver == null)
             throw new NullPointerException("El receptor no puede ser null.");
-        if (fecha == null)
-            fecha = new Date();
 
         this.organType = organType;
         this.donor = donor;
         this.receiver = receiver;
-        this.rejectionHistory = rejectionHistory != null ? rejectionHistory : "";
+        this.estado = estado;
+        this.historialClinico = historialClinico != null ? historialClinico : "";
         this.rejectionReason = rejectionReason != null ? rejectionReason : "";
         this.fecha = fecha;
     }
 
-    // --- Getters y Setters ---
+    // --- Getters ---
     public String getOrganType() { return organType; }
     public Donante getDonor() { return donor; }
     public Paciente getReceiver() { return receiver; }
-    public String getRejectionHistory() { return rejectionHistory; }
+    public String getEstado() { return estado; }
+    public String getHistorialClinico() { return historialClinico; }
     public String getRejectionReason() { return rejectionReason; }
     public Date getFecha() { return fecha; }
 
-    public void setOrganType(String organType) {
-        if (organType == null || organType.trim().isEmpty())
-            throw new IllegalArgumentException("El tipo de órgano no puede estar vacío.");
-        this.organType = organType;
-    }
-
-    public void setRejectionHistory(String rejectionHistory) {
-        this.rejectionHistory = rejectionHistory != null ? rejectionHistory : "";
-    }
-
-    public void setRejectionReason(String rejectionReason) {
-        this.rejectionReason = rejectionReason != null ? rejectionReason : "";
-    }
-
-    public void setFecha(Date fecha) {
-        this.fecha = fecha != null ? fecha : new Date();
-    }
+    // --- Persistencia ---
 
     /**
-     * Verifica si el trasplante es compatible en base al tipo de sangre.
-     *
-     * @return true si los tipos de sangre son compatibles, false en caso contrario.
-     */
-    public boolean esCompatible() {
-        if (donor == null || receiver == null) return false;
-
-        String sangreDonante = donor.getBloodType().toUpperCase();
-        String sangreReceptor = receiver.getBloodType().toUpperCase();
-
-        // Compatibilidad básica de sangre
-        return sangreDonante.equals(sangreReceptor) ||
-               (sangreDonante.equals("O-")) || // universal donante
-               (sangreReceptor.equals("AB+"));  // universal receptor
-    }
-
-    /**
-     * Registra un rechazo del trasplante con su motivo.
-     *
-     * @param motivo Motivo del rechazo.
-     */
-    public void registrarRechazo(String motivo) {
-        if (motivo == null || motivo.trim().isEmpty())
-            throw new IllegalArgumentException("El motivo del rechazo no puede estar vacío.");
-        this.rejectionHistory = "Rechazado";
-        this.rejectionReason = motivo;
-    }
-
-    /**
-     * Genera un resumen con la información del trasplante.
-     *
-     * @return Cadena con el resumen del trasplante.
-     */
-    public String resumen() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        return String.format("Trasplante de %s | Donante: %s | Receptor: %s | Fecha: %s | Estado: %s%s",
-                organType,
-                donor.getName(),
-                receiver.getName(),
-                sdf.format(fecha),
-                rejectionHistory.isEmpty() ? "Aprobado" : rejectionHistory,
-                rejectionReason.isEmpty() ? "" : " (" + rejectionReason + ")");
-    }
-
-    // --- Métodos para archivo de texto ---
-
-    /**
-     * Convierte el trasplante a una línea de texto para guardar en archivo.
-     * @return Cadena con los datos del trasplante separados por punto y coma.
+     * Convierte el objeto a formato de archivo:
+     * Organo;ID_Donante;ID_Receptor;Estado;Historial;Motivo;Fecha
      */
     public String toArchivo() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        return organType + ";" +
-               donor.getName() + ";" +
-               receiver.getName() + ";" +
-               rejectionHistory + ";" +
-               rejectionReason + ";" +
-               sdf.format(fecha);
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
+
+        return String.join(";",
+                organType,
+                donor.getId(), // Usamos ID del Donante
+                receiver.getId(), // Usamos ID del Receptor
+                estado,
+                historialClinico,
+                rejectionReason,
+                formatoFecha.format(fecha)
+        );
     }
 
     /**
-     * Crea un trasplante desde una línea de texto.
-     * 
-     * @param linea Línea de texto con los datos del trasplante.
-     * @return Instancia de Trasplante si el formato es válido, null si hay error.
+     * Crea un objeto Trasplante desde una línea del archivo, buscando Donante/Paciente por ID.
      */
     public static Trasplante fromArchivo(String linea) {
         if (linea == null || linea.trim().isEmpty()) return null;
 
         try {
             String[] partes = linea.split(";");
-            if (partes.length < 6) return null;
+            // Ahora esperamos 7 partes: Organo;ID_Donante;ID_Receptor;Estado;Historial;Motivo;Fecha
+            if (partes.length < 7) return null;
 
             String organ = partes[0];
-            String donorName = partes[1];
-            String receiverName = partes[2];
-            String history = partes[3];
-            String reason = partes[4];
-            Date fecha;
+            String donorId = partes[1]; // Es un ID
+            String receiverId = partes[2]; // Es un ID
+            String estado = partes[3];
+            String historial = partes[4];
+            String reason = partes[5];
+            Date fecha = new SimpleDateFormat("dd/MM/yyyy").parse(partes[6]);
 
-            try {
-                fecha = new SimpleDateFormat("dd/MM/yyyy").parse(partes[5]);
-            } catch (ParseException e) {
-                fecha = new Date();
+            // ⚠️ Usar Loaders para buscar por ID
+            Donante donor = DonanteLoader.buscarDonantePorId(donorId);
+            Paciente receiver = PacienteLoader.buscarPacientePorId(receiverId);
+
+            if (donor == null || receiver == null) {
+                System.err.println("Advertencia: Donante o Receptor no encontrado por ID. Trasplante omitido.");
+                return null;
             }
 
-            // Buscar los objetos Donante y Paciente por nombre en las listas existentes
-            Donante donor = Donante.getDonantes().stream()
-                    .filter(d -> d.getName().equalsIgnoreCase(donorName))
-                    .findFirst().orElse(null);
+            return new Trasplante(organ, donor, receiver, estado, historial, reason, fecha);
 
-            Paciente receiver = Paciente.getPacientes().stream()
-                    .filter(p -> p.getName().equalsIgnoreCase(receiverName))
-                    .findFirst().orElse(null);
-
-            if (donor == null || receiver == null) return null;
-
-            return new Trasplante(organ, donor, receiver, history, reason, fecha);
-
+        } catch (ParseException e) {
+            System.err.println("Error de formato de fecha en trasplante: " + e.getMessage());
+            return null;
         } catch (Exception e) {
             System.err.println("Error al procesar trasplante: " + e.getMessage());
             return null;
         }
     }
 
+
     @Override
     public String toString() {
-        return resumen();
+        // ... (Tu implementación original puede ir aquí, la ajustamos ligeramente)
+        return String.format("Trasplante de %s | Donante: %s (%s) | Receptor: %s (%s) | Estado: %s",
+                organType,
+                donor.getName(), donor.getId(),
+                receiver.getName(), receiver.getId(),
+                estado
+        );
+    }
+
+    /**
+     * Genera un resumen legible para el JTextArea.
+     */
+    public String resumen() {
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
+
+        return String.format("TRASPLANTE: %s. Fecha: %s. Estado: %s\n" +
+                             "  > Donante (ID): %s (%s)\n" +
+                             "  > Receptor (ID): %s (%s)\n" +
+                             "  > Historial Clínico: %s. Motivo: %s",
+                organType,
+                formatoFecha.format(fecha),
+                estado,
+                donor.getName(), donor.getId(),
+                receiver.getName(), receiver.getId(),
+                historialClinico.isEmpty() ? "N/A" : historialClinico,
+                rejectionReason.isEmpty() ? "N/A" : rejectionReason
+        );
     }
 }

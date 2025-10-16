@@ -3,205 +3,120 @@ import java.util.Date;
 
 /**
  * Clase que representa una cita médica.
- * Contiene información de fecha, hora, lugar, paciente
- * y permite confirmar, cancelar y reprogramar la cita.
- * 
+ * Contiene información de ID, fecha, hora, lugar, paciente y doctor.
+ * @version 1.3 (Modificado: ID de Cita añadido)
  * @author Juan Cogua
  * @author Andres Rojas
- * @version 1.0 (Mejorado con manejo de excepciones específicas)
  */
 public class Cita {
+    private String id; // NUEVO CAMPO: ID de la Cita (Ej: C001)
     private Date date;
     private Date time; 
     private String location;
     private Paciente paciente;
-    private boolean confirmada = false;
+    private String doctor; 
+    private String estado = "PENDIENTE"; 
+    private boolean confirmada = false; 
     private boolean cancelada = false;
 
     /**
      * Constructor para crear una nueva cita.
-     * 
+     * @param id ID único de la cita
      * @param date Fecha de la cita
      * @param time Hora de la cita
      * @param location Ubicación de la cita
      * @param paciente Paciente asociado a la cita
-     * @throws NullPointerException si date, time o paciente son null
-     * @throws IllegalArgumentException si location está vacía
+     * @param doctor Doctor/Especialista de la cita
      */
-    public Cita(Date date, Date time, String location, Paciente paciente) {
-        if (date == null) {
-            throw new NullPointerException("La fecha de la cita no puede ser null.");
+    public Cita(String id, Date date, Date time, String location, Paciente paciente, String doctor) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("El ID de la cita no puede ser nulo o vacío.");
         }
-        if (time == null) {
-            throw new NullPointerException("La hora de la cita no puede ser null.");
+        if (date == null || time == null) {
+            throw new NullPointerException("La fecha y hora de la cita no pueden ser null.");
         }
         if (location == null || location.trim().isEmpty()) {
             throw new IllegalArgumentException("La ubicación de la cita no puede estar vacía.");
         }
         if (paciente == null) {
-            throw new NullPointerException("El paciente de la cita no puede ser null.");
+            throw new NullPointerException("La cita debe estar asociada a un paciente.");
         }
-        
+        if (doctor == null || doctor.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del doctor no puede estar vacío.");
+        }
+
+        this.id = id;
         this.date = date;
         this.time = time;
         this.location = location;
         this.paciente = paciente;
+        this.doctor = doctor;
     }
 
-    public Date getDate() {
-        return date;
-    }
+    // --- Getters ---
+    public String getId() { return id; }
+    public Date getDate() { return date; }
+    public Date getTime() { return time; }
+    public String getLocation() { return location; }
+    public Paciente getPaciente() { return paciente; }
+    public String getDoctor() { return doctor; }
+    public String getEstado() { return estado; }
+    public boolean isConfirmada() { return confirmada; }
+    public boolean isCancelada() { return cancelada; }
 
-    /**
-     * Establece la fecha de la cita.
-     * 
-     * @param date Nueva fecha de la cita
-     * @throws NullPointerException si date es null
-     */
-    public void setDate(Date date) {
-        if (date == null) {
-            throw new NullPointerException("La fecha de la cita no puede ser null.");
-        }
-        this.date = date;
-    }
+    // --- Setters ---
+    public void setDate(Date date) { this.date = date; }
+    public void setTime(Date time) { this.time = time; }
+    public void setLocation(String location) { this.location = location; }
+    public void setDoctor(String doctor) { this.doctor = doctor; }
+    public void setEstado(String estado) { this.estado = estado; }
 
-    public Date getTime() {
-        return time;
-    }
-
-    /**
-     * Establece la hora de la cita.
-     * 
-     * @param time Nueva hora de la cita
-     * @throws NullPointerException si time es null
-     */
-    public void setTime(Date time) {
-        if (time == null) {
-            throw new NullPointerException("La hora de la cita no puede ser null.");
-        }
-        this.time = time;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    /**
-     * Establece la ubicación de la cita.
-     * 
-     * @param location Nueva ubicación de la cita
-     * @throws IllegalArgumentException si location está vacía
-     */
-    public void setLocation(String location) {
-        if (location == null || location.trim().isEmpty()) {
-            throw new IllegalArgumentException("La ubicación de la cita no puede estar vacía.");
-        }
-        this.location = location;
-    }
-
-    public Paciente getPaciente() {
-        return paciente;
-    }
-
-    /**
-     * Establece el paciente de la cita.
-     * 
-     * @param paciente Nuevo paciente de la cita
-     * @throws NullPointerException si paciente es null
-     */
-    public void setPaciente(Paciente paciente) {
-        if (paciente == null) {
-            throw new NullPointerException("El paciente de la cita no puede ser null.");
-        }
-        this.paciente = paciente;
-    }
-
-    /**
-     * Confirma la cita.
-     * Cambia el estado a confirmada y desactiva cancelada.
-     * 
-     * @throws IllegalStateException si la cita ya está cancelada
-     */
-    public void confirmarCita() {
-        if (cancelada) {
-            throw new IllegalStateException("No se puede confirmar una cita que ya está cancelada.");
-        }
-        
+    // --- Lógica ---
+    public void confirmar() {
         this.confirmada = true;
-        System.out.println("La cita ha sido confirmada para el paciente " + paciente.getName());
     }
 
-    /**
-     * Cancela la cita.
-     * Cambia el estado a cancelada y desactiva confirmada.
-     * 
-     * @throws IllegalStateException si la cita ya está cancelada
-     */
-    public void cancelarCita() {
-        if (cancelada) {
-            throw new IllegalStateException("La cita ya está cancelada.");
-        }
-        
+    public void cancelar() {
         this.cancelada = true;
-        this.confirmada = false;
-        System.out.println("La cita ha sido cancelada para el paciente " + paciente.getName());
+        this.estado = "CANCELADA"; 
+        System.out.println("La cita ha sido cancelada.");
     }
-
-    public boolean isConfirmada() {
-        return confirmada;
-    }
-
-    public boolean isCancelada() {
-        return cancelada;
-    }
-
+    
     /**
-     * Reprograma la cita con nueva fecha y hora.
-     * 
-     * @param nuevaFecha Nueva fecha para la cita
-     * @param nuevaHora Nueva hora para la cita
-     * @throws NullPointerException si nuevaFecha o nuevaHora son null
-     * @throws IllegalStateException si la cita está cancelada
+     * Genera un resumen legible de la cita con el formato: 
+     * (Fecha;Hora;Lugar;Doctor [ESTADO])
      */
-    public void reprogramarCita(Date nuevaFecha, Date nuevaHora) {
-        if (nuevaFecha == null) {
-            throw new NullPointerException("La nueva fecha no puede ser null.");
+    public String resumen() {
+        java.text.SimpleDateFormat formatoFecha = new java.text.SimpleDateFormat("dd/MM/yyyy");
+        java.text.SimpleDateFormat formatoHora = new java.text.SimpleDateFormat("HH:mm");
+
+        String estadoStr = "";
+        if (!estado.equals("PENDIENTE")) {
+            estadoStr = " [" + estado + "]";
         }
-        if (nuevaHora == null) {
-            throw new NullPointerException("La nueva hora no puede ser null.");
-        }
-        if (cancelada) {
-            throw new IllegalStateException("No se puede reprogramar una cita cancelada.");
-        }
+
+        return String.format("%s;%s;%s;%s%s", 
+            formatoFecha.format(date), 
+            formatoHora.format(time), 
+            location, 
+            doctor, 
+            estadoStr);
+    }
+    
+    /**
+     * Convierte la cita al formato de archivo: ID;Fecha;Hora;Lugar;ID_Paciente;Doctor;Estado
+     */
+    public String toArchivo() {
+        java.text.SimpleDateFormat formatoFecha = new java.text.SimpleDateFormat("dd/MM/yyyy");
+        java.text.SimpleDateFormat formatoHora = new java.text.SimpleDateFormat("HH:mm");
         
-        this.date = nuevaFecha;
-        this.time = nuevaHora;
-        System.out.println("La cita ha sido reprogramada para: " + nuevaFecha + " a las " + nuevaHora);
+        return String.join(";",
+            this.id, // ID AÑADIDO
+            formatoFecha.format(date),
+            formatoHora.format(time),
+            location,
+            paciente.getId(),
+            doctor,
+            estado);
     }
-
-    /**
-     * Genera un resumen de la cita con información básica.
-     * 
-     * @return Cadena con el resumen de la cita
-     */
- /**
- * Genera un resumen legible de la cita con formato amigable.
- *
- * @return Cadena con el resumen de la cita
- */
-public String resumen() {
-    java.text.SimpleDateFormat formatoFecha = new java.text.SimpleDateFormat("dd/MM/yyyy");
-    java.text.SimpleDateFormat formatoHora = new java.text.SimpleDateFormat("HH:mm");
-
-    String estado = "";
-    if (confirmada) estado = " [CONFIRMADA]";
-    if (cancelada) estado = " [CANCELADA]";
-
-    return "Dia: " + formatoFecha.format(date) +
-           "Hora: " + formatoHora.format(time) +
-           " - " + paciente.getName() +
-           " - " + location +
-           estado;
-}
-
 }
