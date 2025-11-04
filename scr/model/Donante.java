@@ -2,6 +2,7 @@ package model;
 
 import excepciones.InvalidDataException;
 import excepciones.DonanteMenorEdadException;
+import excepciones.InvariantViolationException;
 import java.util.List;
 
 /**
@@ -54,6 +55,22 @@ public class Donante extends Persona {
 
     public static List<String> getOrganosDisponibles() {
         return ORGANOS_DISPONIBLES;
+    }
+
+    /**
+     * Verifica las invariantes de Donante.
+     */
+    public void checkInvariant() {
+        // Validar invariantes de la superclase
+        super.checkInvariant();
+
+        if (donationType == null || donationType.trim().isEmpty())
+            throw new InvariantViolationException("Tipo de donación no puede ser nulo o vacío.");
+        if (healthStatus == null || healthStatus.trim().isEmpty())
+            throw new InvariantViolationException("Estado de salud no puede ser nulo o vacío.");
+        // Si se especifica un órgano, debe estar en la lista de disponibles
+        if (organo != null && !organo.trim().isEmpty() && !ORGANOS_DISPONIBLES.contains(organo.trim()))
+            throw new InvariantViolationException("Órgano especificado no es válido: " + organo);
     }
 
     // --- Métodos de archivo ---

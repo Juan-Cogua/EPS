@@ -1,6 +1,7 @@
 package model;
 
 import excepciones.InvalidDataException;
+import excepciones.InvariantViolationException;
 import java.util.Date;
 
 /**
@@ -122,5 +123,21 @@ public class Cita {
             paciente.getId(),
             doctor,
             estado);
+    }
+
+    /**
+     * Verifica invariantes de la cita.
+     */
+    public void checkInvariant() {
+        if (id == null || id.trim().isEmpty())
+            throw new InvariantViolationException("ID de la cita no puede ser nulo o vacío.");
+        if (date == null || time == null)
+            throw new InvariantViolationException("La fecha y la hora no pueden ser null.");
+        if (location == null || location.trim().isEmpty())
+            throw new InvariantViolationException("La ubicación no puede estar vacía.");
+        if (paciente == null)
+            throw new InvariantViolationException("La cita debe tener un paciente asociado.");
+        if (doctor == null || doctor.trim().isEmpty())
+            throw new InvariantViolationException("El doctor no puede ser nulo o vacío.");
     }
 }

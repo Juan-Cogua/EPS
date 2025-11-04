@@ -1,6 +1,7 @@
 package model;
 
 import excepciones.InvalidDataException;
+import excepciones.InvariantViolationException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,17 @@ public class Paciente extends Persona {
         this.height = height;
         this.allergies = allergies != null ? allergies : new ArrayList<>();
         this.citas = citas != null ? citas : new ArrayList<>();
+    }
+
+    /**
+     * Verifica las invariantes de Paciente.
+     */
+    public void checkInvariant() {
+        super.checkInvariant();
+        if (weight < 0) throw new InvariantViolationException("El peso no puede ser negativo.");
+        if (height < 0) throw new InvariantViolationException("La altura no puede ser negativa.");
+        if (allergies == null) throw new InvariantViolationException("La lista de alergias no puede ser null.");
+        if (citas == null) throw new InvariantViolationException("La lista de citas no puede ser null.");
     }
 
     // --- Getters y Setters ---

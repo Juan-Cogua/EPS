@@ -1,6 +1,7 @@
 package model;
 
 import excepciones.InvalidDataException;
+import excepciones.InvariantViolationException;
 
 /**
  * Clase base para personas en el sistema EPS.
@@ -8,7 +9,7 @@ import excepciones.InvalidDataException;
  * @author Juan Cogua
  * @version 1.0
  */
-class Persona {
+public class Persona {
     private String name;
     private byte age;
     private String id;
@@ -145,6 +146,21 @@ class Persona {
         this.phone = nuevoTelefono;
     }
 
+    /**
+     * Verifica las invariantes de la clase Persona. Lanza InvariantViolationException
+     * si alguna invariante se rompe.
+     */
+    public void checkInvariant() {
+        if (name == null || name.trim().isEmpty())
+            throw new InvariantViolationException("Nombre no puede ser nulo o vacío.");
+        if (age < 0)
+            throw new InvariantViolationException("Edad no puede ser negativa.");
+        if (id == null || id.trim().isEmpty())
+            throw new InvariantViolationException("ID no puede ser nulo o vacío.");
+        if (bloodType == null || bloodType.trim().isEmpty())
+            throw new InvariantViolationException("Tipo de sangre no puede ser nulo o vacío.");
+    }
+
      /**
      * Redefine el método equals para comparar objetos Persona basándose en su ID.
      * Dos objetos Persona son considerados iguales si tienen el mismo ID.
@@ -160,7 +176,7 @@ class Persona {
         return id.equals(persona.id); 
     }
 
-     /**
+    /**
      * Redefine el método hashCode para mantener la consistencia con equals.
      * El hash code se calcula basándose en el ID.
      * Autor: Andrés Rojas.

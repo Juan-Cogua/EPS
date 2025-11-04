@@ -1,85 +1,132 @@
 package loaders;
 
 import model.Trasplante;
-import java.io.*;
-import java.util.*;
+import model.Donante;
+import model.Paciente;
+import excepciones.NotFoundException;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Clase encargada de la persistencia de trasplantes.
- * @version 1.2 (Modificado: Eliminación por ID, Persistencia ajustada a 7 campos)
- * @author Juan
- * @author Andres
  */
-
 public class TrasplanteLoader {
 
-    private static final String RUTA_ARCHIVO = "Trasplante.txt";
-    // El FORMATO_FECHA ya no se necesita aquí si lo manejas en Trasplante.java
+    private static final String RUTA = "Trasplante.txt";
+    private static final SimpleDateFormat FORMATO_FECHA = new SimpleDateFormat("dd/MM/yyyy");
 
-    /**
-     * Carga todos los trasplantes desde el archivo.
-     *
-     * @return Lista de trasplantes cargados.
-     */
-    public static List<Trasplante> cargarTrasplantes() {
-        List<Trasplante> lista = new ArrayList<>();
-        File archivo = new File(RUTA_ARCHIVO);
-
+    public static ArrayList<Trasplante> cargarTrasplantes() {
+        ArrayList<Trasplante> lista = new ArrayList<>();
+        File archivo = new File(RUTA);
         if (!archivo.exists()) {
-            System.err.println("Archivo Trasplante.txt no encontrado. Se creará al guardar.");
             return lista;
         }
 
         try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                try {
-                    Trasplante t = Trasplante.fromArchivo(linea); // Llama al fromArchivo que ahora puede lanzar NotFoundException
-                    if (t != null) lista.add(t);
-                } catch (excepciones.NotFoundException nf) {
-                    System.err.println("Advertencia al cargar trasplante: " + nf.getMessage() + " Línea omitida: " + linea);
-                    // continuar con siguiente línea
-                }
+                if (linea.trim().isEmpty()) continue;
+                Trasplante t = fromArchivo(linea);
+                if (t != null) lista.add(t);
             }
         } catch (IOException e) {
-            System.err.println("Error al leer Trasplante.txt: " + e.getMessage());
+            System.err.println("Error al cargar trasplantes: " + e.getMessage());
         }
 
         return lista;
     }
 
-    /**
-     * Guarda todos los trasplantes en el archivo de texto.
-     *
-     * @param trasplantes Lista de trasplantes a guardar.
-     */
-    public static void guardarTrasplantes(List<Trasplante> trasplantes) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(RUTA_ARCHIVO))) {
-            for (Trasplante t : trasplantes) {
-                bw.write(t.toArchivo()); // Llama al toArchivo corregido (7 campos)
+    public static void guardarTrasplantes(List<Trasplante> lista) {
+        File archivo = new File(RUTA);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(archivo))) {
+            for (Trasplante t : lista) {
+                // serializamos aquí en el loader (responsabilidad de persistencia)
+                bw.write(toArchivo(t));
                 bw.newLine();
             }
         } catch (IOException e) {
-            System.err.println("Error al guardar Trasplante.txt: " + e.getMessage());
+            System.err.println("Error al guardar trasplantes: " + e.getMessage());
         }
     }
 
     /**
-     * Elimina un trasplante basado en el ID del donante y receptor.
-     *
-     * @param idDonante ID del donante.
-     * @param idReceptor ID del receptor.
-     * @return true si se eliminó, false si no se encontró.
+     * Serializa un Trasplante a la línea de archivo.
+     * Formato: Paciente: {NombrePaciente} | Donante: {NombreDonante} | Estado: {Estado} | ID: {ID} | Fecha: {dd/MM/yyyy}
      */
-    public static boolean eliminarTrasplante(String idDonante, String idReceptor) {
-        List<Trasplante> lista = cargarTrasplantes();
-        boolean eliminado = lista.removeIf(t ->
-                t.getDonor().getId().equalsIgnoreCase(idDonante) // Usar ID
-             && t.getReceiver().getId().equalsIgnoreCase(idReceptor)); //  Usar ID
+    public static String toArchivo(Trasplante t) {
+        if (t == null) return "";
+        String paciente = t.getReceiver() != null ? t.getReceiver().getName() : "";
+        String donante = t.getDonor() != null ? t.getDonor().getName() : "";
+        String estado = t.getEstado() != null ? t.getEstado() : "";
+        String id = t.getId() != null ? t.getId() : "";
+        String fechaStr = t.getFecha() != null ? FORMATO_FECHA.format(t.getFecha()) : "";
 
-        if (eliminado) {
-            guardarTrasplantes(lista);
+        return String.format("Paciente: %s | Donante: %s | Estado: %s | ID: %s | Fecha: %s",
+                paciente, donante, estado, id, fechaStr);
+    }
+
+    /**
+     * Crea un objeto Trasplante desde una línea del archivo,
+     * buscando Donante/Paciente por nombre (si no se encuentra lanza NotFoundException).
+     *
+     * Formato esperado (según toArchivo de Trasplante):
+     * Paciente: {NombrePaciente} | Donante: {NombreDonante} | Estado: {Estado} | ID: {ID} | Fecha: {dd/MM/yyyy}
+     */
+    public static Trasplante fromArchivo(String linea) {
+        if (linea == null || linea.trim().isEmpty()) return null;
+        try {
+            String[] partes = linea.split("\\|");
+            if (partes.length < 5) return null;
+
+            String pacientePart = partes[0].split(":", 2)[1].trim();
+            String donantePart = partes[1].split(":", 2)[1].trim();
+            String estado = partes[2].split(":", 2)[1].trim();
+            String id = partes[3].split(":", 2)[1].trim();
+            String fechaStr = partes[4].split(":", 2)[1].trim();
+
+            Date fecha = FORMATO_FECHA.parse(fechaStr);
+
+            // Buscar por nombre entre los donantes/pacientes cargados
+            Donante donor = null;
+            for (Donante d : loaders.DonanteLoader.cargarDonantes()) {
+                if (d.getName().equalsIgnoreCase(donantePart) || d.getId().equalsIgnoreCase(donantePart)) {
+                    donor = d;
+                    break;
+                }
+            }
+            if (donor == null) throw new NotFoundException("Donante '" + donantePart + "' no encontrado.");
+
+            Paciente receiver = null;
+            for (Paciente p : loaders.PacienteLoader.cargarPacientes()) {
+                if (p.getName().equalsIgnoreCase(pacientePart) || p.getId().equalsIgnoreCase(pacientePart)) {
+                    receiver = p;
+                    break;
+                }
+            }
+            if (receiver == null) throw new NotFoundException("Paciente '" + pacientePart + "' no encontrado.");
+
+            // organType no se serializa en el toArchivo actual; usaremos el órgano declarado en el donante
+            String organType = donor.getOrgano();
+
+            return new Trasplante(id, organType, donor, receiver, estado, "", "", fecha);
+        } catch (java.text.ParseException e) {
+            System.err.println("Error parseando fecha de trasplante: " + e.getMessage());
+            return null;
+        } catch (NotFoundException e) {
+            System.err.println("Registro de trasplante incompleto: " + e.getMessage());
+            return null;
+        } catch (Exception e) {
+            System.err.println("Error al parsear trasplante: " + e.getMessage());
+            return null;
         }
-        return eliminado;
     }
 }

@@ -16,4 +16,3 @@ Pablo Mora;41;P020;B-;Carrera 65 #3-10;3167788990;74.9;1.79;Acaros
 Fátima León;27;P021;O-;Avenida Central 50;3178899001;58.0;1.55;Mariscos,Chocolate
 Rafael Vera;63;P022;AB-;Calle 9 #13-45;3189900112;81.3;1.83;Ninguna
 Mónica Soler;30;P023;B+;Transversal 2 #88-12;3190011223;61.5;1.69;Pescado
-Juam;17;1029645745;A+;cll 4 a;3204729358;80.0;1.79;arroz,pasta

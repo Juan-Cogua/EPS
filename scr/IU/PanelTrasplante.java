@@ -130,14 +130,32 @@ public class PanelTrasplante extends JPanel {
                 return;
             }
 
-            String idPaciente = pacienteSeleccionado.split("\\(ID: ")[1].replace(")", "");
-            String idDonante = donanteSeleccionado.split("\\(ID: ")[1].replace(")", "");
+            // Extraer ID de forma robusta desde la etiqueta de la lista
+            String idPaciente = extraerIdDesdeLabel(pacienteSeleccionado);
+            String idDonante = extraerIdDesdeLabel(donanteSeleccionado);
 
-            Paciente paciente = PacienteLoader.buscarPacientePorId(idPaciente);
-            Donante donante = DonanteLoader.buscarDonantePorId(idDonante);
+            Paciente paciente;
+            Donante donante;
+            try {
+                paciente = PacienteLoader.buscarPacientePorId(idPaciente);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Paciente con ID '" + idPaciente + "' no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            try {
+                donante = DonanteLoader.buscarDonantePorId(idDonante);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Donante con ID '" + idDonante + "' no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-            if (paciente == null || donante == null) {
-                JOptionPane.showMessageDialog(this, "Paciente o Donante no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
+            // Comprobar compatibilidad de sangre (ABO) entre donante y receptor
+            String sangreDonante = donante.getBloodType();
+            String sangreReceptor = paciente.getBloodType();
+            if (!sangreCompatible(sangreDonante, sangreReceptor)) {
+                JOptionPane.showMessageDialog(this,
+                        "Incompatibilidad sanguínea: Donante con tipo '" + sangreDonante + "' no compatible con receptor tipo '" + sangreReceptor + "'.",
+                        "Error de compatibilidad", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -184,9 +202,9 @@ public class PanelTrasplante extends JPanel {
             if (t.getFecha().before(hoy) && t.getEstado().equals("Pendiente")) {
                 t.setEstado("Aprobado");
             }
-            areaTrasplantes.append(String.format("Paciente: %s | Donante: %s | Estado: %s | ID: %s | Fecha: %s\n",
-                    t.getReceiver().getName(), t.getDonor().getName(), t.getEstado(), t.getId(),
-                    FORMATO_FECHA.format(t.getFecha())));
+            // Mostrar resumen legible en el área usando el formateador UI
+            areaTrasplantes.append(resumenTrasplante(t));
+            areaTrasplantes.append("\n----------------------------------------\n");
         }
         TrasplanteLoader.guardarTrasplantes(listaTrasplantes); // Guardar cambios en los estados
     }
@@ -198,5 +216,102 @@ public class PanelTrasplante extends JPanel {
         txtHistorial.setText("");
         txtMotivo.setText("");
         txtFecha.setText(FORMATO_FECHA.format(new Date()));
+    }
+
+    /**
+     * Extrae el ID de una etiqueta de lista con formato: "Nombre (ID: P015) | Sangre: AB+".
+     * Si no encuentra el patrón, intenta devolver la primera palabra que parezca un ID.
+     */
+    private String extraerIdDesdeLabel(String label) {
+        if (label == null) return "";
+        int start = label.indexOf("(ID: ");
+        if (start >= 0) {
+            int end = label.indexOf(')', start);
+            if (end > start) {
+                return label.substring(start + 5, end).trim();
+            } else {
+                // si no hay paréntesis de cierre, tomar hasta el pipe o hasta el final
+                int pipe = label.indexOf('|', start);
+                if (pipe > start) return label.substring(start + 5, pipe).trim();
+                return label.substring(start + 5).trim();
+            }
+        }
+        // fallback: buscar algo que parezca un ID (palabra con letra seguida de dígitos)
+        String[] parts = label.split("\\s+");
+        for (String p : parts) {
+            if (p.matches("[A-Za-z]+\\d+")) return p.trim();
+        }
+        return parts.length > 0 ? parts[0].trim() : "";
+    }
+
+    /**
+     * Formatea un resumen legible para un Trasplante. Null-safe y preparado para mostrar en JTextArea.
+     */
+    private String resumenTrasplante(Trasplante t) {
+        if (t == null) return "";
+        String id = t.getId() != null ? t.getId() : "N/A";
+        String organo = t.getOrganType() != null ? t.getOrganType() : "N/A";
+        String fecha = (t.getFecha() != null) ? FORMATO_FECHA.format(t.getFecha()) : "N/A";
+        String estado = t.getEstado() != null ? t.getEstado() : "N/A";
+
+        String donorName = "N/A";
+        String donorId = "N/A";
+        if (t.getDonor() != null) {
+            donorName = t.getDonor().getName() != null ? t.getDonor().getName() : "N/A";
+            donorId = t.getDonor().getId() != null ? t.getDonor().getId() : "N/A";
+        }
+
+        String receiverName = "N/A";
+        String receiverId = "N/A";
+        if (t.getReceiver() != null) {
+            receiverName = t.getReceiver().getName() != null ? t.getReceiver().getName() : "N/A";
+            receiverId = t.getReceiver().getId() != null ? t.getReceiver().getId() : "N/A";
+        }
+
+        String historial = t.getHistorialClinico() != null && !t.getHistorialClinico().isEmpty() ? t.getHistorialClinico() : "N/A";
+        String motivo = t.getRejectionReason() != null && !t.getRejectionReason().isEmpty() ? t.getRejectionReason() : "N/A";
+
+        return String.format("TRASPLANTE ID: %s. Órgano: %s. Fecha: %s. Estado: %s\n" +
+                "  > Donante (ID): %s (%s)\n" +
+                "  > Receptor (ID): %s (%s)\n" +
+                "  > Historial Clínico: %s. Motivo: %s",
+                id, organo, fecha, estado,
+                donorName, donorId,
+                receiverName, receiverId,
+                historial, motivo);
+    }
+
+    /**
+     * Extrae el grupo ABO del tipo de sangre (ignora Rh +/-). Ejemplos: "AB+" -> "AB", "A-" -> "A".
+     */
+    private String aboGroup(String bloodType) {
+        if (bloodType == null) return "";
+        String s = bloodType.trim().toUpperCase();
+        if (s.startsWith("AB")) return "AB";
+        if (s.startsWith("A")) return "A";
+        if (s.startsWith("B")) return "B";
+        if (s.startsWith("O")) return "O";
+        return "";
+    }
+
+    /**
+     * Comprueba compatibilidad ABO: si el donante puede donar al receptor.
+     * Reglas usadas (según imagen):
+     * - O dona a O,A,B,AB
+     * - A dona a A,AB
+     * - B dona a B,AB
+     * - AB dona a AB
+     */
+    private boolean sangreCompatible(String donorBlood, String receiverBlood) {
+        String d = aboGroup(donorBlood);
+        String r = aboGroup(receiverBlood);
+        if (d.isEmpty() || r.isEmpty()) return false; // dato inválido -> considerar no compatible
+        switch (d) {
+            case "O": return true; // dona a todos
+            case "A": return r.equals("A") || r.equals("AB");
+            case "B": return r.equals("B") || r.equals("AB");
+            case "AB": return r.equals("AB");
+            default: return false;
+        }
     }
 }
