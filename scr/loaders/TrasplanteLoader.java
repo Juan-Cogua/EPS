@@ -21,8 +21,8 @@ import java.util.List;
  */
 public class TrasplanteLoader {
 
-    private static final String RUTA = "Trasplante.txt";
-    private static final SimpleDateFormat FORMATO_FECHA = new SimpleDateFormat("dd/MM/yyyy");
+    public static final String RUTA = "Trasplante.txt";
+    public static final SimpleDateFormat FORMATO_FECHA = new SimpleDateFormat("dd/MM/yyyy");
 
     public static ArrayList<Trasplante> cargarTrasplantes() {
         ArrayList<Trasplante> lista = new ArrayList<>();

@@ -12,6 +12,9 @@ import model.Paciente;
 import loaders.TrasplanteLoader;
 import loaders.DonanteLoader;
 import loaders.PacienteLoader;
+import excepciones.TrasplanteInvalidoException;
+import excepciones.SangreIncompatibleException;
+import excepciones.FechaInvalidaException;
 
 public class PanelTrasplante extends JPanel {
 
@@ -90,7 +93,13 @@ public class PanelTrasplante extends JPanel {
         add(panelInferior, BorderLayout.SOUTH);
 
         // --- Listeners ---
-        btnAgregar.addActionListener(e -> agregarTrasplante());
+        btnAgregar.addActionListener(e -> {
+            try {
+                agregarTrasplante();
+            } catch (TrasplanteInvalidoException | SangreIncompatibleException | FechaInvalidaException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
         btnEliminar.addActionListener(e -> eliminarTrasplante());
         btnActualizar.addActionListener(e -> actualizarLista());
 
@@ -113,64 +122,106 @@ public class PanelTrasplante extends JPanel {
                 .toArray(String[]::new);
     }
 
-    private void agregarTrasplante() {
-        try {
-            String idTrasplante = txtIdTrasplante.getText().trim();
-            String organo = (String) cmbOrganos.getSelectedItem();
-            String estado = (String) cmbEstado.getSelectedItem();
-            String historial = txtHistorial.getText().trim();
-            String motivo = txtMotivo.getText().trim();
-            Date fecha = FORMATO_FECHA.parse(txtFecha.getText().trim());
+    public JTextField getTxtIdTrasplante() { return txtIdTrasplante; }
+    public JTextField getTxtHistorial() { return txtHistorial; }
+    public JTextField getTxtMotivo() { return txtMotivo; }
+    public JTextField getTxtFecha() { return txtFecha; }
+    public JComboBox<String> getCmbOrganos() { return cmbOrganos; }
+    public JComboBox<String> getCmbEstado() { return cmbEstado; }
+    public JList<String> getListaPacientes() { return listaPacientes; }
+    public JList<String> getListaDonantes() { return listaDonantes; }
+    public JTextArea getAreaTrasplantes() { return areaTrasplantes; }
 
-            String pacienteSeleccionado = listaPacientes.getSelectedValue();
-            String donanteSeleccionado = listaDonantes.getSelectedValue();
-
-            if (pacienteSeleccionado == null || donanteSeleccionado == null) {
-                JOptionPane.showMessageDialog(this, "Debe seleccionar un paciente y un donante.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Extraer ID de forma robusta desde la etiqueta de la lista
-            String idPaciente = extraerIdDesdeLabel(pacienteSeleccionado);
-            String idDonante = extraerIdDesdeLabel(donanteSeleccionado);
-
-            Paciente paciente;
-            Donante donante;
-            try {
-                paciente = PacienteLoader.buscarPacientePorId(idPaciente);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Paciente con ID '" + idPaciente + "' no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            try {
-                donante = DonanteLoader.buscarDonantePorId(idDonante);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Donante con ID '" + idDonante + "' no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Comprobar compatibilidad de sangre (ABO) entre donante y receptor
-            String sangreDonante = donante.getBloodType();
-            String sangreReceptor = paciente.getBloodType();
-            if (!sangreCompatible(sangreDonante, sangreReceptor)) {
-                JOptionPane.showMessageDialog(this,
-                        "Incompatibilidad sanguínea: Donante con tipo '" + sangreDonante + "' no compatible con receptor tipo '" + sangreReceptor + "'.",
-                        "Error de compatibilidad", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            Trasplante nuevo = new Trasplante(idTrasplante, organo, donante, paciente, estado, historial, motivo, fecha);
-            listaTrasplantes.add(nuevo);
-            TrasplanteLoader.guardarTrasplantes(listaTrasplantes);
-
-            limpiarCampos();
-            actualizarLista();
-            JOptionPane.showMessageDialog(this, "Trasplante agregado correctamente.");
-        } catch (ParseException e) {
-            JOptionPane.showMessageDialog(this, "Formato de fecha inválido. Use dd/MM/yyyy.", "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al agregar trasplante: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    public void agregarTrasplante() throws TrasplanteInvalidoException, SangreIncompatibleException, FechaInvalidaException {
+        String id = txtIdTrasplante.getText().trim();
+        if (id.isEmpty()) {
+            throw new TrasplanteInvalidoException("El ID del trasplante no puede estar vacío");
         }
+
+        String donanteLabel = listaDonantes.getSelectedValue();
+        String pacienteLabel = listaPacientes.getSelectedValue();
+        if (donanteLabel == null || pacienteLabel == null) {
+            throw new TrasplanteInvalidoException("Debe seleccionar un donante y un paciente");
+        }
+
+        try {
+            FORMATO_FECHA.parse(txtFecha.getText().trim());
+        } catch (ParseException e) {
+            throw new FechaInvalidaException("El formato de fecha debe ser dd/MM/yyyy");
+        }
+
+        // Verificar compatibilidad sanguínea
+        String sangreDonante = extraerSangreDesdeLabel(donanteLabel);
+        String sangrePaciente = extraerSangreDesdeLabel(pacienteLabel);
+        if (!sangreCompatible(sangreDonante, sangrePaciente)) {
+            throw new SangreIncompatibleException(
+                "Sangre incompatible: donante " + sangreDonante + " no puede donar a receptor " + sangrePaciente);
+        }
+
+        String idTrasplante = txtIdTrasplante.getText().trim();
+        String organo = (String) cmbOrganos.getSelectedItem();
+        String estado = (String) cmbEstado.getSelectedItem();
+        String historial = txtHistorial.getText().trim();
+        String motivo = txtMotivo.getText().trim();
+        Date fecha;
+        try {
+            fecha = FORMATO_FECHA.parse(txtFecha.getText().trim());
+        } catch (ParseException e) {
+            throw new FechaInvalidaException("El formato de fecha debe ser dd/MM/yyyy");
+        }
+
+        // Extraer ID de forma robusta desde la etiqueta de la lista
+        String idPaciente = extraerIdDesdeLabel(pacienteLabel);
+        String idDonante = extraerIdDesdeLabel(donanteLabel);
+
+        Paciente paciente;
+        Donante donante;
+        try {
+            paciente = PacienteLoader.buscarPacientePorId(idPaciente);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Paciente con ID '" + idPaciente + "' no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        try {
+            donante = DonanteLoader.buscarDonantePorId(idDonante);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Donante con ID '" + idDonante + "' no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Comprobar compatibilidad de sangre (ABO) entre donante y receptor
+        String sangreDonanteObj = donante.getBloodType();
+        String sangreReceptorObj = paciente.getBloodType();
+        if (!sangreCompatible(sangreDonanteObj, sangreReceptorObj)) {
+            JOptionPane.showMessageDialog(this,
+                    "Incompatibilidad sanguínea: Donante con tipo '" + sangreDonanteObj + "' no compatible con receptor tipo '" + sangreReceptorObj + "'.",
+                    "Error de compatibilidad", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        Trasplante nuevo = new Trasplante(idTrasplante, organo, donante, paciente, estado, historial, motivo, fecha);
+        listaTrasplantes.add(nuevo);
+        TrasplanteLoader.guardarTrasplantes(listaTrasplantes);
+
+        limpiarCampos();
+        actualizarLista();
+        JOptionPane.showMessageDialog(this, "Trasplante agregado correctamente.");
+    }
+    /**
+     * Extrae el tipo de sangre desde una etiqueta de lista con formato: "... | Sangre: T ...".
+     */
+    private String extraerSangreDesdeLabel(String label) {
+        if (label == null) return "";
+        int idx = label.indexOf("Sangre: ");
+        if (idx >= 0) {
+            int fin = label.indexOf("|", idx + 8);
+            if (fin > idx) {
+                return label.substring(idx + 8, fin).trim();
+            } else {
+                return label.substring(idx + 8).trim();
+            }
+        }
+        return "";
     }
 
     private void eliminarTrasplante() {

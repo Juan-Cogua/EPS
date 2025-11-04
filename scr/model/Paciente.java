@@ -137,7 +137,7 @@ public class Paciente extends Persona {
     public String toString() {
         String alergiasStr = String.join(", ", getAllergies());
         if (alergiasStr.isEmpty()) {
-             alergiasStr = "No registradas"; 
+            alergiasStr = "No registradas"; 
         }
         return getName() + " (ID: " + getId() + ")" + " (alergias: " + alergiasStr + ")";
     }
