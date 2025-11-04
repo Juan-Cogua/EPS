@@ -35,13 +35,12 @@ public class PanelPaciente extends JPanel {
     private static final Color COLOR_TEXTO_BOTON = Color.WHITE;
     private static final Font FUENTE_TITULO = new Font("Segoe UI", Font.BOLD, 14);
 
-
     public PanelPaciente() {
         setLayout(new BorderLayout(15, 15));
         setBackground(COLOR_BASE); 
-
+    
         listaPacientes = PacienteLoader.cargarPacientes();
-
+    
         // 🔹 Panel de entrada (Formulario)
         JPanel panelEntrada = new JPanel(new GridLayout(10, 2, 10, 10)); 
         panelEntrada.setBorder(BorderFactory.createTitledBorder(
@@ -51,8 +50,7 @@ public class PanelPaciente extends JPanel {
             TitledBorder.TOP, 
             FUENTE_TITULO)); 
         panelEntrada.setBackground(COLOR_CONTENEDOR);
-
-
+    
         txtNombre = new JTextField();
         txtEdad = new JTextField();
         txtID = new JTextField();
@@ -60,22 +58,17 @@ public class PanelPaciente extends JPanel {
         txtTelefono = new JTextField();
         txtAlergias = new JTextField();
         
-        // Configuración del JComboBox
         cmbTipoSangre = new JComboBox<>(TIPOS_SANGRE);
         cmbTipoSangre.setSelectedIndex(0); 
-
-        // Configuración de JSpinner para Peso
+    
         SpinnerModel modelPeso = new SpinnerNumberModel(70.0, 30.0, 300.0, 0.1);
         spinnerPeso = new JSpinner(modelPeso);
         ((JSpinner.DefaultEditor) spinnerPeso.getEditor()).getTextField().setEditable(true);
-
-        // Configuración de JSpinner para Altura
+    
         SpinnerModel modelAltura = new SpinnerNumberModel(1.70, 0.5, 2.5, 0.01);
         spinnerAltura = new JSpinner(modelAltura);
         ((JSpinner.DefaultEditor) spinnerAltura.getEditor()).getTextField().setEditable(true);
-
-
-        // --- Agregar componentes al panel de entrada ---
+    
         panelEntrada.add(new JLabel("Nombre:"));
         panelEntrada.add(txtNombre);
         panelEntrada.add(new JLabel("Edad:"));
@@ -94,23 +87,22 @@ public class PanelPaciente extends JPanel {
         panelEntrada.add(spinnerAltura); 
         panelEntrada.add(new JLabel("Alergias (sep. por ','):"));
         panelEntrada.add(txtAlergias);
-
-        // 🔹 Panel de botones 
+    
+        // 🔹 Panel de botones y lista (compacto)
+        JPanel panelInferior = new JPanel(new BorderLayout(10, 10));
+        panelInferior.setBackground(COLOR_BASE);
+    
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         panelBotones.setBackground(COLOR_BASE);
         JButton btnAgregar = new JButton("Agregar Paciente");
         JButton btnEliminar = new JButton("Eliminar Paciente");
-        
-        // Aplicar estilo de botón unificado
         btnAgregar.setBackground(COLOR_BOTON);
         btnAgregar.setForeground(COLOR_TEXTO_BOTON);
         btnEliminar.setBackground(COLOR_BOTON);
         btnEliminar.setForeground(COLOR_TEXTO_BOTON);
-        
         panelBotones.add(btnAgregar);
         panelBotones.add(btnEliminar);
-
-        // 🔹 Área de texto para mostrar pacientes
+    
         areaPacientes = new JTextArea(10, 40);
         areaPacientes.setEditable(false);
         JScrollPane scrollPacientes = new JScrollPane(areaPacientes);
@@ -120,14 +112,16 @@ public class PanelPaciente extends JPanel {
             TitledBorder.LEFT, 
             TitledBorder.TOP,
             FUENTE_TITULO));
-
+    
+        panelInferior.add(panelBotones, BorderLayout.NORTH);
+        panelInferior.add(scrollPacientes, BorderLayout.CENTER);
+    
         // 🔹 Organización final del Panel
         add(panelEntrada, BorderLayout.NORTH);
-        add(panelBotones, BorderLayout.CENTER);
-        add(scrollPacientes, BorderLayout.SOUTH);
-
+        add(panelInferior, BorderLayout.CENTER);
+    
         actualizarArea();
-
+    
         btnAgregar.addActionListener(e -> agregarPaciente());
         btnEliminar.addActionListener(e -> eliminarPaciente());
     }

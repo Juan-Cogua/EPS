@@ -18,6 +18,7 @@ import loaders.PacienteLoader;
  */
 public class Trasplante {
 
+    private String id; // Nuevo campo: ID único del trasplante
     private String organType;
     private Donante donor;
     private Paciente receiver;
@@ -27,8 +28,9 @@ public class Trasplante {
     private Date fecha;
 
     /**
-     * Constructor principal de la clase Trasplante (7 argumentos).
+     * Constructor principal de la clase Trasplante (8 argumentos).
      *
+     * @param id ID único del trasplante.
      * @param organType Tipo de órgano trasplantado.
      * @param donor Donante que participa en el trasplante.
      * @param receiver Paciente receptor.
@@ -37,9 +39,11 @@ public class Trasplante {
      * @param rejectionReason Motivo del rechazo (si aplica).
      * @param fecha Fecha del trasplante.
      */
-    public Trasplante(String organType, Donante donor, Paciente receiver,
-                      String estado, String historialClinico, String rejectionReason, Date fecha) {
+    public Trasplante(String id, String organType, Donante donor, Paciente receiver,
+                        String estado, String historialClinico, String rejectionReason, Date fecha) {
 
+        if (id == null || id.trim().isEmpty())
+            throw new IllegalArgumentException("El ID del trasplante no puede estar vacío.");
         if (organType == null || organType.trim().isEmpty())
             throw new IllegalArgumentException("El tipo de órgano no puede estar vacío.");
         if (donor == null)
@@ -47,6 +51,7 @@ public class Trasplante {
         if (receiver == null)
             throw new NullPointerException("El receptor no puede ser null.");
 
+        this.id = id;
         this.organType = organType;
         this.donor = donor;
         this.receiver = receiver;
@@ -56,11 +61,15 @@ public class Trasplante {
         this.fecha = fecha;
     }
 
-    // --- Getters ---
+    // --- Getters y Setters ---
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
     public String getOrganType() { return organType; }
     public Donante getDonor() { return donor; }
     public Paciente getReceiver() { return receiver; }
     public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
     public String getHistorialClinico() { return historialClinico; }
     public String getRejectionReason() { return rejectionReason; }
     public Date getFecha() { return fecha; }
@@ -69,20 +78,17 @@ public class Trasplante {
 
     /**
      * Convierte el objeto a formato de archivo:
-     * Organo;ID_Donante;ID_Receptor;Estado;Historial;Motivo;Fecha
+     * Paciente: {NombrePaciente} | Donante: {NombreDonante} | Estado: {Estado} | ID: {ID} | Fecha: {Fecha}
      */
     public String toArchivo() {
         SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
 
-        return String.join(";",
-                organType,
-                donor.getId(), // Usamos ID del Donante
-                receiver.getId(), // Usamos ID del Receptor
+        return String.format("Paciente: %s | Donante: %s | Estado: %s | ID: %s | Fecha: %s",
+                receiver.getName(),
+                donor.getName(),
                 estado,
-                historialClinico,
-                rejectionReason,
-                formatoFecha.format(fecha)
-        );
+                id,
+                formatoFecha.format(fecha));
     }
 
     /**
@@ -92,28 +98,31 @@ public class Trasplante {
         if (linea == null || linea.trim().isEmpty()) return null;
 
         try {
-            String[] partes = linea.split(";");
-            // Ahora esperamos 7 partes: Organo;ID_Donante;ID_Receptor;Estado;Historial;Motivo;Fecha
-            if (partes.length < 7) return null;
+            String[] partes = linea.split("\\|");
+            if (partes.length < 5) return null;
 
-            String organ = partes[0];
-            String donorId = partes[1]; // Es un ID
-            String receiverId = partes[2]; // Es un ID
-            String estado = partes[3];
-            String historial = partes[4];
-            String reason = partes[5];
-            Date fecha = new SimpleDateFormat("dd/MM/yyyy").parse(partes[6]);
+            String pacienteNombre = partes[0].split(":")[1].trim();
+            String donanteNombre = partes[1].split(":")[1].trim();
+            String estado = partes[2].split(":")[1].trim();
+            String id = partes[3].split(":")[1].trim();
+            Date fecha = new SimpleDateFormat("dd/MM/yyyy").parse(partes[4].split(":")[1].trim());
 
-            // ⚠️ Usar Loaders para buscar por ID
-            Donante donor = DonanteLoader.buscarDonantePorId(donorId);
-            Paciente receiver = PacienteLoader.buscarPacientePorId(receiverId);
+            Donante donor = DonanteLoader.cargarDonantes().stream()
+                    .filter(d -> d.getName().equalsIgnoreCase(donanteNombre))
+                    .findFirst()
+                    .orElse(null);
+
+            Paciente receiver = PacienteLoader.cargarPacientes().stream()
+                    .filter(p -> p.getName().equalsIgnoreCase(pacienteNombre))
+                    .findFirst()
+                    .orElse(null);
 
             if (donor == null || receiver == null) {
-                System.err.println("Advertencia: Donante o Receptor no encontrado por ID. Trasplante omitido.");
+                System.err.println("Advertencia: Donante o Receptor no encontrado por nombre. Trasplante omitido.");
                 return null;
             }
 
-            return new Trasplante(organ, donor, receiver, estado, historial, reason, fecha);
+            return new Trasplante(id, donor.getOrgano(), donor, receiver, estado, "", "", fecha);
 
         } catch (ParseException e) {
             System.err.println("Error de formato de fecha en trasplante: " + e.getMessage());
@@ -127,13 +136,8 @@ public class Trasplante {
 
     @Override
     public String toString() {
-        // ... (Tu implementación original puede ir aquí, la ajustamos ligeramente)
-        return String.format("Trasplante de %s | Donante: %s (%s) | Receptor: %s (%s) | Estado: %s",
-                organType,
-                donor.getName(), donor.getId(),
-                receiver.getName(), receiver.getId(),
-                estado
-        );
+        return String.format("Trasplante ID: %s | Órgano: %s | Donante: %s (%s) | Receptor: %s (%s) | Estado: %s",
+                id, organType, donor.getName(), donor.getId(), receiver.getName(), receiver.getId(), estado);
     }
 
     /**
@@ -142,10 +146,11 @@ public class Trasplante {
     public String resumen() {
         SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
 
-        return String.format("TRASPLANTE: %s. Fecha: %s. Estado: %s\n" +
+        return String.format("TRASPLANTE ID: %s. Órgano: %s. Fecha: %s. Estado: %s\n" +
                              "  > Donante (ID): %s (%s)\n" +
                              "  > Receptor (ID): %s (%s)\n" +
                              "  > Historial Clínico: %s. Motivo: %s",
+                id,
                 organType,
                 formatoFecha.format(fecha),
                 estado,

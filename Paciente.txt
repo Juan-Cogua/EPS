@@ -6,7 +6,7 @@ Pedro López;33;P007;B-;Calle 20 #77;3147890123;90.0;1.85;Ninguna
 Laura Jiménez;45;P008;AB+;Av. Norte 99;3158901234;68.5;1.72;Penicilina,Polvo
 Andrés Ramírez;38;P009;O-;Cra 5 #21;3169012345;82.0;1.78;Ninguna
 Valentina Ríos;29;P010;A+;Calle 3 #14;3170123456;58.0;1.62;Mariscos
-Javier Soto;55;P014;O-;Carrera 100 #25;3101122334;78.5;1.70;Ninguna
+Javier Soto;55;P014;O-;Carrera 100 #25;3101122334;78.5;1.7;Ninguna
 Gisela Rojas;31;P015;AB+;Calle 44 Sur 12;3112233445;60.0;1.68;Antibióticos
 Diego Herrera;49;P016;B+;Avenida 30 #5-20;3123344556;95.2;1.85;Penicilina
 Carmen Gil;24;P017;A-;Transversal 70 #10;3134455667;52.8;1.63;Polen,Grama
@@ -16,3 +16,4 @@ Pablo Mora;41;P020;B-;Carrera 65 #3-10;3167788990;74.9;1.79;Acaros
 Fátima León;27;P021;O-;Avenida Central 50;3178899001;58.0;1.55;Mariscos,Chocolate
 Rafael Vera;63;P022;AB-;Calle 9 #13-45;3189900112;81.3;1.83;Ninguna
 Mónica Soler;30;P023;B+;Transversal 2 #88-12;3190011223;61.5;1.69;Pescado
+Juam;17;1029645745;A+;cll 4 a;3204729358;80.0;1.79;arroz,pasta

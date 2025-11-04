@@ -32,17 +32,16 @@ public class DonanteLoader {
                 if (datos.length >= 10) { 
                     try {
                         Donante d = new Donante(
-                                datos[0],                            // 1. nombre
-                                Byte.parseByte(datos[1]),            // 2. edad
-                                datos[2],                            // 3. id
-                                datos[3],                            // 4. tipo sangre
-                                datos[4],                            // 5. dirección
-                                datos[5],                            // 6. teléfono
-                                new java.util.Date(),                // 7. ⚠️ Fecha de Nacimiento (Temporal: Se añade una fecha por defecto)
-                                datos[6],                            // 8. tipo donación
-                                datos[7],                            // 9. estado salud
-                                datos[8].equals("1"),                // 10. elegibilidad
-                                datos[9]                             // 11. órgano
+                            datos[0], // Nombre
+                            Byte.parseByte(datos[1]), // Edad
+                            datos[2], // ID
+                            datos[3], // Tipo de sangre
+                            datos[4], // Dirección
+                            datos[5], // Teléfono
+                            datos[6], // Tipo de donación
+                            datos[7], // Estado de salud
+                            datos[8].equals("1"), // Elegibilidad
+                            datos[9] // Órgano
                         );
                         lista.add(d);
                     } catch (Exception e) {
