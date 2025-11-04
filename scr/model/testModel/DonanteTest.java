@@ -1,4 +1,4 @@
-package model.test;
+package model.testModel;
 
 import excepciones.DonanteMenorEdadException;
 import excepciones.InvariantViolationException;

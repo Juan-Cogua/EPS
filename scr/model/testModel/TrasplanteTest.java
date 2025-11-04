@@ -1,4 +1,4 @@
-package model.test;
+package model.testModel;
 
 import excepciones.InvalidDataException;
 import excepciones.SangreIncompatibleException;

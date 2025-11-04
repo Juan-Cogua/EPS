@@ -1,5 +1,4 @@
-package IU.test;
-
+package IU.testIU;
 import IU.PanelTrasplante;
 import excepciones.FechaInvalidaException;
 import excepciones.SangreIncompatibleException;
