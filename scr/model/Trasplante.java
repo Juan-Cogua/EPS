@@ -1,11 +1,13 @@
 package model;
 
+import excepciones.InvalidDataException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 // Importamos los loaders para la carga estática (usado en fromArchivo)
 import loaders.DonanteLoader;
 import loaders.PacienteLoader;
+import excepciones.NotFoundException;
 
 /**
  * Clase que representa un trasplante dentro del sistema.
@@ -43,13 +45,13 @@ public class Trasplante {
                         String estado, String historialClinico, String rejectionReason, Date fecha) {
 
         if (id == null || id.trim().isEmpty())
-            throw new IllegalArgumentException("El ID del trasplante no puede estar vacío.");
+            throw new InvalidDataException("El ID del trasplante no puede estar vacío.");
         if (organType == null || organType.trim().isEmpty())
-            throw new IllegalArgumentException("El tipo de órgano no puede estar vacío.");
+            throw new InvalidDataException("El tipo de órgano no puede estar vacío.");
         if (donor == null)
-            throw new NullPointerException("El donante no puede ser null.");
+            throw new InvalidDataException("El donante no puede ser null.");
         if (receiver == null)
-            throw new NullPointerException("El receptor no puede ser null.");
+            throw new InvalidDataException("El receptor no puede ser null.");
 
         this.id = id;
         this.organType = organType;
@@ -107,22 +109,24 @@ public class Trasplante {
             String id = partes[3].split(":")[1].trim();
             Date fecha = new SimpleDateFormat("dd/MM/yyyy").parse(partes[4].split(":")[1].trim());
 
-            Donante donor = DonanteLoader.cargarDonantes().stream()
-                    .filter(d -> d.getName().equalsIgnoreCase(donanteNombre))
-                    .findFirst()
-                    .orElse(null);
+        Donante donor = DonanteLoader.cargarDonantes().stream()
+            .filter(d -> d.getName().equalsIgnoreCase(donanteNombre))
+            .findFirst()
+            .orElse(null);
 
-            Paciente receiver = PacienteLoader.cargarPacientes().stream()
-                    .filter(p -> p.getName().equalsIgnoreCase(pacienteNombre))
-                    .findFirst()
-                    .orElse(null);
+        Paciente receiver = PacienteLoader.cargarPacientes().stream()
+            .filter(p -> p.getName().equalsIgnoreCase(pacienteNombre))
+            .findFirst()
+            .orElse(null);
 
-            if (donor == null || receiver == null) {
-                System.err.println("Advertencia: Donante o Receptor no encontrado por nombre. Trasplante omitido.");
-                return null;
-            }
+        if (donor == null) {
+        throw new NotFoundException("Donante con nombre '" + donanteNombre + "' no encontrado al parsear trasplante.");
+        }
+        if (receiver == null) {
+        throw new NotFoundException("Paciente con nombre '" + pacienteNombre + "' no encontrado al parsear trasplante.");
+        }
 
-            return new Trasplante(id, donor.getOrgano(), donor, receiver, estado, "", "", fecha);
+        return new Trasplante(id, donor.getOrgano(), donor, receiver, estado, "", "", fecha);
 
         } catch (ParseException e) {
             System.err.println("Error de formato de fecha en trasplante: " + e.getMessage());

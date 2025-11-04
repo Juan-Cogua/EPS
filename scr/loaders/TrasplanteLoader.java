@@ -2,7 +2,6 @@ package loaders;
 
 import model.Trasplante;
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -34,8 +33,13 @@ public class TrasplanteLoader {
         try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                Trasplante t = Trasplante.fromArchivo(linea); // Llama al fromArchivo corregido
-                if (t != null) lista.add(t);
+                try {
+                    Trasplante t = Trasplante.fromArchivo(linea); // Llama al fromArchivo que ahora puede lanzar NotFoundException
+                    if (t != null) lista.add(t);
+                } catch (excepciones.NotFoundException nf) {
+                    System.err.println("Advertencia al cargar trasplante: " + nf.getMessage() + " Línea omitida: " + linea);
+                    // continuar con siguiente línea
+                }
             }
         } catch (IOException e) {
             System.err.println("Error al leer Trasplante.txt: " + e.getMessage());
@@ -70,8 +74,8 @@ public class TrasplanteLoader {
     public static boolean eliminarTrasplante(String idDonante, String idReceptor) {
         List<Trasplante> lista = cargarTrasplantes();
         boolean eliminado = lista.removeIf(t ->
-                t.getDonor().getId().equalsIgnoreCase(idDonante) // ⚠️ Usar ID
-             && t.getReceiver().getId().equalsIgnoreCase(idReceptor)); // ⚠️ Usar ID
+                t.getDonor().getId().equalsIgnoreCase(idDonante) // Usar ID
+             && t.getReceiver().getId().equalsIgnoreCase(idReceptor)); //  Usar ID
 
         if (eliminado) {
             guardarTrasplantes(lista);

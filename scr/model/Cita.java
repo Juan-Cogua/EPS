@@ -1,4 +1,6 @@
 package model;
+
+import excepciones.InvalidDataException;
 import java.util.Date;
 
 /**
@@ -31,19 +33,19 @@ public class Cita {
      */
     public Cita(String id, Date date, Date time, String location, Paciente paciente, String doctor) {
         if (id == null || id.trim().isEmpty()) {
-            throw new IllegalArgumentException("El ID de la cita no puede ser nulo o vacío.");
+            throw new InvalidDataException("El ID de la cita no puede ser nulo o vacío.");
         }
         if (date == null || time == null) {
-            throw new NullPointerException("La fecha y hora de la cita no pueden ser null.");
+            throw new InvalidDataException("La fecha y hora de la cita no pueden ser null.");
         }
         if (location == null || location.trim().isEmpty()) {
-            throw new IllegalArgumentException("La ubicación de la cita no puede estar vacía.");
+            throw new InvalidDataException("La ubicación de la cita no puede estar vacía.");
         }
         if (paciente == null) {
-            throw new NullPointerException("La cita debe estar asociada a un paciente.");
+            throw new InvalidDataException("La cita debe estar asociada a un paciente.");
         }
         if (doctor == null || doctor.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre del doctor no puede estar vacío.");
+            throw new InvalidDataException("El nombre del doctor no puede estar vacío.");
         }
 
         this.id = id;

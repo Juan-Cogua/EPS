@@ -3,6 +3,8 @@ package loaders;
 import java.io.*;
 import java.util.*;
 import model.Donante;
+import excepciones.InvalidDataException;
+import excepciones.NotFoundException;
 
 /**
  * Clase encargada de manejar la persistencia de los datos de donantes desde y hacia el archivo Donante.txt.
@@ -78,22 +80,26 @@ public class DonanteLoader {
         }
     }
 
-    public static void agregarDonante(Donante nuevo) {
+    public static void agregarDonante(Donante nuevo) throws InvalidDataException {
         ArrayList<Donante> lista = cargarDonantes();
         // Se previene duplicidad por ID
         if (lista.stream().noneMatch(d -> d.getId().equalsIgnoreCase(nuevo.getId()))) {
             lista.add(nuevo);
             guardarDonantes(lista);
         } else {
-             System.err.println("Error: El ID del donante ya existe.");
+            throw new InvalidDataException("El ID del donante ya existe: " + nuevo.getId());
         }
     }
 
-    public static boolean eliminarDonante(String id) {
+    public static boolean eliminarDonante(String id) throws NotFoundException {
         ArrayList<Donante> lista = cargarDonantes();
         boolean eliminado = lista.removeIf(d -> d.getId().equalsIgnoreCase(id));
-        if (eliminado) guardarDonantes(lista);
-        return eliminado;
+        if (eliminado) {
+            guardarDonantes(lista);
+            return true;
+        } else {
+            throw new NotFoundException("Donante con ID '" + id + "' no encontrado.");
+        }
     }
     
     public static Donante buscarDonantePorId(String id) {
@@ -103,6 +109,6 @@ public class DonanteLoader {
                 return d;
             }
         }
-        return null;
+        throw new excepciones.NotFoundException("Donante con ID '" + id + "' no encontrado.");
     }
 }

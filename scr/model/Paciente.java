@@ -1,5 +1,7 @@
 package model;
 
+import excepciones.InvalidDataException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,9 +24,8 @@ public class Paciente extends Persona {
     public Paciente(String name, byte age, String id, String bloodType, String address, String phone,
                     double weight, double height, List<String> allergies, List<Cita> citas) {
         super(name, age, id, bloodType, address, phone);
-
-        if (weight < 0) throw new IllegalArgumentException("El peso no puede ser negativo.");
-        if (height < 0) throw new IllegalArgumentException("La altura no puede ser negativa.");
+        if (weight < 0) throw new InvalidDataException("El peso no puede ser negativo.");
+        if (height < 0) throw new InvalidDataException("La altura no puede ser negativa.");
 
         this.weight = weight;
         this.height = height;
@@ -47,12 +48,12 @@ public class Paciente extends Persona {
 
     // --- Métodos de gestión de lista estática ---
     public static void añadir(Paciente paciente) {
-        if (paciente == null) throw new NullPointerException("No se puede añadir un paciente null.");
+        if (paciente == null) throw new InvalidDataException("No se puede añadir un paciente null.");
         pacientes.add(paciente);
     }
 
     public static void eliminar(Paciente paciente) {
-        if (paciente == null) throw new NullPointerException("No se puede eliminar un paciente null.");
+        if (paciente == null) throw new InvalidDataException("No se puede eliminar un paciente null.");
         pacientes.remove(paciente);
     }
 
@@ -62,12 +63,12 @@ public class Paciente extends Persona {
 
     // --- Lógica de negocio ---
     public void agregarCita(Cita cita) {
-        if (cita == null) throw new NullPointerException("No se puede agregar una cita null.");
+        if (cita == null) throw new InvalidDataException("No se puede agregar una cita null.");
         citas.add(cita);
     }
 
     public void cancelarCita(Cita cita) {
-        if (cita == null) throw new NullPointerException("No se puede cancelar una cita null.");
+        if (cita == null) throw new InvalidDataException("No se puede cancelar una cita null.");
         citas.remove(cita);
     }
 

@@ -1,5 +1,7 @@
 package model;
 
+import excepciones.InvalidDataException;
+
 /**
  * Clase base para personas en el sistema EPS.
  *
@@ -25,6 +27,12 @@ class Persona {
      * @param phone Teléfono.
      */
     public Persona(String name, byte age, String id, String bloodType, String address, String phone) {
+        // Invariantes básicas
+        if (name == null || name.trim().isEmpty()) throw new InvalidDataException("El nombre no puede estar vacío.");
+        if (age < 0) throw new InvalidDataException("La edad no puede ser negativa.");
+        if (id == null || id.trim().isEmpty()) throw new InvalidDataException("El ID no puede estar vacío.");
+        if (bloodType == null || bloodType.trim().isEmpty()) throw new InvalidDataException("El tipo de sangre no puede estar vacío.");
+
         this.name = name;
         this.age = age;
         this.id = id;

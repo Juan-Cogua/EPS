@@ -56,7 +56,7 @@ public class PacienteLoader {
                 return p;
             }
         }
-        return null;
+        throw new excepciones.NotFoundException("Paciente con ID '" + id + "' no encontrado.");
     }
     
     /**

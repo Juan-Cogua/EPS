@@ -1,6 +1,7 @@
 package model;
 
-import java.util.ArrayList;
+import excepciones.InvalidDataException;
+import excepciones.DonanteMenorEdadException;
 import java.util.List;
 
 /**
@@ -13,7 +14,6 @@ public class Donante extends Persona {
     private boolean eligibility;
     private String organo; // Órgano donado
 
-    private static List<Donante> donantes = new ArrayList<>();
     private static final List<String> ORGANOS_DISPONIBLES = List.of("Corazón", "Riñón", "Hígado", "Pulmón", "Páncreas");
 
     /**
@@ -21,17 +21,22 @@ public class Donante extends Persona {
      */
     public Donante(String name, byte age, String id, String bloodType, String address, String phone, 
                     String donationType, String healthStatus, boolean eligibility, String organo) {
-        super(name, age, id, bloodType, address, phone);
-
+        super(name, checkEdadValida(age), id, bloodType, address, phone);
         if (donationType == null || donationType.trim().isEmpty())
-            throw new IllegalArgumentException("El tipo de donación no puede estar vacío.");
+            throw new InvalidDataException("El tipo de donación no puede estar vacío.");
         if (healthStatus == null || healthStatus.trim().isEmpty())
-            throw new IllegalArgumentException("El estado de salud no puede estar vacío.");
+            throw new InvalidDataException("El estado de salud no puede estar vacío.");
 
         this.donationType = donationType;
         this.healthStatus = healthStatus;
         this.eligibility = eligibility;
         this.organo = organo != null ? organo.trim() : "";
+    }
+
+    // Método helper para validar edad en tiempo de invocación del constructor padre.
+    private static byte checkEdadValida(byte age) {
+        if (age < 18) throw new DonanteMenorEdadException("El donante debe ser mayor de 18 años.");
+        return age;
     }
 
     // --- Getters y setters ---

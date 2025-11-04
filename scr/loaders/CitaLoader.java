@@ -11,8 +11,6 @@ import java.util.*;
  * Clase encargada de la persistencia de citas médicas.
  * Permite cargar, guardar y eliminar citas en el archivo de texto.
  * @version 1.4 (Corregido: EliminarCitaPorId ahora Cancelada la cita en lugar de removerla)
- * @author Juan
- * @author Andres
  */
 public class CitaLoader {
 
@@ -31,10 +29,6 @@ public class CitaLoader {
         return Character.toUpperCase(estado.charAt(0)) + estado.substring(1).toLowerCase();
     }
 
-    /**
-     * Carga todas las citas desde el archivo y marca las citas pasadas como Aprobada.
-     * @return Lista de citas cargadas.
-     */
     public static List<Cita> cargarCitas() {
         List<Cita> citas = new ArrayList<>();
         File archivo = new File(RUTA_ARCHIVO);
@@ -52,7 +46,6 @@ public class CitaLoader {
                 Cita c = fromArchivo(linea);
                 if (c != null) {
                     // Lógica de expiración: si la fecha y hora de la cita ya pasaron y no está cancelada
-                    // Combina fecha y hora para una comparación precisa
                     Calendar calCita = Calendar.getInstance();
                     calCita.setTime(c.getDate());
                     Calendar calHora = Calendar.getInstance();
@@ -62,10 +55,8 @@ public class CitaLoader {
                     calCita.set(Calendar.MINUTE, calHora.get(Calendar.MINUTE));
                     calCita.set(Calendar.SECOND, 0);
                     calCita.set(Calendar.MILLISECOND, 0);
-                    
+
                     Date fechaHoraCita = calCita.getTime();
-                    
-                    // Si está Pendiente y la fecha/hora ya pasó, se marca como Aprobada.
                     if (c.getEstado().equalsIgnoreCase("Pendiente") && fechaHoraCita.before(hoy)) {
                         c.setEstado("Aprobada");
                     }
@@ -76,20 +67,17 @@ public class CitaLoader {
             System.err.println("Error al cargar citas: " + e.getMessage());
         }
 
+        // Guardar normalizando estados
         guardarCitas(citas);
         return citas;
     }
 
-    /**
-     * Parsea una línea del archivo para crear un objeto Cita.
-     * Formato: ID;Fecha;Hora;Lugar;ID_Paciente;Doctor;Estado
-     */
     public static Cita fromArchivo(String linea) {
         try {
             String[] parts = linea.split(";");
             if (parts.length < 7) return null;
 
-            String id = parts[0]; 
+            String id = parts[0];
             Date fecha = FORMATO_FECHA.parse(parts[1]);
             Date hora = FORMATO_HORA.parse(parts[2]);
             String lugar = parts[3];
@@ -97,15 +85,13 @@ public class CitaLoader {
             String doctor = parts[5];
             String estado = parts[6];
 
-            Paciente paciente = PacienteLoader.buscarPacientePorId(idPaciente);
-
-            if (paciente != null) {
+            try {
+                Paciente paciente = PacienteLoader.buscarPacientePorId(idPaciente);
                 Cita cita = new Cita(id, fecha, hora, lugar, paciente, doctor);
-                // Normalizar estado leído desde archivo
                 cita.setEstado(normalizeEstado(estado));
                 return cita;
-            } else {
-                System.err.println("Paciente con ID " + idPaciente + " no encontrado para la cita: " + id);
+            } catch (excepciones.NotFoundException nf) {
+                System.err.println("Paciente no encontrado al parsear cita: " + nf.getMessage() + " Cita omitida: " + id);
                 return null;
             }
 
@@ -118,13 +104,9 @@ public class CitaLoader {
         }
     }
 
-    /**
-     * Guarda la lista de citas en el archivo, sobrescribiendo el contenido.
-     */
     public static void guardarCitas(List<Cita> citas) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(RUTA_ARCHIVO))) {
             for (Cita c : citas) {
-                // Asegurar que el estado se guarda normalizado
                 c.setEstado(normalizeEstado(c.getEstado()));
                 pw.println(c.toArchivo());
             }
@@ -132,15 +114,11 @@ public class CitaLoader {
             System.err.println("Error al guardar citas: " + e.getMessage());
         }
     }
-    
-    /**
-     * Cancela (no elimina físicamente) una cita pendiente por su ID.
-     */
+
     public static boolean eliminarCitaPorId(String idCita) {
         List<Cita> citas = cargarCitas();
         boolean encontradaYCancelada = false;
-        
-        // Buscar la cita por ID y marcarla como Cancelada si no lo está ya.
+
         for (Cita c : citas) {
             if (c.getId().equalsIgnoreCase(idCita)) {
                 if (!c.getEstado().equalsIgnoreCase("Cancelada")) {
@@ -150,9 +128,9 @@ public class CitaLoader {
                 break;
             }
         }
-        
+
         if (encontradaYCancelada) {
-            guardarCitas(citas); 
+            guardarCitas(citas);
         }
         return encontradaYCancelada;
     }
