@@ -101,12 +101,18 @@ public class PanelTrasplante extends JPanel {
 
     private String[] cargarNombresPacientes() {
         List<Paciente> pacientes = PacienteLoader.cargarPacientes();
-        return pacientes.stream().map(p -> p.getName() + " (ID: " + p.getId() + ")").toArray(String[]::new);
+        // Formato solicitado: Nombre (ID: Pxxx) | Sangre: T
+        return pacientes.stream()
+                .map(p -> p.getName() + " (ID: " + p.getId() + ") | Sangre: " + p.getBloodType())
+                .toArray(String[]::new);
     }
 
     private String[] cargarNombresDonantes() {
         List<Donante> donantes = DonanteLoader.cargarDonantes();
-        return donantes.stream().map(d -> d.getName() + " (ID: " + d.getId() + ")").toArray(String[]::new);
+        // Formato solicitado: Nombre (ID: Dxxx) | Sangre: T | Dona: Órgano
+        return donantes.stream()
+                .map(d -> d.getName() + " (ID: " + d.getId() + ") | Sangre: " + d.getBloodType() + " | Dona: " + d.getOrgano())
+                .toArray(String[]::new);
     }
 
     private void agregarTrasplante() {

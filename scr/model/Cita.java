@@ -15,8 +15,9 @@ public class Cita {
     private String location;
     private Paciente paciente;
     private String doctor; 
-    private String estado = "PENDIENTE"; 
-    private boolean confirmada = false; 
+    // Estados manejados: "Pendiente", "Aprobada", "Cancelada"
+    private String estado = "Pendiente";
+    private boolean confirmada = false;
     private boolean cancelada = false;
 
     /**
@@ -78,7 +79,7 @@ public class Cita {
 
     public void cancelar() {
         this.cancelada = true;
-        this.estado = "CANCELADA"; 
+        this.estado = "Cancelada";
         System.out.println("La cita ha sido cancelada.");
     }
     
@@ -91,15 +92,16 @@ public class Cita {
         java.text.SimpleDateFormat formatoHora = new java.text.SimpleDateFormat("HH:mm");
 
         String estadoStr = "";
-        if (!estado.equals("PENDIENTE")) {
-            estadoStr = " [" + estado + "]";
+        if (!estado.equalsIgnoreCase("Pendiente")) {
+            estadoStr = "| Estado: " + estado;
         }
 
-        return String.format("%s;%s;%s;%s%s", 
-            formatoFecha.format(date), 
-            formatoHora.format(time), 
-            location, 
-            doctor, 
+        // Devolvemos la cadena en el formato pedido por la UI: Fecha;Hora;Lugar;Doctor (con posible estado añadido)
+        return String.format("%s;%s;%s;%s %s",
+            formatoFecha.format(date),
+            formatoHora.format(time),
+            location,
+            doctor,
             estadoStr);
     }
     
@@ -111,7 +113,7 @@ public class Cita {
         java.text.SimpleDateFormat formatoHora = new java.text.SimpleDateFormat("HH:mm");
         
         return String.join(";",
-            this.id, // ID AÑADIDO
+            this.id,
             formatoFecha.format(date),
             formatoHora.format(time),
             location,

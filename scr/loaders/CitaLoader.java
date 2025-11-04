@@ -20,8 +20,19 @@ public class CitaLoader {
     private static final SimpleDateFormat FORMATO_FECHA = new SimpleDateFormat("dd/MM/yyyy");
     private static final SimpleDateFormat FORMATO_HORA = new SimpleDateFormat("HH:mm");
 
+    // Normaliza los estados leídos desde archivo o proporcionados por la UI
+    private static String normalizeEstado(String estado) {
+        if (estado == null) return "Pendiente";
+        estado = estado.trim();
+        if (estado.equalsIgnoreCase("PENDIENTE") || estado.equalsIgnoreCase("Pendiente")) return "Pendiente";
+        if (estado.equalsIgnoreCase("COMPLETADA") || estado.equalsIgnoreCase("Aprobada") || estado.equalsIgnoreCase("APROBADA")) return "Aprobada";
+        if (estado.equalsIgnoreCase("CANCELADA") || estado.equalsIgnoreCase("Cancelada")) return "Cancelada";
+        // Valor por defecto si no se reconoce
+        return Character.toUpperCase(estado.charAt(0)) + estado.substring(1).toLowerCase();
+    }
+
     /**
-     * Carga todas las citas desde el archivo y marca las citas pasadas como COMPLETADA.
+     * Carga todas las citas desde el archivo y marca las citas pasadas como Aprobada.
      * @return Lista de citas cargadas.
      */
     public static List<Cita> cargarCitas() {
@@ -54,9 +65,9 @@ public class CitaLoader {
                     
                     Date fechaHoraCita = calCita.getTime();
                     
-                    // Si está PENDIENTE y la fecha/hora ya pasó, se marca como COMPLETADA.
-                    if (c.getEstado().equals("PENDIENTE") && fechaHoraCita.before(hoy)) {
-                        c.setEstado("COMPLETADA");
+                    // Si está Pendiente y la fecha/hora ya pasó, se marca como Aprobada.
+                    if (c.getEstado().equalsIgnoreCase("Pendiente") && fechaHoraCita.before(hoy)) {
+                        c.setEstado("Aprobada");
                     }
                     citas.add(c);
                 }
@@ -90,7 +101,8 @@ public class CitaLoader {
 
             if (paciente != null) {
                 Cita cita = new Cita(id, fecha, hora, lugar, paciente, doctor);
-                cita.setEstado(estado);
+                // Normalizar estado leído desde archivo
+                cita.setEstado(normalizeEstado(estado));
                 return cita;
             } else {
                 System.err.println("Paciente con ID " + idPaciente + " no encontrado para la cita: " + id);
@@ -112,6 +124,8 @@ public class CitaLoader {
     public static void guardarCitas(List<Cita> citas) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(RUTA_ARCHIVO))) {
             for (Cita c : citas) {
+                // Asegurar que el estado se guarda normalizado
+                c.setEstado(normalizeEstado(c.getEstado()));
                 pw.println(c.toArchivo());
             }
         } catch (IOException e) {
@@ -126,11 +140,14 @@ public class CitaLoader {
         List<Cita> citas = cargarCitas();
         boolean encontradaYCancelada = false;
         
+        // Buscar la cita por ID y marcarla como Cancelada si no lo está ya.
         for (Cita c : citas) {
-            if (c.getId().equalsIgnoreCase(idCita) && c.getEstado().equals("PENDIENTE")) {
-                c.setEstado("CANCELADA"); 
-                encontradaYCancelada = true;
-                break; 
+            if (c.getId().equalsIgnoreCase(idCita)) {
+                if (!c.getEstado().equalsIgnoreCase("Cancelada")) {
+                    c.setEstado("Cancelada");
+                    encontradaYCancelada = true;
+                }
+                break;
             }
         }
         

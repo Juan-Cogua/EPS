@@ -9,7 +9,6 @@ import loaders.CitaLoader;
 import loaders.PacienteLoader;
 import java.awt.*;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.swing.border.TitledBorder;
 
 /**
@@ -22,7 +21,6 @@ public class PanelCita extends JPanel {
 
     private JTextField txtFecha, txtHora, txtLugar, txtIdPaciente, txtDoctor, txtIdCita; 
     private JTextArea areaCitas;
-    private JTextArea areaHistorial;
     private List<Cita> listaCitas;
 
     private static final SimpleDateFormat FORMATO_FECHA = new SimpleDateFormat("dd/MM/yyyy");
@@ -80,22 +78,22 @@ public class PanelCita extends JPanel {
         panelEntrada.add(txtDoctor);
 
         // --- Panel de botones ---
-        JButton btnAgregar = new JButton("Agregar Cita");
-        JButton btnEliminar = new JButton("Eliminar Cita (por ID)"); 
-        JButton btnBuscarHistorial = new JButton("Mostrar Historial (por ID Paciente)");
+    JButton btnAgregar = new JButton("Agregar Cita");
+    JButton btnEliminar = new JButton("Eliminar Cita (por ID)"); 
+    JButton btnActualizar = new JButton("Actualizar Lista");
         
         btnAgregar.setBackground(COLOR_BOTON);
         btnAgregar.setForeground(COLOR_TEXTO_BOTON);
-        btnEliminar.setBackground(COLOR_BOTON);
-        btnEliminar.setForeground(COLOR_TEXTO_BOTON);
-        btnBuscarHistorial.setBackground(COLOR_BOTON);
-        btnBuscarHistorial.setForeground(COLOR_TEXTO_BOTON);
+    btnEliminar.setBackground(COLOR_BOTON);
+    btnEliminar.setForeground(COLOR_TEXTO_BOTON);
+    btnActualizar.setBackground(COLOR_BOTON);
+    btnActualizar.setForeground(COLOR_TEXTO_BOTON);
     
 
-        JPanel panelBotones = new JPanel(new GridLayout(1, 3, 10, 10));
-        panelBotones.add(btnAgregar);
-        panelBotones.add(btnEliminar);
-        panelBotones.add(btnBuscarHistorial); 
+    JPanel panelBotones = new JPanel(new GridLayout(1, 3, 10, 10));
+    panelBotones.add(btnAgregar);
+    panelBotones.add(btnEliminar);
+    panelBotones.add(btnActualizar);
         panelBotones.setBackground(COLOR_BASE);
 
         panelSuperior.add(panelEntrada);
@@ -107,28 +105,17 @@ public class PanelCita extends JPanel {
         JPanel panelResultados = new JPanel(new GridLayout(2, 1, 10, 10));
         panelResultados.setBackground(COLOR_BASE);
         
-        areaCitas = new JTextArea(10, 40);
+        areaCitas = new JTextArea(15, 80);
         areaCitas.setEditable(false);
         JScrollPane scrollCitas = new JScrollPane(areaCitas);
         scrollCitas.setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(COLOR_BORDE, 1), 
-            "Citas Pendientes", 
-            TitledBorder.LEFT, 
-            TitledBorder.TOP,
-            FUENTE_TITULO));
-        
-        areaHistorial = new JTextArea(10, 40);
-        areaHistorial.setEditable(false);
-        JScrollPane scrollHistorial = new JScrollPane(areaHistorial);
-        scrollHistorial.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(COLOR_BORDE, 1), 
-            "Historial de Citas", 
+            "Lista de Citas", 
             TitledBorder.LEFT, 
             TitledBorder.TOP,
             FUENTE_TITULO));
 
         panelResultados.add(scrollCitas);
-        panelResultados.add(scrollHistorial);
         
         add(panelSuperior, BorderLayout.NORTH); 
         add(panelResultados, BorderLayout.CENTER); 
@@ -136,9 +123,9 @@ public class PanelCita extends JPanel {
         // Listeners
         actualizarArea();
 
-        btnAgregar.addActionListener(e -> agregarCita());
-        btnEliminar.addActionListener(e -> eliminarCita());
-        btnBuscarHistorial.addActionListener(e -> mostrarHistorialPaciente()); 
+    btnAgregar.addActionListener(e -> agregarCita());
+    btnEliminar.addActionListener(e -> eliminarCita());
+    btnActualizar.addActionListener(e -> actualizarArea());
     }
 
     private void agregarCita() {
@@ -170,12 +157,14 @@ public class PanelCita extends JPanel {
             }
             
             Cita nueva = new Cita(idCita, fecha, hora, lugar, paciente, doctor); 
-            
+            // Asegurar estado inicial Pendiente y añadir en memoria
+            nueva.setEstado("Pendiente");
             listaCitas.add(nueva);
             CitaLoader.guardarCitas(listaCitas);
 
             limpiarCampos();
-            actualizarArea();
+            // Actualizar la vista usando la lista en memoria para evitar recarga inmediata
+            actualizarAreaDesdeMemoria();
             JOptionPane.showMessageDialog(this, "Cita agregada correctamente.");
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error al agregar cita: Revise el formato de Fecha (dd/MM/yyyy) y Hora (HH:mm).\nDetalle: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -190,64 +179,74 @@ public class PanelCita extends JPanel {
             return;
         }
 
-        boolean cancelada = CitaLoader.eliminarCitaPorId(idCita); 
-        
+        boolean cancelada = CitaLoader.eliminarCitaPorId(idCita);
+
         if (cancelada) {
             listaCitas = CitaLoader.cargarCitas();
             actualizarArea();
-            JOptionPane.showMessageDialog(this, "Cita pendiente con ID " + idCita + " CANCELADA y movida a historial.");
+            JOptionPane.showMessageDialog(this, "La cita con ID " + idCita + " ha sido marcada como Cancelada.");
         } else {
-            JOptionPane.showMessageDialog(this, "No se encontró cita pendiente con ID: " + idCita + " o ya no está PENDIENTE.");
+            JOptionPane.showMessageDialog(this, "No se encontró una cita con ID: " + idCita + " o ya estaba Cancelada. Asegúrese del ID.");
         }
     }
 
     private void actualizarArea() {
         listaCitas = CitaLoader.cargarCitas(); 
-        
         areaCitas.setText("");
-        areaHistorial.setText("Use el botón 'Mostrar Historial' e ingrese el ID del paciente para ver su historial.");
-        
-        List<Cita> citasPendientes = listaCitas.stream()
-                .filter(c -> c.getEstado().equals("PENDIENTE"))
-                .collect(Collectors.toList());
-        
-        if (citasPendientes.isEmpty()) {
-            areaCitas.append("No hay citas pendientes.");
+
+        if (listaCitas.isEmpty()) {
+            areaCitas.append("No hay citas registradas.");
         } else {
-            areaCitas.append("--- Citas Pendientes ---\n");
-            for (Cita c : citasPendientes) {
-                areaCitas.append("(ID Cita: " + c.getId() + ") " + c.resumen() + " (ID Paciente: " + c.getPaciente().getId() + ")\n");
+            for (Cita c : listaCitas) {
+                // Formato requerido:
+                // (ID Cita: C020) 14/12/2025;15:00;Centro Médico Occidente;Dra. Sofía Mora (ID Paciente: P009)| Estado: Pendiente
+                java.text.SimpleDateFormat fFecha = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                java.text.SimpleDateFormat fHora = new java.text.SimpleDateFormat("HH:mm");
+
+                String fecha = fFecha.format(c.getDate());
+                String hora = fHora.format(c.getTime());
+                String lugar = c.getLocation();
+                String doctor = c.getDoctor();
+                String idPaciente = c.getPaciente().getId();
+                String estado = c.getEstado();
+
+                areaCitas.append(String.format("(ID Cita: %s) %s;%s;%s;%s (ID Paciente: %s) | Estado: %s\n",
+                        c.getId(), fecha, hora, lugar, doctor, idPaciente, estado));
             }
         }
-        
+
         CitaLoader.guardarCitas(listaCitas);
     }
-    
-    private void mostrarHistorialPaciente() {
-        String idPaciente = txtIdPaciente.getText().trim();
-        areaHistorial.setText("");
-        
-        if (idPaciente.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Debe ingresar el ID del paciente para ver su historial.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+
+    /**
+     * Actualiza el área de citas usando la lista en memoria (no recarga desde archivo).
+     * Útil justo después de crear o modificar en memoria para evitar efectos de recarga.
+     */
+    private void actualizarAreaDesdeMemoria() {
+        areaCitas.setText("");
+
+        if (listaCitas == null || listaCitas.isEmpty()) {
+            areaCitas.append("No hay citas registradas.");
             return;
         }
 
-        // CORRECCIÓN CLAVE: El filtro busca cualquier cita que NO sea PENDIENTE.
-        // Esto incluye 'COMPLETADA' y 'CANCELADA'.
-        List<Cita> historial = listaCitas.stream()
-                .filter(c -> c.getPaciente().getId().equalsIgnoreCase(idPaciente) && !c.getEstado().equals("PENDIENTE"))
-                .collect(Collectors.toList());
+        java.text.SimpleDateFormat fFecha = new java.text.SimpleDateFormat("dd/MM/yyyy");
+        java.text.SimpleDateFormat fHora = new java.text.SimpleDateFormat("HH:mm");
 
-        if (historial.isEmpty()) {
-            areaHistorial.setText("No se encontró historial de citas (COMPLETADA/CANCELADA) para el paciente con ID: " + idPaciente);
-            return;
-        }
+        for (Cita c : listaCitas) {
+            String fecha = fFecha.format(c.getDate());
+            String hora = fHora.format(c.getTime());
+            String lugar = c.getLocation();
+            String doctor = c.getDoctor();
+            String idPaciente = c.getPaciente().getId();
+            String estado = c.getEstado();
 
-        areaHistorial.append("--- Historial de Citas para Paciente ID: " + idPaciente + " ---\n");
-        for (Cita c : historial) {
-            areaHistorial.append("(ID Cita: " + c.getId() + ") " + c.resumen() + "\n");
+            areaCitas.append(String.format("(ID Cita: %s) %s;%s;%s;%s (ID Paciente: %s) | Estado: %s\n",
+                    c.getId(), fecha, hora, lugar, doctor, idPaciente, estado));
         }
     }
+    
+    // Eliminado: mostrarHistorialPaciente() — la UI ahora muestra la lista completa de citas en una vista única.
 
     private void limpiarCampos() {
         txtIdCita.setText("");
