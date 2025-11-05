@@ -8,42 +8,65 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import IU.PanelDonante;
+import model.Cita;
 import model.Donante;
 import loaders.DonanteLoader;
 
-
 /**
- * Clase de pruebas para PanelDonante donde se implementan:
- * 1. Invariantes de una clase.
- * 2. Métodos para verificación.
- * 3. Implementación de pruebas Unitarias.
- * 4. Pruebas automáticas para el manejo de excepciones.
+ * Clase de pruebas para {@link PanelDonante} y la clase {@link Donante}.
+ * Contiene:
+ * <ul>
+ *   <li>Pruebas de invariantes y consistencia de datos.</li>
+ *   <li>Pruebas unitarias sobre serialización, deserialización y persistencia.</li>
+ *   <li>Verificación de métodos de utilidad y conversiones.</li>
+ *   <li>Pruebas automáticas para el manejo de excepciones y validaciones.</li>
+ * </ul>
+ * 
+ * <p>Esta clase garantiza la correcta funcionalidad de las operaciones básicas
+ * del módulo de donantes dentro del sistema de donación.</p>
+ * 
+ * @author Andres
+ * @author Juan Cogua
+ * @version 2.0
  */
 public class PanelDonanteTest {
+    /** Ruta temporal utilizada para pruebas de persistencia. */
     private static final String RUTA_TEST = "DonanteTest.txt";
+    /** Panel de prueba para la interfaz de donante. */
     private PanelDonante panel;
+    /** Objeto Donante utilizado como caso de prueba. */
     private Donante donantePrueba;
 
+    /**
+     * Configura los objetos necesarios antes de cada prueba.
+     * Se inicializa un {@link Donante} válido y una instancia del panel.
+     */
     @BeforeEach
     public void setUp() {
-        // Crear datos de prueba
         donantePrueba = new Donante(
-            "María González",  // name
-            (byte)35,          // age (debe ser >= 18)
-            "D001",            // id
-            "A+",              // bloodType
-            "Calle 456",       // address
-            "3009876543",      // phone
-            "Órganos",         // donationType
-            "Saludable",       // healthStatus
-            true,              // eligibility
-            "Riñón"            // organo
+            "María González",  // Nombre
+            (byte)35,          // Edad (válida)
+            "D001",            // ID
+            "A+",              // Tipo de sangre
+            "Calle 456",       // Dirección
+            "3009876543",      // Teléfono
+            "Órganos",         // Tipo de donación
+            "Saludable",       // Estado de salud
+            true,              // Elegibilidad
+            "Riñón"            // Órgano
         );
         
         panel = new PanelDonante();
     }
 
+    // -------------------------------
     // 1. Invariantes de la clase
+    // -------------------------------
+
+    /**
+     * Verifica las invariantes de {@link Donante}, asegurando que
+     * los campos esenciales no sean nulos y que el donante sea mayor de edad.
+     */
     @Test
     public void testInvariantesDonante() {
         assertNotNull(donantePrueba.getName(), "El nombre no debe ser nulo");
@@ -54,11 +77,19 @@ public class PanelDonanteTest {
         assertTrue(donantePrueba.getAge() >= 18, "El donante debe ser mayor de edad");
     }
 
+    /**
+     * Verifica la invariante del panel, asegurando que el objeto
+     * {@link PanelDonante} se haya inicializado correctamente.
+     */
     @Test
     public void testInvariantesPanel() {
         assertNotNull(panel, "El panel no debe ser nulo");
     }
 
+    /**
+     * Verifica que la lista de órganos disponibles en {@link Donante#getOrganosDisponibles()}
+     * no sea nula, esté poblada y contenga órganos comunes como "Riñón" y "Corazón".
+     */
     @Test
     public void testOrganosDisponibles() {
         List<String> organos = Donante.getOrganosDisponibles();
@@ -68,7 +99,14 @@ public class PanelDonanteTest {
         assertTrue(organos.contains("Corazón"), "Debe incluir Corazón");
     }
 
+    // -------------------------------
     // 2. Métodos para verificación
+    // -------------------------------
+
+    /**
+     * Verifica la correcta serialización de un {@link Donante} a formato de texto,
+     * asegurando que todos los campos importantes estén representados.
+     */
     @Test
     public void testSerializacionDonante() {
         String serializado = donantePrueba.toArchivo();
@@ -80,6 +118,10 @@ public class PanelDonanteTest {
         assertTrue(serializado.contains("Riñón"), "Debe contener el órgano");
     }
 
+    /**
+     * Verifica la deserialización de un {@link Donante} a partir de una línea de texto.
+     * Comprueba que los datos se mantengan consistentes tras la conversión.
+     */
     @Test
     public void testDeserializacionDonante() {
         String linea = donantePrueba.toArchivo();
@@ -92,6 +134,10 @@ public class PanelDonanteTest {
         assertEquals(donantePrueba.getDonationType(), deserializado.getDonationType(), "El tipo de donación debe mantenerse");
     }
 
+    /**
+     * Verifica que el método {@link Donante#toString()} genere una cadena no nula
+     * y contenga los datos esenciales del donante.
+     */
     @Test
     public void testToString() {
         String resultado = donantePrueba.toString();
@@ -100,17 +146,22 @@ public class PanelDonanteTest {
         assertTrue(resultado.contains("D001"), "Debe contener el ID");
     }
 
-    // 3. Implementación de pruebas automáticas
+    // -------------------------------
+    // 3. Pruebas sobre persistencia
+    // -------------------------------
+
+    /**
+     * Verifica el correcto guardado y carga de donantes usando la clase {@link DonanteLoader}.
+     * Se asegura que el donante guardado pueda ser recuperado con los mismos datos.
+     */
     @Test
     public void testGuardarYCargarDonantes() {
         List<Donante> donantes = new ArrayList<>();
         donantes.add(donantePrueba);
 
-        // Guardar
         DonanteLoader.guardarDonantes(donantes);
-
-        // Cargar
         List<Donante> cargados = DonanteLoader.cargarDonantes();
+
         assertFalse(cargados.isEmpty(), "La lista cargada no debe estar vacía");
 
         Donante cargado = cargados.stream()
@@ -122,6 +173,10 @@ public class PanelDonanteTest {
         assertEquals(donantePrueba.getName(), cargado.getName(), "El nombre debe mantenerse");
     }
 
+    /**
+     * Verifica la función de agregar un nuevo donante a la persistencia
+     * mediante {@link DonanteLoader#agregarDonante(Donante)}.
+     */
     @Test
     public void testAgregarDonante() {
         DonanteLoader.agregarDonante(donantePrueba);
@@ -133,7 +188,13 @@ public class PanelDonanteTest {
         assertTrue(encontrado, "El donante debe estar en la lista");
     }
 
-    // 4. Pruebas automáticas para el manejo de excepciones
+    // -------------------------------
+    // 4. Pruebas de excepciones
+    // -------------------------------
+
+    /**
+     * Verifica que se lance una excepción si se intenta crear un donante menor de edad.
+     */
     @Test
     public void testDonanteMenorDeEdad() {
         assertThrows(Exception.class, () -> {
@@ -142,6 +203,9 @@ public class PanelDonanteTest {
         }, "Debe lanzar excepción con donante menor de 18 años");
     }
 
+    /**
+     * Verifica que se lance una excepción si el campo de tipo de donación está vacío.
+     */
     @Test
     public void testTipoDonacionVacio() {
         assertThrows(Exception.class, () -> {
@@ -150,6 +214,9 @@ public class PanelDonanteTest {
         }, "Debe lanzar excepción con tipo de donación vacío");
     }
 
+    /**
+     * Verifica que se lance una excepción si el campo de estado de salud está vacío.
+     */
     @Test
     public void testEstadoSaludVacio() {
         assertThrows(Exception.class, () -> {
@@ -158,18 +225,30 @@ public class PanelDonanteTest {
         }, "Debe lanzar excepción con estado de salud vacío");
     }
 
+    /**
+     * Verifica que {@link Donante#fromArchivo(String)} retorne null
+     * cuando la línea de entrada sea nula o vacía.
+     */
     @Test
     public void testFromArchivoLineaVacia() {
         assertNull(Donante.fromArchivo(""), "Línea vacía debe retornar null");
         assertNull(Donante.fromArchivo(null), "Línea nula debe retornar null");
     }
 
+    /**
+     * Verifica que {@link Donante#fromArchivo(String)} retorne null
+     * cuando el formato de entrada sea inválido.
+     */
     @Test
     public void testFromArchivoFormatoInvalido() {
         assertNull(Donante.fromArchivo("Formato|Invalido"), 
                   "Formato inválido debe retornar null");
     }
 
+    /**
+     * Verifica que el método {@link Donante#checkInvariant()} no lance excepciones
+     * para un donante válido.
+     */
     @Test
     public void testCheckInvariant() {
         assertDoesNotThrow(() -> {
@@ -177,6 +256,10 @@ public class PanelDonanteTest {
         }, "Las invariantes deben cumplirse en un donante válido");
     }
 
+    /**
+     * Verifica que {@link Donante#checkInvariant()} lance una excepción
+     * si el órgano especificado no pertenece a la lista de órganos disponibles.
+     */
     @Test
     public void testOrganoInvalido() {
         Donante donanteOrganoInvalido = new Donante(
@@ -189,9 +272,12 @@ public class PanelDonanteTest {
         }, "Debe lanzar excepción con órgano no disponible");
     }
 
+    /**
+     * Elimina los archivos temporales generados durante las pruebas
+     * para mantener un entorno limpio y evitar contaminación entre tests.
+     */
     @AfterEach
     public void tearDown() {
-        // Limpiar archivos de prueba
         File archivo = new File(RUTA_TEST);
         if (archivo.exists()) {
             archivo.delete();

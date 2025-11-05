@@ -12,41 +12,67 @@ import model.Paciente;
 import loaders.PacienteLoader;
 
 /**
- * Clase de pruebas para PanelPaciente siguiendo los 4 puntos:
- * 1. Invariantes de una clase
- * 2. Métodos para verificación
- * 3. Implementación de pruebas automáticas
- * 4. Pruebas automáticas para el manejo de excepciones
+ * Clase de pruebas unitarias para {@link PanelPaciente} y la clase {@link Paciente}.
+ * 
+ * Esta clase cubre los siguientes aspectos:
+ * -Invariantes de la clase {@link Paciente} y del panel.
+ * -Verificación de serialización, deserialización y representación textual.
+ * -Pruebas automáticas sobre la persistencia con {@link PacienteLoader}.
+ * -Pruebas de manejo de excepciones e integridad de datos.
+ * 
+ * El objetivo es asegurar que el modelo y la interfaz relacionada con los pacientes
+ * mantengan consistencia, integridad y correcto funcionamiento bajo distintos escenarios.
+ * 
+ * @version 2.0
+ * @author Andres
+ * @author Juan
  */
 public class PanelPacienteTest {
+
+    /** Ruta temporal utilizada para pruebas de persistencia. */
     private static final String RUTA_TEST = "PacienteTest.txt";
+    /** Panel de prueba correspondiente a la interfaz del paciente. */
     private PanelPaciente panel;
+    /** Paciente de ejemplo utilizado para las pruebas unitarias. */
     private Paciente pacientePrueba;
 
+    /**
+     * Configura los objetos necesarios antes de cada prueba.
+     * 
+     *Se inicializa un paciente de prueba con datos válidos, incluyendo una lista de alergias
+     * y una lista vacía de citas. También se instancia el panel asociado.
+     */
     @BeforeEach
     public void setUp() {
-        // Crear datos de prueba
         List<String> alergias = new ArrayList<>();
         alergias.add("Polen");
         alergias.add("Penicilina");
         
         pacientePrueba = new Paciente(
-            "Juan Pérez",      // name
-            (byte)30,          // age
-            "P001",            // id
-            "O+",              // bloodType
-            "Calle 123",       // address
-            "3001234567",      // phone
-            70.5,              // weight
-            1.75,              // height
-            alergias,          // allergies
-            new ArrayList<>()  // citas
+            "Juan Pérez",      // Nombre
+            (byte)30,          // Edad
+            "P001",            // ID
+            "O+",              // Tipo de sangre
+            "Calle 123",       // Dirección
+            "3001234567",      // Teléfono
+            70.5,              // Peso
+            1.75,              // Altura
+            alergias,          // Alergias
+            new ArrayList<>()  // Citas
         );
         
         panel = new PanelPaciente();
     }
 
+    // -------------------------------
     // 1. Invariantes de la clase
+    // -------------------------------
+
+    /**
+     * Verifica las invariantes de {@link Paciente}, asegurando que todos los
+     * atributos obligatorios estén inicializados correctamente y que los valores
+     * numéricos sean positivos.
+     */
     @Test
     public void testInvariantesPaciente() {
         assertNotNull(pacientePrueba.getName(), "El nombre no debe ser nulo");
@@ -57,12 +83,25 @@ public class PanelPacienteTest {
         assertNotNull(pacientePrueba.getAllergies(), "La lista de alergias no debe ser nula");
     }
 
+    /**
+     * Verifica la invariante del panel, garantizando que la instancia
+     * de {@link PanelPaciente} no sea nula.
+     */
     @Test
     public void testInvariantesPanel() {
         assertNotNull(panel, "El panel no debe ser nulo");
     }
 
+    // -------------------------------
     // 2. Métodos para verificación
+    // -------------------------------
+
+    /**
+     * Verifica la correcta serialización de un objeto {@link Paciente} al formato de archivo.
+     * 
+     * Comprueba que el resultado no sea nulo y que contenga los campos esenciales
+     * como nombre, ID, tipo de sangre y peso.
+     */
     @Test
     public void testSerializacionPaciente() {
         String serializado = pacientePrueba.toArchivo();
@@ -73,6 +112,10 @@ public class PanelPacienteTest {
         assertTrue(serializado.contains("70.5"), "Debe contener el peso");
     }
 
+    /**
+     * Verifica la deserialización de un {@link Paciente} desde una línea de texto,
+     * asegurando que los valores sean consistentes con los datos originales.
+     */
     @Test
     public void testDeserializacionPaciente() {
         String linea = pacientePrueba.toArchivo();
@@ -84,6 +127,10 @@ public class PanelPacienteTest {
         assertEquals(pacientePrueba.getBloodType(), deserializado.getBloodType(), "El tipo de sangre debe mantenerse");
     }
 
+    /**
+     * Verifica que el método {@link Paciente#toString()} produzca una
+     * representación textual válida y contenga los datos esenciales.
+     */
     @Test
     public void testToString() {
         String resultado = pacientePrueba.toString();
@@ -92,16 +139,22 @@ public class PanelPacienteTest {
         assertTrue(resultado.contains("P001"), "Debe contener el ID");
     }
 
+    // -------------------------------
     // 3. Implementación de pruebas automáticas
+    // -------------------------------
+
+    /**
+     * Verifica el proceso completo de guardado y carga de pacientes usando {@link PacienteLoader}.
+     * 
+     * Se comprueba que el paciente almacenado pueda recuperarse correctamente,
+     * manteniendo su información intacta.
+     */
     @Test
     public void testGuardarYCargarPacientes() {
         List<Paciente> pacientes = new ArrayList<>();
         pacientes.add(pacientePrueba);
 
-        // Guardar
         PacienteLoader.guardarPacientes(pacientes);
-
-        // Cargar
         List<Paciente> cargados = PacienteLoader.cargarPacientes();
         assertFalse(cargados.isEmpty(), "La lista cargada no debe estar vacía");
 
@@ -114,6 +167,10 @@ public class PanelPacienteTest {
         assertEquals(pacientePrueba.getName(), cargado.getName(), "El nombre debe mantenerse");
     }
 
+    /**
+     * Verifica la función {@link PacienteLoader#agregarPaciente(Paciente)} asegurando
+     * que un nuevo paciente se añada correctamente a la lista de persistencia.
+     */
     @Test
     public void testAgregarPaciente() {
         PacienteLoader.agregarPaciente(pacientePrueba);
@@ -125,7 +182,13 @@ public class PanelPacienteTest {
         assertTrue(encontrado, "El paciente debe estar en la lista");
     }
 
+    // -------------------------------
     // 4. Pruebas automáticas para el manejo de excepciones
+    // -------------------------------
+
+    /**
+     * Verifica que se lance una excepción al intentar crear un paciente con peso negativo.
+     */
     @Test
     public void testPesoNegativo() {
         assertThrows(Exception.class, () -> {
@@ -134,6 +197,9 @@ public class PanelPacienteTest {
         }, "Debe lanzar excepción con peso negativo");
     }
 
+    /**
+     * Verifica que se lance una excepción al intentar crear un paciente con altura negativa.
+     */
     @Test
     public void testAlturaNegativa() {
         assertThrows(Exception.class, () -> {
@@ -142,18 +208,30 @@ public class PanelPacienteTest {
         }, "Debe lanzar excepción con altura negativa");
     }
 
+    /**
+     * Verifica que el método {@link Paciente#fromArchivo(String)} retorne {@code null}
+     * cuando se le pasa una línea vacía o nula.
+     */
     @Test
     public void testFromArchivoLineaVacia() {
         assertNull(Paciente.fromArchivo(""), "Línea vacía debe retornar null");
         assertNull(Paciente.fromArchivo(null), "Línea nula debe retornar null");
     }
 
+    /**
+     * Verifica que {@link Paciente#fromArchivo(String)} retorne {@code null}
+     * cuando el formato del texto sea inválido.
+     */
     @Test
     public void testFromArchivoFormatoInvalido() {
         assertNull(Paciente.fromArchivo("Formato|Invalido"), 
                   "Formato inválido debe retornar null");
     }
 
+    /**
+     * Verifica que se lance una excepción al intentar agregar una cita nula
+     * a la lista de citas del paciente.
+     */
     @Test
     public void testAgregarCitaNula() {
         assertThrows(Exception.class, () -> {
@@ -161,6 +239,10 @@ public class PanelPacienteTest {
         }, "Debe lanzar excepción al agregar cita nula");
     }
 
+    /**
+     * Verifica que el método {@link Paciente#checkInvariant()} no lance excepciones
+     * cuando el paciente cumple todas las condiciones de validez.
+     */
     @Test
     public void testCheckInvariant() {
         assertDoesNotThrow(() -> {
@@ -168,9 +250,12 @@ public class PanelPacienteTest {
         }, "Las invariantes deben cumplirse en un paciente válido");
     }
 
+    /**
+     * Elimina los archivos temporales creados durante las pruebas
+     * para mantener un entorno limpio y evitar contaminación entre ejecuciones.
+     */
     @AfterEach
     public void tearDown() {
-        // Limpiar archivos de prueba
         File archivo = new File(RUTA_TEST);
         if (archivo.exists()) {
             archivo.delete();

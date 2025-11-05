@@ -11,9 +11,8 @@ import java.awt.*;
 import java.util.List;
 import javax.swing.border.TitledBorder;
 
-/**
- * Panel para la gestión de citas médicas.
- * @version 1.9 (Corregido: Historial muestra COMPLETADAS y CANCELADAS)
+/**Panel para la gestión de citas médicas.
+ * @version 2.0
  * @author Juan
  * @author Andres
  */
@@ -35,6 +34,12 @@ public class PanelCita extends JPanel {
     private static final Font FUENTE_TITULO = new Font("Segoe UI", Font.BOLD, 14);
 
 
+    /**metodo que maneja las funciones del panel de cita:
+     * -carga y modifica el csv.
+     * -manejo de botones
+     * -amanejo de formularios para la entrada de informacion.
+     * -color, y distribucion de los objetos en el panel(botones,formularios,scrolls, panel de listas).
+     */
     public PanelCita() {
         setLayout(new BorderLayout(15, 15)); 
         setBackground(COLOR_BASE); 
@@ -128,6 +133,9 @@ public class PanelCita extends JPanel {
     btnActualizar.addActionListener(e -> actualizarArea());
     }
 
+    /**
+     * metodo que maneja la funcion de agregar citas a la persistencia de citas.
+     */
     private void agregarCita() {
         try {
             String idCita = txtIdCita.getText().trim();
@@ -171,6 +179,10 @@ public class PanelCita extends JPanel {
         }
     }
 
+    /**
+     * metodo que maneja la funcion de poder eliminar una cita de la persistencia.
+     * 
+     */
     private void eliminarCita() {
         String idCita = txtIdCita.getText().trim();
 
@@ -190,6 +202,9 @@ public class PanelCita extends JPanel {
         }
     }
 
+    /**
+     * metodo que permite modificar la informacion de una cita ya creada ya añadida a la persistencia.
+     */
     private void actualizarArea() {
         listaCitas = CitaLoader.cargarCitas(); 
         areaCitas.setText("");
@@ -220,7 +235,7 @@ public class PanelCita extends JPanel {
 
     /**
      * Actualiza el área de citas usando la lista en memoria (no recarga desde archivo).
-     * Útil justo después de crear o modificar en memoria para evitar efectos de recarga.
+     * 
      */
     private void actualizarAreaDesdeMemoria() {
         areaCitas.setText("");

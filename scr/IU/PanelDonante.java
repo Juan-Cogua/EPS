@@ -7,6 +7,13 @@ import java.util.List;
 import model.Donante;
 import loaders.DonanteLoader;
 
+/**
+ * Panel para la gestion de los Donantes
+ * @author andres
+ * @author Juan Cogua
+ * @version 2.0
+ * 
+ */
 public class PanelDonante extends JPanel {
 
     private JTextField txtNombre, txtEdad, txtID, txtDireccion, txtTelefono, txtTipoDonacion, txtSalud;
@@ -17,6 +24,13 @@ public class PanelDonante extends JPanel {
 
     private static final String[] TIPOS_SANGRE = {"A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"};
 
+    /**
+     * metodo que maneja las funciones del panel de Donantes
+     * -carga y modifica el csv.
+     * -manejo de botones
+     * -amanejo de formularios para la entrada de informacion.
+     * -color, y distribucion de los objetos en el panel(botones,formularios,scrolls, panel de listas).
+     */
     public PanelDonante() {
         setLayout(new BorderLayout(10, 10));
         setBackground(Color.LIGHT_GRAY);
@@ -100,6 +114,10 @@ public class PanelDonante extends JPanel {
         actualizarArea();
     }
 
+    /**
+     * Metodo que maneja la funcion de añadir nuevos Donantes y los agrega a la persistencia.
+     * 
+     */
     private void agregarDonante() {
         try {
             String nombre = txtNombre.getText().trim();
