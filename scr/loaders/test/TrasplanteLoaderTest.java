@@ -13,21 +13,39 @@ import model.Trasplante;
 import model.Donante;
 import model.Paciente;
 import excepciones.NotFoundException;
-    /**
-     * Clase de pruebas para `TrasplanteLoader` que sigue el patrón de `PanelTrasplanteTest`.
-     * Cubre:
-     * 1. Invariantes de una clase (constantes y formatos esperados)
-     * 2. Métodos para verificación (serialización/deserialización, guardar/cargar)
-     * 3. Implementación de pruebas automáticas (@BeforeEach y @AfterEach)
-     * 4. Pruebas automáticas para el manejo de excepciones (entradas inválidas)
-     */
+
+/**
+ * Clase de pruebas unitarias para TrasplanteLoader.
+ * Verifica la correcta funcionalidad de carga, guardado, serialización
+ * y deserialización de trasplantes.
+ * 
+ * Cubre los 4 puntos de las pruebas unitarias:
+ * 1. Invariantes de una clase (constantes y formatos esperados)
+ * 2. Métodos para verificación (serialización/deserialización, guardar/cargar)
+ * 3. Implementación de pruebas automáticas (@BeforeEach y @AfterEach)
+ * 4. Pruebas automáticas para el manejo de excepciones (entradas inválidas)
+ * 
+ * @author Juan Cogua
+ * @author Andres Rojas
+ * @version 1.0
+ */
 public class TrasplanteLoaderTest {
+    /** Ruta del archivo de prueba */
     private static final String RUTA_TEST = "TrasplanteTest.txt";
+    
+    /** Trasplante utilizado para las pruebas */
     private Trasplante trasplantePrueba;
+    
+    /** Donante asociado al trasplante de prueba */
     private Donante donante;
+    
+    /** Paciente receptor del trasplante de prueba */
     private Paciente paciente;
 
-
+    /**
+     * Configuración inicial antes de cada prueba.
+     * Crea un donante, un paciente y un trasplante de prueba.
+     */
     @BeforeEach
     public void setUp() {
         // Crear datos de prueba
@@ -72,14 +90,24 @@ public class TrasplanteLoaderTest {
         );
     }
 
-    // 1. Invariantes de la clase
+    // ========== 1. INVARIANTES DE LA CLASE ==========
+    
+    /**
+     * Verifica que las constantes de la clase TrasplanteLoader no sean nulas.
+     * Prueba las invariantes de formato y ruta de archivo.
+     */
     @Test
     public void testInvariantes() {
         assertNotNull(TrasplanteLoader.RUTA, "La ruta del archivo no debe ser nula");
         assertNotNull(TrasplanteLoader.FORMATO_FECHA, "El formato de fecha no debe ser nulo");
     }
 
-    // 2. Métodos para verificación
+    // ========== 2. MÉTODOS PARA VERIFICACIÓN ==========
+    
+    /**
+     * Verifica que la serialización de un trasplante genere
+     * una cadena con todos los campos requeridos.
+     */
     @Test
     public void testSerializacionTrasplante() {
         String serializado = TrasplanteLoader.toArchivo(trasplantePrueba);
@@ -89,6 +117,10 @@ public class TrasplanteLoaderTest {
         assertTrue(serializado.contains("Ana Paciente"), "La serialización debe contener el nombre del paciente");
     }
 
+    /**
+     * Verifica que la deserialización reconstruya correctamente
+     * un objeto Trasplante desde una cadena serializada.
+     */
     @Test
     public void testDeserializacionTrasplante() {
         String linea = TrasplanteLoader.toArchivo(trasplantePrueba);
@@ -100,7 +132,12 @@ public class TrasplanteLoaderTest {
         assertEquals(trasplantePrueba.getEstado(), deserializado.getEstado(), "El estado debe mantenerse");
     }
 
-    // 3. Implementación de pruebas automáticas
+    // ========== 3. IMPLEMENTACIÓN DE PRUEBAS AUTOMÁTICAS ==========
+    
+    /**
+     * Verifica que los trasplantes se guarden y carguen correctamente
+     * manteniendo su integridad y la cantidad de registros.
+     */
     @Test
     public void testGuardarYCargarTrasplantes() {
         List<Trasplante> trasplantes = new ArrayList<>();
@@ -119,23 +156,38 @@ public class TrasplanteLoaderTest {
         assertEquals(trasplantePrueba.getEstado(), cargado.getEstado(), "El estado debe mantenerse después de cargar");
     }
 
-    // 4. Pruebas automáticas para el manejo de excepciones
+    // ========== 4. PRUEBAS AUTOMÁTICAS PARA EL MANEJO DE EXCEPCIONES ==========
+    
+    /**
+     * Verifica que líneas vacías o nulas retornen null en la deserialización.
+     */
     @Test
     public void testFromArchivoLineaVacia() {
         assertNull(TrasplanteLoader.fromArchivo(""), "Línea vacía debe retornar null");
         assertNull(TrasplanteLoader.fromArchivo(null), "Línea nula debe retornar null");
     }
 
+    /**
+     * Verifica que formatos inválidos retornen null en la deserialización.
+     */
     @Test
     public void testFromArchivoFormatoInvalido() {
         assertNull(TrasplanteLoader.fromArchivo("Formato|Invalido|Sin|Campos|Correctos"), "Formato inválido debe retornar null");
     }
 
+    /**
+     * Verifica que un trasplante nulo genere una cadena vacía
+     * al intentar serializarlo.
+     */
     @Test
     public void testToArchivoTrasplanteNulo() {
         assertEquals("", TrasplanteLoader.toArchivo(null), "Trasplante nulo debe retornar cadena vacía");
     }
 
+    /**
+     * Limpieza después de cada prueba.
+     * Elimina los archivos temporales creados.
+     */
     @AfterEach
     public void tearDown() {
         // Limpiar archivos de prueba
