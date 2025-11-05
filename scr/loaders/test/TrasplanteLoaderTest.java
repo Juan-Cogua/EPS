@@ -13,29 +13,63 @@ import model.Trasplante;
 import model.Donante;
 import model.Paciente;
 import excepciones.NotFoundException;
-
-
-
+    /**
+     * Clase de pruebas para `TrasplanteLoader` que sigue el patrón de `PanelTrasplanteTest`.
+     * Cubre:
+     * 1. Invariantes de una clase (constantes y formatos esperados)
+     * 2. Métodos para verificación (serialización/deserialización, guardar/cargar)
+     * 3. Implementación de pruebas automáticas (@BeforeEach y @AfterEach)
+     * 4. Pruebas automáticas para el manejo de excepciones (entradas inválidas)
+     */
 public class TrasplanteLoaderTest {
     private static final String RUTA_TEST = "TrasplanteTest.txt";
     private Trasplante trasplantePrueba;
     private Donante donante;
     private Paciente paciente;
 
-    /**
-     * Clase de pruebas para `TrasplanteLoader` que sigue el patrón de `PanelTrasplanteTest`.
-     * Cubre los 4 puntos de las pruebas unitarias:
-     * 1. Invariantes de una clase (constantes y formatos esperados)
-     * 2. Métodos para verificación (serialización/deserialización, guardar/cargar)
-     * 3. Implementación de pruebas automáticas (@BeforeEach y @AfterEach)
-     * 4. Pruebas automáticas para el manejo de excepciones (entradas inválidas)
-     */
+
     @BeforeEach
     public void setUp() {
         // Crear datos de prueba
-        donante = new Donante("D001", "Juan Donante", "12345678", new Date(), "O+", "Riñón", true);
-        paciente = new Paciente("P001", "Ana Paciente", "87654321", new Date(), "AB+", "Riñón");
-        trasplantePrueba = new Trasplante("T001", "Riñón", donante, paciente, "Pendiente", "", "", new Date());
+        // Donante(name, age, id, bloodType, address, phone, donationType, healthStatus, eligibility, organo)
+        donante = new Donante(
+            "Juan Donante",    // name
+            (byte)30,          // age (>= 18)
+            "D001",            // id
+            "O+",              // bloodType
+            "Calle 123",       // address
+            "12345678",        // phone
+            "Órganos",         // donationType
+            "Saludable",       // healthStatus
+            true,              // eligibility
+            "Riñón"            // organo
+        );
+        
+        // Paciente(name, age, id, bloodType, address, phone, weight, height, allergies, citas)
+        paciente = new Paciente(
+            "Ana Paciente",    // name
+            (byte)25,          // age
+            "P001",            // id
+            "AB+",             // bloodType
+            "Calle 456",       // address
+            "87654321",        // phone
+            70.0,              // weight
+            1.65,              // height
+            new ArrayList<>(), // allergies
+            new ArrayList<>()  // citas
+        );
+        
+        // Trasplante(id, organType, donor, receiver, estado, historialClinico, rejectionReason, fecha)
+        trasplantePrueba = new Trasplante(
+            "T001",            // id
+            "Riñón",           // organType
+            donante,           // donor
+            paciente,          // receiver
+            "Pendiente",       // estado
+            "",                // historialClinico
+            "",                // rejectionReason
+            new Date()         // fecha
+        );
     }
 
     // 1. Invariantes de la clase
@@ -49,10 +83,10 @@ public class TrasplanteLoaderTest {
     @Test
     public void testSerializacionTrasplante() {
         String serializado = TrasplanteLoader.toArchivo(trasplantePrueba);
-        assertNotNull("La serialización no debe ser nula", serializado);
-        assertTrue("La serialización debe contener el ID del trasplante", serializado.contains("T001"));
-        assertTrue("La serialización debe contener el nombre del donante", serializado.contains("Juan Donante"));
-        assertTrue("La serialización debe contener el nombre del paciente", serializado.contains("Ana Paciente"));
+        assertNotNull(serializado, "La serialización no debe ser nula");
+        assertTrue(serializado.contains("T001"), "La serialización debe contener el ID del trasplante");
+        assertTrue(serializado.contains("Juan Donante"), "La serialización debe contener el nombre del donante");
+        assertTrue(serializado.contains("Ana Paciente"), "La serialización debe contener el nombre del paciente");
     }
 
     @Test

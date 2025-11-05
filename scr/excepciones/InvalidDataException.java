@@ -5,6 +5,13 @@ package excepciones;
  */
 public class InvalidDataException extends RuntimeException {
     public InvalidDataException() { super(); }
+    /**
+     * @param message
+     */
     public InvalidDataException(String message) { super(message); }
+    /**
+     * @param message
+     * @param cause
+     */
     public InvalidDataException(String message, Throwable cause) { super(message, cause); }
 }

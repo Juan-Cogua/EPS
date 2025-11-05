@@ -7,8 +7,9 @@ import java.awt.*;
  * Ventana principal del sistema EPS.
  * Contiene pestañas para gestionar Pacientes, Donantes, Trasplantes y Citas.
  * 
- * Autor: Juan Cogua / Andres Rojas
- * Versión: 2.0 (reorganizada por paneles)
+ * @author andres
+ * @author Juan Cogua
+ * @Versión: 2.0
  */
 public class EPS_GUI extends JFrame {
 
