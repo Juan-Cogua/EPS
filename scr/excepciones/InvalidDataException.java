@@ -1,17 +1,37 @@
 package excepciones;
 
 /**
- * Excepción lanzada cuando se detecta datos inválidos que violan las invariantes del modelo.
+ * Excepción lanzada para indicar que un donante no cumple con la restricción mínima de edad
+ * requerida para realizar una donación (es menor de 18 años).
+ *
+ * @author Juan Cogua
+ * @version 2.0
  */
-public class InvalidDataException extends RuntimeException {
-    public InvalidDataException() { super(); }
+public class DonanteMenorEdadException extends InvalidDataException {
+
     /**
-     * @param message
+     * Construye una nueva excepción DonanteMenorEdadException con un mensaje de detalle null.
      */
-    public InvalidDataException(String message) { super(message); }
+    public DonanteMenorEdadException() {
+        super();
+    }
+
     /**
-     * @param message
-     * @param cause
+     * Construye una nueva excepción DonanteMenorEdadException con el mensaje de detalle especificado.
+     *
+     * @param message el mensaje de detalle (guardado para su posterior recuperación).
      */
-    public InvalidDataException(String message, Throwable cause) { super(message, cause); }
+    public DonanteMenorEdadException(String message) {
+        super(message);
+    }
+
+    /**
+     * Construye una nueva excepción DonanteMenorEdadException con el mensaje de detalle y la causa especificados.
+     *
+     * @param message el mensaje de detalle (guardado para su posterior recuperación).
+     * @param cause la causa de la excepción (guardada para su posterior recuperación).
+     */
+    public DonanteMenorEdadException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
