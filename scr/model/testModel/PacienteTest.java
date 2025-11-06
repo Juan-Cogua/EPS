@@ -28,7 +28,7 @@ class PacienteTest {
      * Punto 3: preparación reutilizable antes de cada prueba
      */
     @BeforeEach
-    void setUp() {
+    void setUp() throws InvalidDataException {
         pacientePrueba = new Paciente("P", (byte)30, "P001", "O+", "Calle", "300", 70.0, 1.7, new ArrayList<>(), new ArrayList<>());
         inicio = new Date();
         fin = new Date(inicio.getTime() + 3600000);
@@ -61,7 +61,7 @@ class PacienteTest {
      * Comprueba agregar y cancelar citas
      */
     @Test
-    void testAgregarCancelarCita() {
+    void testAgregarCancelarCita() throws InvalidDataException {
         pacientePrueba.agregarCita(citaPrueba);
         assertTrue(pacientePrueba.getCitas().contains(citaPrueba));
         pacientePrueba.cancelarCita(citaPrueba);
@@ -73,7 +73,7 @@ class PacienteTest {
      * Comprueba getters y setters básicos
      */
     @Test
-    void testSettersGetters() {
+    void testSettersGetters() throws InvalidDataException {
     pacientePrueba.setAddress("Calle Nueva 123");
     assertEquals("Calle Nueva 123", pacientePrueba.getAddress());
 

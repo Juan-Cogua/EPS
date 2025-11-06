@@ -2,9 +2,9 @@ package model;
 
 import excepciones.InvalidDataException;
 import excepciones.InvariantViolationException;
-
 import java.util.ArrayList;
 import java.util.List;
+import model.Cita; // <-- añadido
 
 /**
  * Clase que representa un paciente, heredando de Persona.
@@ -23,8 +23,10 @@ public class Paciente extends Persona {
     private static List<Paciente> pacientes = new ArrayList<>();
 
     public Paciente(String name, byte age, String id, String bloodType, String address, String phone,
-                    double weight, double height, List<String> allergies, List<Cita> citas) {
+                    double weight, double height, List<String> allergies, List<Cita> citas) throws InvalidDataException {
         super(name, age, id, bloodType, address, phone);
+
+        // validaciones: lanzar, no capturar
         if (weight < 0) throw new InvalidDataException("El peso no puede ser negativo.");
         if (height < 0) throw new InvalidDataException("La altura no puede ser negativa.");
 
@@ -59,12 +61,12 @@ public class Paciente extends Persona {
     public void setCitas(List<Cita> citas) { this.citas = citas; }
 
     // --- Métodos de gestión de lista estática ---
-    public static void añadir(Paciente paciente) {
+    public static void añadir(Paciente paciente) throws InvalidDataException {
         if (paciente == null) throw new InvalidDataException("No se puede añadir un paciente null.");
         pacientes.add(paciente);
     }
 
-    public static void eliminar(Paciente paciente) {
+    public static void eliminar(Paciente paciente) throws InvalidDataException {
         if (paciente == null) throw new InvalidDataException("No se puede eliminar un paciente null.");
         pacientes.remove(paciente);
     }
@@ -74,12 +76,12 @@ public class Paciente extends Persona {
     }
 
     // --- Lógica de negocio ---
-    public void agregarCita(Cita cita) {
+    public void agregarCita(Cita cita) throws InvalidDataException {
         if (cita == null) throw new InvalidDataException("No se puede agregar una cita null.");
         citas.add(cita);
     }
 
-    public void cancelarCita(Cita cita) {
+    public void cancelarCita(Cita cita) throws InvalidDataException {
         if (cita == null) throw new InvalidDataException("No se puede cancelar una cita null.");
         citas.remove(cita);
     }
@@ -123,9 +125,13 @@ public class Paciente extends Persona {
                 for (String a : parts[8].split(",")) allergies.add(a.trim());
             }
 
+            // ahora el constructor puede lanzar InvalidDataException y será capturado abajo
             return new Paciente(name, age, id, bloodType, address, phone, weight, height, allergies, new ArrayList<>());
+        } catch (InvalidDataException e) {
+            System.err.println("Línea de paciente inválida (se omitirá): " + e.getMessage() + " -> " + linea);
+            return null;
         } catch (Exception e) {
-            System.err.println("Error al parsear paciente: " + e.getMessage());
+            System.err.println("Error al parsear paciente: " + e.getMessage() + " -> " + linea);
             return null;
         }
     }

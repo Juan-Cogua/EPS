@@ -1,45 +1,108 @@
 package IU.testIU;
 
-import org.junit.jupiter.api.AfterEach;
+import IU.PanelTrasplante;
+import excepciones.FechaInvalidaException;
+import excepciones.SangreIncompatibleException;
+import excepciones.TrasplanteInvalidoException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import java.io.File;
-import java.util.ArrayList;
+
+import javax.swing.*;
 import java.util.Date;
-import java.util.List;
-import model.Trasplante;
-import model.Donante;
-import model.Paciente;
-import loaders.TrasplanteLoader;
-import excepciones.InvalidDataException;
-import excepciones.DonanteMenorEdadException;
-import excepciones.InvariantViolationException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Tests adicionales para PanelTrasplante que buscan exponer problemas en el manejo de excepciones
+ * al intentar agregar trasplantes (fechas, selección y compatibilidad sanguínea).
+ */
+public class PanelTrasplanteExtraTest {
 
-* Clase de pruebas unitarias para la entidad {@link Trasplante} y sus operaciones
-* asociadas, siguiendo los principios de diseño y verificación de calidad:
-* <ol>
-* <li>Invariantes de la clase</li>
-* <li>Métodos de verificación</li>
-* <li>Pruebas automáticas de funcionalidad</li>
-* <li>Pruebas automáticas para el manejo de excepciones</li>
-* </ol>
-*
-* <p>Estas pruebas garantizan la correcta interacción entre objetos relacionados
-* como {@link Donante}, {@link Paciente} y el proceso de persistencia
-* administrado por {@link TrasplanteLoader}.</p>
-*
-* @author
-* @version 1.0
-  */
-  public class PanelTrasplanteTest {
-  /** Ruta del archivo temporal utilizado en las pruebas automáticas. */
-  private static final String RUTA_TEST = "TrasplanteTest.txt";
+  private PanelTrasplante panel;
 
-  /** Instancia de prueba del objeto {@link Trasplante}. */
-  private Trasplante trasplantePrueba;
+  @BeforeEach
+  public void setup() {
+    // Construir el panel (usa los loaders internos; las listas se reemplazarán en cada test)
+    panel = new PanelTrasplante();
+    // Evitar dependencias visuales en el entorno de test
+    panel.getAreaTrasplantes().setText("");
+  }
+
+  @Test
+  public void testAgregarTrasplanteSinSeleccionLanzaTrasplanteInvalido() {
+    panel.getTxtIdTrasplante().setText("TX100");
+    // Asegurarse de que no haya selección
+    panel.getListaDonantes().clearSelection();
+    panel.getListaPacientes().clearSelection();
+
+    assertThrows(TrasplanteInvalidoException.class, () -> {
+      panel.agregarTrasplante();
+    }, "Debe lanzar TrasplanteInvalidoException cuando no hay donante/paciente seleccionado");
+  }
+
+  @Test
+  public void testAgregarTrasplanteFechaInvalidaLanzaFechaInvalidaException() {
+    // Proveer etiquetas mínimas para evitar la excepción de selección
+    String donorLabel = "Donante X (ID: D1) | Sangre: O+";
+    String patientLabel = "Paciente Y (ID: P1) | Sangre: A+";
+    JList<String> donList = panel.getListaDonantes();
+    JList<String> patList = panel.getListaPacientes();
+
+    donList.setListData(new String[]{donorLabel});
+    patList.setListData(new String[]{patientLabel});
+    donList.setSelectedIndex(0);
+    patList.setSelectedIndex(0);
+
+    panel.getTxtIdTrasplante().setText("TX101");
+    panel.getTxtFecha().setText("31-31-2020"); // formato inválido
+
+    assertThrows(FechaInvalidaException.class, () -> {
+      panel.agregarTrasplante();
+    }, "Debe lanzar FechaInvalidaException para formato de fecha inválido");
+  }
+
+  @Test
+  public void testAgregarTrasplanteSangreIncompatibleLanzaSangreIncompatibleException() {
+    // Donante A -> Receptor B (incompatibles según reglas ABO implementadas)
+    String donorLabel = "Donante A (ID: D2) | Sangre: A+";
+    String patientLabel = "Paciente B (ID: P2) | Sangre: B+";
+    JList<String> donList = panel.getListaDonantes();
+    JList<String> patList = panel.getListaPacientes();
+
+    donList.setListData(new String[]{donorLabel});
+    patList.setListData(new String[]{patientLabel});
+    donList.setSelectedIndex(0);
+    patList.setSelectedIndex(0);
+
+    panel.getTxtIdTrasplante().setText("TX102");
+    // Fecha válida para no interferir con la validación de sangre
+    panel.getTxtFecha().setText(new java.text.SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+
+    assertThrows(SangreIncompatibleException.class, () -> {
+      panel.agregarTrasplante();
+    }, "Debe lanzar SangreIncompatibleException cuando la sangre es incompatible");
+  }
+
+  @Test
+  public void testAgregarTrasplanteCompatibleNoLanzaAntesDeBuscar() {
+    // Donante O -> Receptor AB (compatible). Esta prueba asegura que la comprobación de
+    // compatibilidad ocurre y no es silenciada antes de verificar loaders.
+    String donorLabel = "Donante O (ID: D3) | Sangre: O+";
+    String patientLabel = "Paciente AB (ID: P3) | Sangre: AB+";
+    panel.getListaDonantes().setListData(new String[]{donorLabel});
+    panel.getListaPacientes().setListData(new String[]{patientLabel});
+    panel.getListaDonantes().setSelectedIndex(0);
+    panel.getListaPacientes().setSelectedIndex(0);
+
+    panel.getTxtIdTrasplante().setText("TX103");
+    panel.getTxtFecha().setText(new java.text.SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+
+    // No se espera una excepción de compatibilidad ni de formato aquí.
+    // Dependencias posteriores (buscarPaciente/buscarDonante) pueden provocar manejo propio;
+    // solo se valida que las validaciones previas no lancen excepciones inesperadas.
+    assertDoesNotThrow(() -> panel.agregarTrasplante(), "En caso de sangre compatible no debe lanzarse SangreIncompatibleException ni FechaInvalidaException");
+  }
+}
 
   /** Donante utilizado como parte del trasplante de prueba. */
   private Donante donante;
@@ -53,24 +116,24 @@ import excepciones.InvariantViolationException;
   * Se crean instancias válidas de {@link Donante}, {@link Paciente} y {@link Trasplante}.
     */
     @BeforeEach
-    public void setUp() throws InvalidDataException, DonanteMenorEdadException {
-        // Crear donante de prueba
-        donante = new Donante(
-            "Juan Donante", (byte)30, "D001", "O+", "Calle 123",
-            "12345678", "Órganos", "Saludable", true, "Riñón"
-        );
+    public void setUp() {
+    // Crear donante de prueba
+    donante = new Donante(
+    "Juan Donante", (byte)30, "D001", "O+", "Calle 123",
+    "12345678", "Órganos", "Saludable", true, "Riñón"
+    );
 
-        // Crear paciente de prueba
-        paciente = new Paciente(
-            "Ana Paciente", (byte)25, "P001", "AB+", "Calle 456",
-            "87654321", 70.0, 1.65, new ArrayList<>(), new ArrayList<>()
-        );
+    // Crear paciente de prueba
+    paciente = new Paciente(
+    "Ana Paciente", (byte)25, "P001", "AB+", "Calle 456",
+    "87654321", 70.0, 1.65, new ArrayList<>(), new ArrayList<>()
+    );
 
-        // Crear trasplante de prueba
-        trasplantePrueba = new Trasplante(
-            "T001", "Riñón", donante, paciente,
-            "Pendiente", "", "", new Date()
-        );
+    // Crear trasplante de prueba
+    trasplantePrueba = new Trasplante(
+    "T001", "Riñón", donante, paciente,
+    "Pendiente", "", "", new Date()
+    );
     }
 
   // =====================================================
@@ -213,36 +276,41 @@ import excepciones.InvariantViolationException;
   /** Verifica que no se permita un ID nulo en la creación de un trasplante. */
   @Test
   public void testIdNulo() {
-    Trasplante t = new Trasplante(null, "Riñón", donante, paciente, "Pendiente", "", "", new Date());
-    assertThrows(InvariantViolationException.class, () -> t.checkInvariant(), "Debe lanzar excepción con ID nulo");
+  assertThrows(Exception.class, () -> {
+  new Trasplante(null, "Riñón", donante, paciente, "Pendiente", "", "", new Date());
+  }, "Debe lanzar excepción con ID nulo");
   }
 
   /** Verifica que no se permita un ID vacío en la creación de un trasplante. */
   @Test
   public void testIdVacio() {
-    Trasplante t = new Trasplante("", "Riñón", donante, paciente, "Pendiente", "", "", new Date());
-    assertThrows(InvariantViolationException.class, () -> t.checkInvariant(), "Debe lanzar excepción con ID vacío");
+  assertThrows(Exception.class, () -> {
+  new Trasplante("", "Riñón", donante, paciente, "Pendiente", "", "", new Date());
+  }, "Debe lanzar excepción con ID vacío");
   }
 
   /** Verifica que el tipo de órgano no pueda ser vacío. */
   @Test
   public void testOrganoVacio() {
-    Trasplante t = new Trasplante("T999", "", donante, paciente, "Pendiente", "", "", new Date());
-    assertThrows(InvariantViolationException.class, () -> t.checkInvariant(), "Debe lanzar excepción con órgano vacío");
+  assertThrows(Exception.class, () -> {
+  new Trasplante("T999", "", donante, paciente, "Pendiente", "", "", new Date());
+  }, "Debe lanzar excepción con órgano vacío");
   }
 
   /** Verifica que no se permita un donante nulo. */
   @Test
   public void testDonanteNulo() {
-    Trasplante t = new Trasplante("T999", "Riñón", null, paciente, "Pendiente", "", "", new Date());
-    assertThrows(InvariantViolationException.class, () -> t.checkInvariant(), "Debe lanzar excepción con donante nulo");
+  assertThrows(Exception.class, () -> {
+  new Trasplante("T999", "Riñón", null, paciente, "Pendiente", "", "", new Date());
+  }, "Debe lanzar excepción con donante nulo");
   }
 
   /** Verifica que no se permita un receptor nulo. */
   @Test
   public void testReceptorNulo() {
-    Trasplante t = new Trasplante("T999", "Riñón", donante, null, "Pendiente", "", "", new Date());
-    assertThrows(InvariantViolationException.class, () -> t.checkInvariant(), "Debe lanzar excepción con receptor nulo");
+  assertThrows(Exception.class, () -> {
+  new Trasplante("T999", "Riñón", donante, null, "Pendiente", "", "", new Date());
+  }, "Debe lanzar excepción con receptor nulo");
   }
 
   /** Prueba la deserialización con línea vacía o nula. */

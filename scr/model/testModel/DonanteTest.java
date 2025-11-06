@@ -28,7 +28,7 @@ class DonanteTest {
      * Este método se ejecuta antes de cada prueba para garantizar un estado inicial conocido
      */
     @BeforeEach
-    void setUp() {
+    void setUp() throws InvalidDataException, DonanteMenorEdadException {
         donantePrueba = new Donante("Luis", (byte)25, "D001", "O+", "Calle", "300", 
             "Órganos", "Bueno", true, "Riñón");
     }
@@ -38,12 +38,12 @@ class DonanteTest {
      * Verifica que un donante con datos válidos cumple con todos los invariantes
      */
     @Test
-    void testDonanteValidoCheckInvariant() {
+    void testDonanteValidoCheckInvariant() throws InvalidDataException {
         donantePrueba.checkInvariant();
         assertTrue(donantePrueba.esMayorDeEdad());
-    assertTrue(donantePrueba.isEligibility());
+        assertTrue(donantePrueba.isEligibility());
     }
-
+    
     /**
      * Punto 1: Invariantes de clase y Punto 4: Manejo de excepciones
      * Verifica que se lanza excepción cuando el donante es menor de edad
@@ -76,13 +76,13 @@ class DonanteTest {
      * Verifica el funcionamiento de los métodos set y get
      */
     @Test
-    void testSettersGetters() {
+    void testSettersGetters() throws InvalidDataException {
         String nuevoEstadoSalud = "Excelente";
-    donantePrueba.setHealthStatus(nuevoEstadoSalud);
-    assertEquals(nuevoEstadoSalud, donantePrueba.getHealthStatus());
+        donantePrueba.setHealthStatus(nuevoEstadoSalud);
+        assertEquals(nuevoEstadoSalud, donantePrueba.getHealthStatus());
 
-    donantePrueba.setEligibility(false);
-    assertFalse(donantePrueba.isEligibility());
+        donantePrueba.setEligibility(false);
+        assertFalse(donantePrueba.isEligibility());
     }
 
     /**

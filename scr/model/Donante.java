@@ -9,7 +9,7 @@ import java.util.List;
  * Clase que representa a un donante en el sistema.
  * Contiene información personal, estado de salud y elegibilidad.
  */
-public class Donante extends Persona {
+public class Donante  extends Persona {
     private String donationType;
     private String healthStatus;
     private boolean eligibility;
@@ -21,8 +21,10 @@ public class Donante extends Persona {
      * Constructor de Donante.
      */
     public Donante(String name, byte age, String id, String bloodType, String address, String phone, 
-                    String donationType, String healthStatus, boolean eligibility, String organo) {
+                    String donationType, String healthStatus, boolean eligibility, String organo)
+            throws InvalidDataException, DonanteMenorEdadException {
         super(name, checkEdadValida(age), id, bloodType, address, phone);
+
         if (donationType == null || donationType.trim().isEmpty())
             throw new InvalidDataException("El tipo de donación no puede estar vacío.");
         if (healthStatus == null || healthStatus.trim().isEmpty())
@@ -35,17 +37,27 @@ public class Donante extends Persona {
     }
 
     // Método helper para validar edad en tiempo de invocación del constructor padre.
-    private static byte checkEdadValida(byte age) {
-        if (age < 18) throw new DonanteMenorEdadException("El donante debe ser mayor de 18 años.");
+    private static byte checkEdadValida(byte age) throws DonanteMenorEdadException {
+        if (age < 18) {
+            throw new DonanteMenorEdadException("El donante debe ser mayor de 18 años.");
+        }
         return age;
     }
 
     // --- Getters y setters ---
     public String getDonationType() { return donationType; }
-    public void setDonationType(String donationType) { this.donationType = donationType; }
+    public void setDonationType(String donationType) throws InvalidDataException {
+        if (donationType == null || donationType.trim().isEmpty())
+            throw new InvalidDataException("El tipo de donación no puede estar vacío.");
+        this.donationType = donationType;
+    }
 
     public String getHealthStatus() { return healthStatus; }
-    public void setHealthStatus(String healthStatus) { this.healthStatus = healthStatus; }
+    public void setHealthStatus(String healthStatus) throws InvalidDataException {
+        if (healthStatus == null || healthStatus.trim().isEmpty())
+            throw new InvalidDataException("El estado de salud no puede estar vacío.");
+        this.healthStatus = healthStatus;
+    }
 
     public boolean isEligibility() { return eligibility; }
     public void setEligibility(boolean eligibility) { this.eligibility = eligibility; }

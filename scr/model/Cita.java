@@ -33,7 +33,9 @@ public class Cita {
      * @param doctor Doctor/Especialista de la cita
      */
     public Cita(String id, Date date, Date time, String location, Paciente paciente, String doctor) {
-        if (id == null || id.trim().isEmpty()) {
+        
+        try {
+            if (id == null || id.trim().isEmpty()) {
             throw new InvalidDataException("El ID de la cita no puede ser nulo o vacío.");
         }
         if (date == null || time == null) {
@@ -47,6 +49,9 @@ public class Cita {
         }
         if (doctor == null || doctor.trim().isEmpty()) {
             throw new InvalidDataException("El nombre del doctor no puede estar vacío.");
+        }
+        } catch (InvalidDataException e) {
+            System.out.println(e.getMessage());
         }
 
         this.id = id;

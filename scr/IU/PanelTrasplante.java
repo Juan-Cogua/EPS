@@ -15,6 +15,7 @@ import loaders.PacienteLoader;
 import excepciones.TrasplanteInvalidoException;
 import excepciones.SangreIncompatibleException;
 import excepciones.FechaInvalidaException;
+import excepciones.InvariantViolationException;
 
 /**
 
@@ -190,14 +191,6 @@ import excepciones.FechaInvalidaException;
     throw new FechaInvalidaException("El formato de fecha debe ser dd/MM/yyyy");
     }
 
-    // Validación de compatibilidad sanguínea
-    String sangreDonante = extraerSangreDesdeLabel(donanteLabel);
-    String sangrePaciente = extraerSangreDesdeLabel(pacienteLabel);
-    if (!sangreCompatible(sangreDonante, sangrePaciente)) {
-    throw new SangreIncompatibleException(
-    "Sangre incompatible: donante " + sangreDonante + " no puede donar a receptor " + sangrePaciente);
-    }
-
     // Creación de nuevo trasplante
     String organo = (String) cmbOrganos.getSelectedItem();
     String estado = (String) cmbEstado.getSelectedItem();
@@ -228,16 +221,17 @@ import excepciones.FechaInvalidaException;
     return;
     }
 
-    // Comprobación final de compatibilidad
-    if (!sangreCompatible(donante.getBloodType(), paciente.getBloodType())) {
-    JOptionPane.showMessageDialog(this,
-    "Incompatibilidad sanguínea detectada.", "Error", JOptionPane.ERROR_MESSAGE);
-    return;
-    }
-
     Trasplante nuevo = new Trasplante(id, organo, donante, paciente, estado, historial, motivo, fecha);
-    listaTrasplantes.add(nuevo);
-    TrasplanteLoader.guardarTrasplantes(listaTrasplantes);
+    try {
+        // delega la validación al modelo (incluye compatibilidad sanguínea)
+        nuevo.checkInvariant();
+        listaTrasplantes.add(nuevo);
+        TrasplanteLoader.guardarTrasplantes(listaTrasplantes);
+    } catch (SangreIncompatibleException | InvariantViolationException ex) {
+        // mostrar mensaje y no crear el trasplante
+        JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
 
     limpiarCampos();
     actualizarLista();
@@ -375,42 +369,4 @@ import excepciones.FechaInvalidaException;
     receiverName, receiverId,
     historial, motivo);
     }
-
-  /**
-
-  * Extrae el grupo ABO del tipo de sangre (ignora el Rh +/-).
-  * @param bloodType tipo de sangre completo (por ejemplo, "AB+").
-  * @return grupo ABO ("A", "B", "AB", "O") o cadena vacía si no se reconoce.
-    */
-    private String aboGroup(String bloodType) {
-    if (bloodType == null) return "";
-    String s = bloodType.trim().toUpperCase();
-    if (s.startsWith("AB")) return "AB";
-    if (s.startsWith("A")) return "A";
-    if (s.startsWith("B")) return "B";
-    if (s.startsWith("O")) return "O";
-    return "";
-    }
-
-  /**
-
-  * Determina si la sangre de un donante es compatible con la de un receptor,
-  * según las reglas ABO básicas.
-  *
-  * @param donorBlood tipo de sangre del donante.
-  * @param receiverBlood tipo de sangre del receptor.
-  * @return true si son compatibles, false en caso contrario.
-    */
-    private boolean sangreCompatible(String donorBlood, String receiverBlood) {
-    String d = aboGroup(donorBlood);
-    String r = aboGroup(receiverBlood);
-    if (d.isEmpty() || r.isEmpty()) return false;
-    switch (d) {
-    case "O": return true;
-    case "A": return r.equals("A") || r.equals("AB");
-    case "B": return r.equals("B") || r.equals("AB");
-    case "AB": return r.equals("AB");
-    default: return false;
-    	}
-    	}
-    }
+  }

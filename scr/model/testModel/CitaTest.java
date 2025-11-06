@@ -33,7 +33,7 @@ class CitaTest {
      * Este método se ejecuta antes de cada prueba para garantizar un estado inicial conocido
      */
     @BeforeEach
-    void setUp() {
+    void setUp() throws InvalidDataException {
         pacientePrueba = new Paciente("Juan", (byte)30, "P001", "O+", "Calle", "300", 
             70.0, 1.7, new ArrayList<>(), new ArrayList<>());
         fechaInicio = new Date();

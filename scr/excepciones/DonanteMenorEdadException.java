@@ -1,13 +1,13 @@
 package excepciones;
 
 /**
- * Excepción lanzada para indicar que un      donante no cumple con la restricción mínima de edad
+ * Excepción lanzada para indicar que un donante no cumple con la restricción mínima de edad
  * para realizar una donación (es menor de 18 años).
  *
  * @author Juan Cogua
  * @version 2.0
  */
-public class DonanteMenorEdadException extends InvalidDataException {
+public class DonanteMenorEdadException extends Exception {
 
     /**
      * Construye una nueva excepción DonanteMenorEdadException con un mensaje de detalle null.

@@ -2,7 +2,8 @@ package model.testModel;
 
 import excepciones.InvalidDataException;
 import excepciones.SangreIncompatibleException;
-import excepciones.InvariantViolationException;
+import excepciones.DonanteMenorEdadException;
+import excepciones.InvariantViolationException; // <-- añadido
 import model.Donante;
 import model.Paciente;
 import model.Trasplante;
@@ -27,7 +28,7 @@ class TrasplanteTest {
     private Date fecha;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws InvalidDataException, DonanteMenorEdadException {
         fecha = new Date();
         donanteValido = new Donante("D", (byte)30, "D1", "O+", "Calle", "300", "Órganos", "Bueno", true, "Riñón");
         receptorValido = new Paciente("R", (byte)45, "R1", "A+", "Calle", "301", 80.0, 1.8, new ArrayList<>(), new ArrayList<>());
@@ -40,9 +41,8 @@ class TrasplanteTest {
      */
     @Test
     void testConstructorDonanteNull() {
-        assertThrows(InvalidDataException.class, () -> {
-            new Trasplante("T1", "Riñón", null, receptorValido, "Pendiente", "", "", fecha);
-        });
+        Trasplante t = new Trasplante("T1", "Riñón", null, receptorValido, "Pendiente", "", "", fecha);
+        assertThrows(InvariantViolationException.class, () -> t.checkInvariant());
     }
 
     /**
@@ -51,7 +51,7 @@ class TrasplanteTest {
      */
     @Test
     void testCheckInvariantValido() {
-        trasplantePrueba.checkInvariant();
+        assertDoesNotThrow(() -> trasplantePrueba.checkInvariant());
     }
 
     /**
@@ -59,9 +59,10 @@ class TrasplanteTest {
      * Verifica la incompatibilidad de tipo de sangre entre donante y receptor
      */
     @Test
-    void testSangreIncompatibleLanzaExcepcion() {
-        Donante dIncompatible = new Donante("D2", (byte)35, "D2", "O+", "Calle", "302", "Órganos", "Bueno", true, "Riñón");
-        Paciente receptorIncompatible = new Paciente("R2", (byte)50, "R2", "AB+", "Calle", "303", 75.0, 1.75, new ArrayList<>(), new ArrayList<>());
+    void testSangreIncompatibleLanzaExcepcion() throws InvalidDataException, DonanteMenorEdadException {
+        // donor A no puede donar a receptor O -> incompatibilidad
+        Donante dIncompatible = new Donante("D2", (byte)35, "D2", "A+", "Calle", "302", "Órganos", "Bueno", true, "Riñón");
+        Paciente receptorIncompatible = new Paciente("R2", (byte)50, "R2", "O+", "Calle", "303", 75.0, 1.75, new ArrayList<>(), new ArrayList<>());
         Trasplante t = new Trasplante("T3", "Riñón", dIncompatible, receptorIncompatible, "Pendiente", "", "", fecha);
         assertThrows(SangreIncompatibleException.class, () -> t.checkInvariant());
     }

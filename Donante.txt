@@ -10,3 +10,4 @@ Isabela Cruz;33;D019;A-;Avenida 25 #6-18;3112345678;Órganos;Buena;1;Corazón
 Ricardo Díaz;42;D020;AB-;Calle 7 #8-25;3189012345;Sangre;Excelente;1;Riñón
 Gabriela Vargas;31;D021;O+;Carrera 4 #12-40;3190123456;Órganos;Buena;1;Páncreas
 Sebastián Moreno;36;D022;A+;Avenida 8 #20-50;3134567890;Sangre;Excelente;1;Corazón
+Juan;18;1029645745;A+;;;Organo;Bueno;0;Corazón

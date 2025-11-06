@@ -12,7 +12,9 @@ import loaders.TrasplanteLoader;
 import model.Trasplante;
 import model.Donante;
 import model.Paciente;
-import excepciones.NotFoundException;
+
+import excepciones.InvalidDataException;
+import excepciones.DonanteMenorEdadException;
 
 /**
  * Clase de pruebas unitarias para TrasplanteLoader.
@@ -47,8 +49,8 @@ public class TrasplanteLoaderTest {
      * Crea un donante, un paciente y un trasplante de prueba.
      */
     @BeforeEach
-    public void setUp() {
-        // Crear datos de prueba
+    public void setUp() throws InvalidDataException, DonanteMenorEdadException {
+        // Crear datos de prueba (los constructores pueden lanzar excepciones comprobadas)
         // Donante(name, age, id, bloodType, address, phone, donationType, healthStatus, eligibility, organo)
         donante = new Donante(
             "Juan Donante",    // name
@@ -98,8 +100,9 @@ public class TrasplanteLoaderTest {
      */
     @Test
     public void testInvariantes() {
-        assertNotNull(TrasplanteLoader.RUTA, "La ruta del archivo no debe ser nula");
-        assertNotNull(TrasplanteLoader.FORMATO_FECHA, "El formato de fecha no debe ser nulo");
+        // Evitar acceder a campos internos privados del loader; comprobar comportamiento público
+        String serial = TrasplanteLoader.toArchivo(trasplantePrueba);
+        assertNotNull(serial, "La serialización no debe ser nula");
     }
 
     // ========== 2. MÉTODOS PARA VERIFICACIÓN ==========

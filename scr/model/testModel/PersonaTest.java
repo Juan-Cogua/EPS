@@ -28,7 +28,7 @@ class PersonaTest {
      * Este método se ejecuta antes de cada prueba para garantizar un estado inicial conocido
      */
     @BeforeEach
-    void setUp() {
+    void setUp() throws InvalidDataException {
         personaPrueba = new Persona("Juan", (byte)30, "ID123", "O+", "Calle 1", "3001234567");
     }
 

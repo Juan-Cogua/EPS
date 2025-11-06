@@ -11,3 +11,4 @@ Paciente: Javier Soto | Donante: Gabriela Vargas | Estado: Cancelada | ID: T010 
 Paciente: Gisela Rojas | Donante: Jorge Ramírez | Estado: Aprobado | ID: T012 | Fecha: 04/11/2025
 Paciente: Gisela Rojas | Donante: Valeria Ríos | Estado: Cancelada | ID: T013 | Fecha: 04/11/2025
 Paciente: Laura Jiménez | Donante: Sebastián Moreno | Estado: Aprobado | ID: T014 | Fecha: 04/11/2025
+Paciente: Pedro López | Donante: Lucía Gómez | Estado: Aprobado | ID: p000 | Fecha: 06/11/2025

@@ -2,6 +2,7 @@ package model;
 
 import excepciones.InvalidDataException;
 import excepciones.InvariantViolationException;
+import excepciones.SangreIncompatibleException;
 import java.util.Date;
 
 /**
@@ -15,12 +16,12 @@ import java.util.Date;
  */
 public class Trasplante {
 
-    private String id; // Nuevo campo: ID único del trasplante
+    private String id;
     private String organType;
     private Donante donor;
     private Paciente receiver;
-    private String estado; // Nuevo campo: Aprobado, Pendiente, Rechazado
-    private String historialClinico; 
+    private String estado;
+    private String historialClinico;
     private String rejectionReason;
     private Date fecha;
 
@@ -38,23 +39,13 @@ public class Trasplante {
      */
     public Trasplante(String id, String organType, Donante donor, Paciente receiver,
                         String estado, String historialClinico, String rejectionReason, Date fecha) {
-
-        if (id == null || id.trim().isEmpty())
-            throw new InvalidDataException("El ID del trasplante no puede estar vacío.");
-        if (organType == null || organType.trim().isEmpty())
-            throw new InvalidDataException("El tipo de órgano no puede estar vacío.");
-        if (donor == null)
-            throw new InvalidDataException("El donante no puede ser null.");
-        if (receiver == null)
-            throw new InvalidDataException("El receptor no puede ser null.");
-
         this.id = id;
         this.organType = organType;
         this.donor = donor;
         this.receiver = receiver;
         this.estado = estado;
-        this.historialClinico = historialClinico != null ? historialClinico : "";
-        this.rejectionReason = rejectionReason != null ? rejectionReason : "";
+        this.historialClinico = historialClinico;
+        this.rejectionReason = rejectionReason;
         this.fecha = fecha;
     }
 
@@ -83,10 +74,36 @@ public class Trasplante {
      */
     // Nota: la presentación (resumen legible) se gestiona en la capa UI (PanelTrasplante).
 
+    // Helper interno: extrae grupo ABO básico desde un tipo de sangre como "O+", "A-", "AB+"...
+    private static String aboGroup(String bloodType) {
+        if (bloodType == null) return "";
+        String s = bloodType.trim().toUpperCase();
+        if (s.startsWith("O")) return "O";
+        if (s.startsWith("AB")) return "AB";
+        if (s.startsWith("A")) return "A";
+        if (s.startsWith("B")) return "B";
+        return "";
+    }
+
+    // Helper interno: lógica básica de compatibilidad ABO (donante -> receptor)
+    private static boolean sangreCompatible(String donorBlood, String receiverBlood) {
+        String d = aboGroup(donorBlood);
+        String r = aboGroup(receiverBlood);
+        if (d.isEmpty() || r.isEmpty()) return false;
+        switch (d) {
+            case "O": return true; // donante O universal
+            case "A": return r.equals("A") || r.equals("AB");
+            case "B": return r.equals("B") || r.equals("AB");
+            case "AB": return r.equals("AB");
+            default: return false;
+        }
+    }
+
     /**
-     * Verifica invariantes del trasplante.
+     * Verifica invariantes del trasplante y la compatibilidad sanguínea.
+     * Lanza SangreIncompatibleException si hay incompatibilidad ABO.
      */
-    public void checkInvariant() {
+    public void checkInvariant() throws SangreIncompatibleException {
         if (id == null || id.trim().isEmpty())
             throw new InvariantViolationException("ID del trasplante no puede ser nulo o vacío.");
         if (organType == null || organType.trim().isEmpty())
@@ -94,5 +111,10 @@ public class Trasplante {
         if (donor == null) throw new InvariantViolationException("Donante no puede ser null.");
         if (receiver == null) throw new InvariantViolationException("Receptor no puede ser null.");
         if (fecha == null) throw new InvariantViolationException("La fecha del trasplante no puede ser null.");
+
+        if (!sangreCompatible(donor.getBloodType(), receiver.getBloodType())) {
+            throw new SangreIncompatibleException(
+                "Sangre incompatible: donante " + donor.getBloodType() + " -> receptor " + receiver.getBloodType());
+        }
     }
 }

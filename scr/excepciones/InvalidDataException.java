@@ -1,37 +1,41 @@
 package excepciones;
 
 /**
- * Excepción lanzada para indicar que un donante no cumple con la restricción mínima de edad
- * requerida para realizar una donación (es menor de 18 años).
+ * Excepción general del dominio que indica que se recibió o se produjo
+ * un dato inválido según las reglas de negocio o de validación.
+ *
+ * <pSe utiliza para señalar errores de validación que deben ser manejados
+ * por el código llamante (por ejemplo, en UI o loaders).
  *
  * @author Juan Cogua
  * @version 2.0
+ * 
  */
-public class DonanteMenorEdadException extends InvalidDataException {
+public class InvalidDataException extends Exception {
 
     /**
-     * Construye una nueva excepción DonanteMenorEdadException con un mensaje de detalle null.
+     * Construye una nueva InvalidDataException con mensaje nulo.
      */
-    public DonanteMenorEdadException() {
+    public InvalidDataException() {
         super();
     }
 
     /**
-     * Construye una nueva excepción DonanteMenorEdadException con el mensaje de detalle especificado.
+     * Construye una nueva InvalidDataException con el mensaje de detalle especificado.
      *
-     * @param message el mensaje de detalle (guardado para su posterior recuperación).
+     * @param message el mensaje de detalle que describe la causa del error
      */
-    public DonanteMenorEdadException(String message) {
+    public InvalidDataException(String message) {
         super(message);
     }
 
     /**
-     * Construye una nueva excepción DonanteMenorEdadException con el mensaje de detalle y la causa especificados.
+     * Construye una nueva InvalidDataException con mensaje y causa especificados.
      *
-     * @param message el mensaje de detalle (guardado para su posterior recuperación).
-     * @param cause la causa de la excepción (guardada para su posterior recuperación).
+     * @param message el mensaje de detalle
+     * @param cause la causa original de la excepción
      */
-    public DonanteMenorEdadException(String message, Throwable cause) {
+    public InvalidDataException(String message, Throwable cause) {
         super(message, cause);
     }
 }
