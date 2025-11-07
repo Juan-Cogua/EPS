@@ -3,6 +3,9 @@ package loaders.test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import excepciones.InvalidDataException;
+
 import static org.junit.jupiter.api.Assertions.*;
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -49,7 +52,7 @@ public class CitaLoaderTest {
      * Crea un paciente y una cita de prueba.
      */
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws InvalidDataException{
         // Crear paciente de prueba y guardarlo
         paciente = new Paciente(
             "Pedro Martínez",  // name

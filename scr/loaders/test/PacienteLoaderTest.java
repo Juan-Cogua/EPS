@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import loaders.PacienteLoader;
 import model.Paciente;
+import excepciones.InvalidDataException;
 import excepciones.NotFoundException;
 
 /**
@@ -38,7 +39,7 @@ public class PacienteLoaderTest {
      * Crea un paciente de prueba con datos válidos incluyendo alergias.
      */
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws InvalidDataException {
         // Crear datos de prueba
         List<String> alergias = new ArrayList<>();
         alergias.add("Maní");
@@ -126,7 +127,7 @@ public class PacienteLoaderTest {
      * Verifica que pacientes sin alergias se serialicen correctamente.
      */
     @Test
-    public void testSerializacionSinAlergias() {
+    public void testSerializacionSinAlergias()throws InvalidDataException {
         Paciente sinAlergias = new Paciente(
             "Test", (byte)25, "P002", "O+", "Calle", "123",
             70.0, 1.75, new ArrayList<>(), new ArrayList<>()
@@ -224,11 +225,11 @@ public class PacienteLoaderTest {
      * y cargarlos correctamente.
      */
     @Test
-    public void testGuardarMultiplesPacientes() {
+    public void testGuardarMultiplesPacientes() throws InvalidDataException {
         List<Paciente> pacientes = new ArrayList<>();
         pacientes.add(pacientePrueba);
         
-        Paciente paciente2 = new Paciente(
+        Paciente paciente2 = new Paciente (
             "Carlos López", (byte)40, "P002", "A+", "Calle 2", "3001234567",
             80.0, 1.80, new ArrayList<>(), new ArrayList<>()
         );
