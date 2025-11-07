@@ -5,6 +5,7 @@ package excepciones;
  * o que no cumple con el formato o las restricciones lógicas esperadas.
  *
  * @author Juan Cogua
+ * @author andres
  * @version 2.0
  */
 public class FechaInvalidaException extends Exception {
