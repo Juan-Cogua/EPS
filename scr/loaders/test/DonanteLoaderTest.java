@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import loaders.DonanteLoader;
 import model.Donante;
+import excepciones.DonanteMenorEdadException;
 import excepciones.InvalidDataException;
 import excepciones.NotFoundException;
 
@@ -39,7 +40,7 @@ public class DonanteLoaderTest {
      * Crea un donante de prueba con datos válidos.
      */
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws InvalidDataException, DonanteMenorEdadException {
         // Crear datos de prueba
         donantePrueba = new Donante(
             "Laura Fernández",  // name
@@ -108,7 +109,7 @@ public class DonanteLoaderTest {
      * como 1 (elegible) o 0 (no elegible).
      */
     @Test
-    public void testFormatoElegibilidad() {
+    public void testFormatoElegibilidad() throws InvalidDataException, DonanteMenorEdadException {
         // Donante elegible
         String lineaElegible = donantePrueba.toArchivo();
         assertTrue(lineaElegible.contains(";1;"), "Donante elegible debe contener '1'");
@@ -155,7 +156,7 @@ public class DonanteLoaderTest {
      * Verifica que se pueda agregar un nuevo donante correctamente.
      */
     @Test
-    public void testAgregarDonante() {
+    public void testAgregarDonante() throws InvalidDataException {
         DonanteLoader.agregarDonante(donantePrueba);
         ArrayList<Donante> donantes = DonanteLoader.cargarDonantes();
         
@@ -169,7 +170,7 @@ public class DonanteLoaderTest {
      * Verifica que un donante se pueda eliminar correctamente por ID.
      */
     @Test
-    public void testEliminarDonante() {
+    public void testEliminarDonante() throws InvalidDataException, NotFoundException {
         DonanteLoader.agregarDonante(donantePrueba);
         
         boolean eliminado = DonanteLoader.eliminarDonante("D001");
@@ -186,7 +187,7 @@ public class DonanteLoaderTest {
      * Verifica que se pueda buscar un donante por ID correctamente.
      */
     @Test
-    public void testBuscarDonantePorId() {
+    public void testBuscarDonantePorId() throws InvalidDataException, NotFoundException {
         DonanteLoader.agregarDonante(donantePrueba);
         
         Donante encontrado = DonanteLoader.buscarDonantePorId("D001");
@@ -201,7 +202,7 @@ public class DonanteLoaderTest {
      * lance una InvalidDataException.
      */
     @Test
-    public void testAgregarDonanteDuplicado() {
+    public void testAgregarDonanteDuplicado() throws InvalidDataException {
         DonanteLoader.agregarDonante(donantePrueba);
         
         assertThrows(InvalidDataException.class, () -> {

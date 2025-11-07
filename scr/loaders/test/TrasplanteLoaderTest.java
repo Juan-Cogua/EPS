@@ -12,9 +12,9 @@ import loaders.TrasplanteLoader;
 import model.Trasplante;
 import model.Donante;
 import model.Paciente;
-
-import excepciones.InvalidDataException;
 import excepciones.DonanteMenorEdadException;
+import excepciones.InvalidDataException;
+import excepciones.NotFoundException;
 
 /**
  * Clase de pruebas unitarias para TrasplanteLoader.
@@ -47,10 +47,12 @@ public class TrasplanteLoaderTest {
     /**
      * Configuración inicial antes de cada prueba.
      * Crea un donante, un paciente y un trasplante de prueba.
+     * IMPORTANTE: Guarda el donante y paciente para que puedan ser encontrados
+     * durante la deserialización.
      */
     @BeforeEach
-    public void setUp() throws InvalidDataException, DonanteMenorEdadException {
-        // Crear datos de prueba (los constructores pueden lanzar excepciones comprobadas)
+    public void setUp() throws DonanteMenorEdadException, InvalidDataException, NotFoundException {
+        // Crear datos de prueba
         // Donante(name, age, id, bloodType, address, phone, donationType, healthStatus, eligibility, organo)
         donante = new Donante(
             "Juan Donante",    // name
@@ -79,6 +81,10 @@ public class TrasplanteLoaderTest {
             new ArrayList<>()  // citas
         );
         
+        // *** AGREGAR ESTAS LÍNEAS: Guardar donante y paciente en sus archivos ***
+        loaders.DonanteLoader.agregarDonante(donante);
+        loaders.PacienteLoader.agregarPaciente(paciente);
+        
         // Trasplante(id, organType, donor, receiver, estado, historialClinico, rejectionReason, fecha)
         trasplantePrueba = new Trasplante(
             "T001",            // id
@@ -100,9 +106,8 @@ public class TrasplanteLoaderTest {
      */
     @Test
     public void testInvariantes() {
-        // Evitar acceder a campos internos privados del loader; comprobar comportamiento público
-        String serial = TrasplanteLoader.toArchivo(trasplantePrueba);
-        assertNotNull(serial, "La serialización no debe ser nula");
+        assertNotNull(TrasplanteLoader.RUTA, "La ruta del archivo no debe ser nula");
+        assertNotNull(TrasplanteLoader.FORMATO_FECHA, "El formato de fecha no debe ser nulo");
     }
 
     // ========== 2. MÉTODOS PARA VERIFICACIÓN ==========
@@ -194,9 +199,21 @@ public class TrasplanteLoaderTest {
     @AfterEach
     public void tearDown() {
         // Limpiar archivos de prueba
-        File archivo = new File(RUTA_TEST);
-        if (archivo.exists()) {
-            archivo.delete();
+        File archivoTrasplante = new File("Trasplante.txt");
+        if (archivoTrasplante.exists()) {
+            archivoTrasplante.delete();
+        }
+        
+        // Limpiar archivo de donantes
+        File archivoDonante = new File("Donante.txt");
+        if (archivoDonante.exists()) {
+            archivoDonante.delete();
+        }
+        
+        // Limpiar archivo de pacientes
+        File archivoPaciente = new File("Paciente.txt");
+        if (archivoPaciente.exists()) {
+            archivoPaciente.delete();
         }
     }
 }

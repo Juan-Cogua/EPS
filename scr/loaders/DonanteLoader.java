@@ -5,7 +5,6 @@ import java.util.*;
 import model.Donante;
 import excepciones.InvalidDataException;
 import excepciones.NotFoundException;
-import excepciones.DonanteMenorEdadException; 
 
 /**
  * Clase encargada de manejar la persistencia de los datos de donantes desde y hacia el archivo Donante.txt.
@@ -22,7 +21,7 @@ public class DonanteLoader {
         File archivo = new File(RUTA);
 
         if (!archivo.exists()) {
-            System.out.println("No se encontró el archivo Donante.txt. Se creará al guardar.");
+            System.out.println("⚠ No se encontró el archivo Donante.txt. Se creará al guardar.");
             return lista;
         }
 
@@ -35,23 +34,20 @@ public class DonanteLoader {
                 if (datos.length >= 10) { 
                     try {
                         Donante d = new Donante(
-                            datos[0].trim(),
-                            Byte.parseByte(datos[1].trim()),
-                            datos[2].trim(),
-                            datos[3].trim(),
-                            datos[4].trim(),
-                            datos[5].trim(),
-                            datos[6].trim(),
-                            datos[7].trim(),
-                            "1".equals(datos[8].trim()),
-                            datos[9].trim()
+                            datos[0], // Nombre
+                            Byte.parseByte(datos[1]), // Edad
+                            datos[2], // ID
+                            datos[3], // Tipo de sangre
+                            datos[4], // Dirección
+                            datos[5], // Teléfono
+                            datos[6], // Tipo de donación
+                            datos[7], // Estado de salud
+                            datos[8].equals("1"), // Elegibilidad
+                            datos[9] // Órgano
                         );
                         lista.add(d);
-                    } catch (InvalidDataException | DonanteMenorEdadException ex) {
-                        // Registrar línea inválida y continuar con siguiente (no crear objeto inválido)
-                        System.err.println("Línea de donante inválida (se omitirá): " + ex.getMessage() + " -> " + linea);
-                    } catch (Exception ex) {
-                        System.err.println("Error inesperado al parsear donante: " + ex.getMessage() + " -> " + linea);
+                    } catch (Exception e) {
+                        System.err.println("Error al procesar línea de donante: " + linea + ". Error: " + e.getMessage());
                     }
                 }
             }

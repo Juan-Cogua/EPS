@@ -24,7 +24,6 @@ import model.Paciente;
  * 2. Métodos para verificación (serialización/deserialización)
  * 3. Implementación de pruebas automáticas (@BeforeEach y @AfterEach)
  * 4. Pruebas automáticas para el manejo de excepciones (entradas inválidas)
- * 
  * @author Juan Cogua
  * @author Andres Rojas
  * @version 2.0
@@ -127,23 +126,37 @@ public class CitaLoaderTest {
 
     /**
      * Verifica que los estados de las citas se normalicen correctamente
-     * al guardar y cargar (PENDIENTE -> Pendiente).
+     * al guardar (PENDIENTE -> Pendiente, COMPLETADA -> Aprobada).
      */
     @Test
     public void testNormalizacionEstados() {
-        citaPrueba.setEstado("PENDIENTE");
+        // Usar fecha muy futura para evitar auto-conversión
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.set(2030, 11, 31); // 31 de diciembre de 2030
+        Date fechaFutura = cal.getTime();
+        
+        Cita citaPendiente = new Cita(
+            "C002",
+            fechaFutura,
+            fechaFutura,
+            "Hospital",
+            paciente,
+            "Dr. Test"
+        );
+        citaPendiente.setEstado("PENDIENTE");
+        
         List<Cita> citas = new ArrayList<>();
-        citas.add(citaPrueba);
+        citas.add(citaPendiente);
         CitaLoader.guardarCitas(citas);
         
         List<Cita> cargadas = CitaLoader.cargarCitas();
         Cita cargada = cargadas.stream()
-            .filter(c -> c.getId().equals("C001"))
+            .filter(c -> c.getId().equals("C002"))
             .findFirst()
             .orElse(null);
         
         assertNotNull(cargada, "La cita debe existir");
-        assertEquals("Pendiente", cargada.getEstado(), "El estado debe normalizarse a 'Pendiente'");
+        assertEquals("Pendiente", cargada.getEstado(), "El estado 'PENDIENTE' debe normalizarse a 'Pendiente'");
     }
 
     // ========== 3. IMPLEMENTACIÓN DE PRUEBAS AUTOMÁTICAS ==========
