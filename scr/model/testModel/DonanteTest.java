@@ -43,7 +43,6 @@ class DonanteTest {
         assertTrue(donantePrueba.esMayorDeEdad());
         assertTrue(donantePrueba.isEligibility());
     }
-    
     /**
      * Punto 1: Invariantes de clase y Punto 4: Manejo de excepciones
      * Verifica que se lanza excepción cuando el donante es menor de edad

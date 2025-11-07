@@ -8,6 +8,8 @@ import java.util.List;
 /**
  * Clase que representa a un donante en el sistema.
  * Contiene información personal, estado de salud y elegibilidad.
+ * @author andres
+ * @author Juan Cogua
  */
 public class Donante  extends Persona {
     private String donationType;

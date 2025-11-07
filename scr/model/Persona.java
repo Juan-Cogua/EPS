@@ -7,7 +7,8 @@ import excepciones.InvariantViolationException;
  * Clase base para personas en el sistema EPS.
  *
  * @author Juan Cogua
- * @version 1.0
+ * @author andres
+ * @version 2.0
  */
 public class Persona {
     private String name;

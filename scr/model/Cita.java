@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Clase que representa una cita médica.
  * Contiene información de ID, fecha, hora, lugar, paciente y doctor.
- * @version 1.3 (Modificado: ID de Cita añadido)
+ * @version 2.0 (Modificado: ID de Cita añadido)
  * @author Juan Cogua
  * @author Andres Rojas
  */

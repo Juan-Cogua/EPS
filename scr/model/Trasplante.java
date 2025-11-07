@@ -10,9 +10,9 @@ import java.util.Date;
  * Contiene información sobre el órgano trasplantado, el donante, el receptor,
  * fecha del procedimiento, estado y posibles rechazos asociados.
  *
- * @author Juan
+ * @author Juan Cogua
  * @author Andres
- * @version 1.2 (Añadido campo 'estado' y constructor de 7 argumentos)
+ * @version 2.0 (Añadido campo 'estado' y constructor de 7 argumentos)
  */
 public class Trasplante {
 

@@ -4,14 +4,14 @@ import excepciones.InvalidDataException;
 import excepciones.InvariantViolationException;
 import java.util.ArrayList;
 import java.util.List;
-import model.Cita; // <-- añadido
+import model.Cita;
 
 /**
  * Clase que representa un paciente, heredando de Persona.
  * Contiene información médica y citas relacionadas.
  * @author Juan
  * @author Andres
- * @version 1.1 
+ * @version 2.0
  */
 
 public class Paciente extends Persona {
