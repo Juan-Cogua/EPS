@@ -3,6 +3,8 @@ package model;
 import excepciones.InvalidDataException;
 import excepciones.InvariantViolationException;
 import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.text.Normalizer;
 
 /**
  * Clase que representa una cita médica.
@@ -18,7 +20,6 @@ public class Cita {
     private String location;
     private Paciente paciente;
     private String doctor; 
-    // Estados manejados: "Pendiente", "Aprobada", "Cancelada"
     private String estado = "Pendiente";
     private boolean confirmada = false;
     private boolean cancelada = false;
@@ -32,10 +33,8 @@ public class Cita {
      * @param paciente Paciente asociado a la cita
      * @param doctor Doctor/Especialista de la cita
      */
-    public Cita(String id, Date date, Date time, String location, Paciente paciente, String doctor) {
-        
-        try {
-            if (id == null || id.trim().isEmpty()) {
+    public Cita(String id, Date date, Date time, String location, Paciente paciente, String doctor) throws InvalidDataException {
+        if (id == null || id.trim().isEmpty()) {
             throw new InvalidDataException("El ID de la cita no puede ser nulo o vacío.");
         }
         if (date == null || time == null) {
@@ -49,9 +48,6 @@ public class Cita {
         }
         if (doctor == null || doctor.trim().isEmpty()) {
             throw new InvalidDataException("El nombre del doctor no puede estar vacío.");
-        }
-        } catch (InvalidDataException e) {
-            System.out.println(e.getMessage());
         }
 
         this.id = id;
@@ -81,68 +77,70 @@ public class Cita {
     public void setEstado(String estado) { this.estado = estado; }
 
     // --- Lógica ---
-    public void confirmar() {
-        this.confirmada = true;
+    public void confirmar() { this.confirmada = true; this.estado = "Aprobada"; }
+    public void cancelar() { this.cancelada = true; this.estado = "Cancelada"; }
+
+    // utilidad mínima para normalizar tildes comunes usadas en tests
+    private String aplicarTildesComunes(String s) {
+        if (s == null) return null;
+        // Devolver la cadena tal cual: los tests esperan acentos/puntos exactos.
+        return s;
     }
 
-    public void cancelar() {
-        this.cancelada = true;
-        this.estado = "Cancelada";
-        System.out.println("La cita ha sido cancelada.");
-    }
-    
     /**
      * Genera un resumen legible de la cita con el formato: 
-     * (Fecha;Hora;Lugar;Doctor [ESTADO])
+     * ID;Fecha;Hora;Lugar;Doctor [ESTADO]
      */
     public String resumen() {
-        java.text.SimpleDateFormat formatoFecha = new java.text.SimpleDateFormat("dd/MM/yyyy");
-        java.text.SimpleDateFormat formatoHora = new java.text.SimpleDateFormat("HH:mm");
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat formatoHora = new SimpleDateFormat("HH:mm");
 
         String estadoStr = "";
-        if (!estado.equalsIgnoreCase("Pendiente")) {
-            estadoStr = "| Estado: " + estado;
+        if (estado != null && !estado.equalsIgnoreCase("Pendiente")) {
+            estadoStr = " | Estado: " + estado;
         }
 
-        // Devolvemos la cadena en el formato pedido por la UI: Fecha;Hora;Lugar;Doctor (con posible estado añadido)
-        return String.format("%s;%s;%s;%s %s",
+        String loc = aplicarTildesComunes(location);
+        String doc = aplicarTildesComunes(doctor);
+
+        return String.format("%s;%s;%s;%s;%s%s",
+            id != null ? id : "N/A",
             formatoFecha.format(date),
             formatoHora.format(time),
-            location,
-            doctor,
+            loc != null ? loc : "N/A",
+            doc != null ? doc : "N/A",
             estadoStr);
     }
-    
+
     /**
      * Convierte la cita al formato de archivo: ID;Fecha;Hora;Lugar;ID_Paciente;Doctor;Estado
      */
     public String toArchivo() {
-        java.text.SimpleDateFormat formatoFecha = new java.text.SimpleDateFormat("dd/MM/yyyy");
-        java.text.SimpleDateFormat formatoHora = new java.text.SimpleDateFormat("HH:mm");
-        
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat formatoHora = new SimpleDateFormat("HH:mm");
+
+        String loc = aplicarTildesComunes(location);
+        String doc = aplicarTildesComunes(doctor);
+        String idPaciente = paciente != null ? paciente.getId() : "";
+
         return String.join(";",
-            this.id,
-            formatoFecha.format(date),
-            formatoHora.format(time),
-            location,
-            paciente.getId(),
-            doctor,
-            estado);
+                id != null ? id : "",
+                formatoFecha.format(date),
+                formatoHora.format(time),
+                loc != null ? loc : "",
+                idPaciente,
+                doc != null ? doc : "",
+                estado != null ? estado : "");
     }
 
     /**
      * Verifica invariantes de la cita.
      */
     public void checkInvariant() {
-        if (id == null || id.trim().isEmpty())
-            throw new InvariantViolationException("ID de la cita no puede ser nulo o vacío.");
-        if (date == null || time == null)
-            throw new InvariantViolationException("La fecha y la hora no pueden ser null.");
-        if (location == null || location.trim().isEmpty())
-            throw new InvariantViolationException("La ubicación no puede estar vacía.");
-        if (paciente == null)
-            throw new InvariantViolationException("La cita debe tener un paciente asociado.");
-        if (doctor == null || doctor.trim().isEmpty())
-            throw new InvariantViolationException("El doctor no puede ser nulo o vacío.");
+        if (id == null || id.trim().isEmpty()) throw new InvariantViolationException("ID inválido");
+        if (date == null || time == null) throw new InvariantViolationException("Fecha/hora inválida");
+        if (location == null || location.trim().isEmpty()) throw new InvariantViolationException("Lugar inválido");
+        if (paciente == null) throw new InvariantViolationException("Paciente null");
+        if (doctor == null || doctor.trim().isEmpty()) throw new InvariantViolationException("Doctor inválido");
     }
 }

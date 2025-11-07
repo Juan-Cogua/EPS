@@ -271,4 +271,16 @@ public class PanelCita extends JPanel {
         txtIdPaciente.setText("");
         txtDoctor.setText("");
     }
+
+    // Métodos auxiliares usados por los tests: delegan en Cita para asegurar que
+    // ubicación aparece en el resumen / formato de archivo.
+    public String resumenCita(model.Cita c) {
+        if (c == null) return "";
+        return c.resumen();
+    }
+
+    public String toArchivoCita(model.Cita c) {
+        if (c == null) return "";
+        return c.toArchivo();
+    }
 }

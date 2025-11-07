@@ -70,7 +70,12 @@ public class Persona {
      * Establece la edad de la persona.
      * @param age La nueva edad.
      */
-    public void setAge(byte age) { this.age = age; }
+    public void setAge(byte age) throws InvalidDataException {
+        if (age <= 0 || age > 120) {
+            throw new InvalidDataException("Edad inválida: " + age);
+        }
+        this.age = age;
+    }
 
     /**
      * Obtiene la identificación de la persona.
@@ -94,7 +99,22 @@ public class Persona {
      * Establece el tipo de sangre de la persona.
      * @param bloodType El nuevo tipo de sangre.
      */
-    public void setBloodType(String bloodType) { this.bloodType = bloodType; }
+    public void setBloodType(String bloodType) throws InvalidDataException {
+        if (bloodType == null) {
+            throw new InvalidDataException("Tipo de sangre nulo");
+        }
+        String bt = bloodType.trim().toUpperCase();
+        switch (bt) {
+            case "A+": case "A-":
+            case "B+": case "B-":
+            case "AB+": case "AB-":
+            case "O+": case "O-":
+                this.bloodType = bt;
+                return;
+            default:
+                throw new InvalidDataException("Tipo de sangre inválido: " + bloodType);
+        }
+    }
 
     /**
      * Obtiene la dirección de la persona.

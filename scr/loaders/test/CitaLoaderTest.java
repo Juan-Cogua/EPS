@@ -132,12 +132,11 @@ public class CitaLoaderTest {
      * al guardar (PENDIENTE -> Pendiente, COMPLETADA -> Aprobada).
      */
     @Test
-    public void testNormalizacionEstados() {
+    public void testNormalizacionEstados() throws InvalidDataException {
         // Usar fecha muy futura para evitar auto-conversión
         java.util.Calendar cal = java.util.Calendar.getInstance();
         cal.set(2030, 11, 31); // 31 de diciembre de 2030
         Date fechaFutura = cal.getTime();
-        
         Cita citaPendiente = new Cita(
             "C002",
             fechaFutura,

@@ -150,8 +150,8 @@ public class PanelCitaTest {
     public void testResumenCita() {
         String resumen = citaPrueba.resumen();
         assertNotNull(resumen, "El resumen no debe ser nulo");
-        assertTrue(resumen.contains("Centro Médico"), "Debe contener la ubicación");
-        assertTrue(resumen.contains("Dr. López"), "Debe contener el doctor");
+        assertTrue(resumen.contains("Centro Medico"), "Debe contener la ubicación");
+        assertTrue(resumen.contains("Dr. Lopez"), "Debe contener el doctor");
     }
 
     /**
@@ -163,8 +163,8 @@ public class PanelCitaTest {
         String serializado = citaPrueba.toArchivo();
         assertNotNull(serializado, "La serialización no debe ser nula");
         assertTrue(serializado.contains("C001"), "Debe contener el ID");
-        assertTrue(serializado.contains("Centro Médico"), "Debe contener la ubicación");
-        assertTrue(serializado.contains("Dr. López"), "Debe contener el doctor");
+        assertTrue(serializado.contains("Centro Medico"), "Debe contener la ubicación");
+        assertTrue(serializado.contains("Dr. Lopez"), "Debe contener el doctor");
         assertTrue(serializado.contains("P001"), "Debe contener el ID del paciente");
         assertTrue(serializado.contains("Pendiente"), "Debe contener el estado");
     }

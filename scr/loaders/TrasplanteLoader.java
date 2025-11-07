@@ -12,9 +12,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Clase encargada de la persistencia de trasplantes.
@@ -34,12 +37,13 @@ public class TrasplanteLoader {
         try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                if (linea.trim().isEmpty()) continue;
+                linea = linea.trim();
+                if (linea.isEmpty()) continue;
                 Trasplante t = fromArchivo(linea);
                 if (t != null) lista.add(t);
             }
         } catch (IOException e) {
-            System.err.println("Error al cargar trasplantes: " + e.getMessage());
+            System.err.println("Error leyendo archivo de trasplantes: " + e.getMessage());
         }
 
         return lista;
@@ -49,80 +53,117 @@ public class TrasplanteLoader {
         File archivo = new File(RUTA);
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(archivo))) {
             for (Trasplante t : lista) {
-                // serializamos aquí en el loader (responsabilidad de persistencia)
-                bw.write(toArchivo(t));
-                bw.newLine();
+                String linea = toArchivo(t);
+                if (linea != null && !linea.isEmpty()) {
+                    bw.write(linea);
+                    bw.newLine();
+                }
             }
         } catch (IOException e) {
-            System.err.println("Error al guardar trasplantes: " + e.getMessage());
+            System.err.println("Error escribiendo archivo de trasplantes: " + e.getMessage());
         }
     }
 
     /**
      * Serializa un Trasplante a la línea de archivo.
-     * Formato: Paciente: {NombrePaciente} | Donante: {NombreDonante} | Estado: {Estado} | ID: {ID} | Fecha: {dd/MM/yyyy}
+     * Formato: Órgano: {organType} | Paciente: {NombrePaciente} | Donante: {NombreDonante} | Estado: {Estado} | ID: {ID} | Fecha: {dd/MM/yyyy}
      */
     public static String toArchivo(Trasplante t) {
         if (t == null) return "";
+        String organo = t.getOrganType() != null ? t.getOrganType() : "";
         String paciente = t.getReceiver() != null ? t.getReceiver().getName() : "";
         String donante = t.getDonor() != null ? t.getDonor().getName() : "";
         String estado = t.getEstado() != null ? t.getEstado() : "";
         String id = t.getId() != null ? t.getId() : "";
         String fechaStr = t.getFecha() != null ? FORMATO_FECHA.format(t.getFecha()) : "";
 
-        return String.format("Paciente: %s | Donante: %s | Estado: %s | ID: %s | Fecha: %s",
-                paciente, donante, estado, id, fechaStr);
+        return String.format("Órgano: %s | Paciente: %s | Donante: %s | Estado: %s | ID: %s | Fecha: %s",
+                organo, paciente, donante, estado, id, fechaStr);
     }
 
     /**
-     * Crea un objeto Trasplante desde una línea del archivo,
-     * buscando Donante/Paciente por nombre (si no se encuentra lanza NotFoundException).
-     *
-     * Formato esperado (según toArchivo de Trasplante):
-     * Paciente: {NombrePaciente} | Donante: {NombreDonante} | Estado: {Estado} | ID: {ID} | Fecha: {dd/MM/yyyy}
+     * Crea un objeto Trasplante desde una línea del archivo.
+     * Maneja líneas con o sin campo "Órgano:" para compatibilidad.
+     * Requiere al menos: Paciente, Donante, ID y Fecha -> devuelve null si faltan.
      */
     public static Trasplante fromArchivo(String linea) {
         if (linea == null || linea.trim().isEmpty()) return null;
         try {
+            // separar por '|' y mapear clave:valor normalizando la clave (sin tildes, en minúsculas)
             String[] partes = linea.split("\\|");
-            if (partes.length < 5) return null;
-
-            String pacientePart = partes[0].split(":", 2)[1].trim();
-            String donantePart = partes[1].split(":", 2)[1].trim();
-            String estado = partes[2].split(":", 2)[1].trim();
-            String id = partes[3].split(":", 2)[1].trim();
-            String fechaStr = partes[4].split(":", 2)[1].trim();
-
-            Date fecha = FORMATO_FECHA.parse(fechaStr);
-
-            // Buscar por nombre entre los donantes/pacientes cargados
-            Donante donor = null;
-            for (Donante d : loaders.DonanteLoader.cargarDonantes()) {
-                if (d.getName().equalsIgnoreCase(donantePart) || d.getId().equalsIgnoreCase(donantePart)) {
-                    donor = d;
-                    break;
-                }
+            Map<String,String> valores = new HashMap<>();
+            for (String p : partes) {
+                String[] kv = p.split(":", 2);
+                if (kv.length != 2) continue;
+                String clave = Normalizer.normalize(kv[0], Normalizer.Form.NFD)
+                        .replaceAll("\\p{M}", "")
+                        .toLowerCase()
+                        .trim();
+                String valor = kv[1].trim();
+                valores.put(clave, valor);
             }
-            if (donor == null) throw new NotFoundException("Donante '" + donantePart + "' no encontrado.");
+
+            // Validar campos mínimos
+            if (!valores.containsKey("paciente") || !valores.containsKey("donante")
+                    || !valores.containsKey("id") || !valores.containsKey("fecha")) {
+                return null;
+            }
+
+            String organo = valores.getOrDefault("organo", "");
+            String pacientePart = valores.get("paciente");
+            String donantePart = valores.get("donante");
+            String estado = valores.getOrDefault("estado", "");
+            String id = valores.get("id");
+            String fechaStr = valores.get("fecha");
+
+            Date fecha = null;
+            if (fechaStr != null && !fechaStr.isEmpty()) {
+                fecha = FORMATO_FECHA.parse(fechaStr);
+            }
+
+            // Normalizador para comparar nombres/ids sin tildes/minúsculas
+            java.util.function.Function<String,String> normalize = s -> {
+                if (s == null) return "";
+                return Normalizer.normalize(s, Normalizer.Form.NFD)
+                        .replaceAll("\\p{M}", "")
+                        .toLowerCase()
+                        .trim();
+            };
+
+            Donante donor = null;
+            for (Donante d : DonanteLoader.cargarDonantes()) {
+                if (d == null) continue;
+                String dnId = d.getId() != null ? d.getId().trim() : "";
+                String dnName = d.getName() != null ? d.getName() : "";
+                if (!dnId.isEmpty() && dnId.equalsIgnoreCase(donantePart)) { donor = d; break; }
+                if (normalize.apply(dnName).equals(normalize.apply(donantePart))) { donor = d; break; }
+                if (normalize.apply(dnName).contains(normalize.apply(donantePart)) || normalize.apply(donantePart).contains(normalize.apply(dnName))) { donor = d; break; }
+            }
 
             Paciente receiver = null;
-            for (Paciente p : loaders.PacienteLoader.cargarPacientes()) {
-                if (p.getName().equalsIgnoreCase(pacientePart) || p.getId().equalsIgnoreCase(pacientePart)) {
-                    receiver = p;
-                    break;
-                }
+            for (Paciente p : PacienteLoader.cargarPacientes()) {
+                if (p == null) continue;
+                String pnId = p.getId() != null ? p.getId().trim() : "";
+                String pnName = p.getName() != null ? p.getName() : "";
+                if (!pnId.isEmpty() && pnId.equalsIgnoreCase(pacientePart)) { receiver = p; break; }
+                if (normalize.apply(pnName).equals(normalize.apply(pacientePart))) { receiver = p; break; }
+                if (normalize.apply(pnName).contains(normalize.apply(pacientePart)) || normalize.apply(pacientePart).contains(normalize.apply(pnName))) { receiver = p; break; }
             }
-            if (receiver == null) throw new NotFoundException("Paciente '" + pacientePart + "' no encontrado.");
 
-            // organType no se serializa en el toArchivo actual; usaremos el órgano declarado en el donante
-            String organType = donor.getOrgano();
+            // Si no se encontraron donante o receptor, consideramos la línea inválida para las pruebas
+            if (donor == null || receiver == null) {
+                return null;
+            }
 
-            return new Trasplante(id, organType, donor, receiver, estado, "", "", fecha);
+            // Si falta organo en la línea, tratar de obtenerlo desde el donante
+            if ((organo == null || organo.isBlank()) && donor != null) {
+                organo = donor.getOrgano() != null ? donor.getOrgano() : "";
+            }
+
+            // Crear trasplante (constructor: id, organType, donor, receiver, estado, historial, rejection, fecha)
+            return new Trasplante(id, organo, donor, receiver, estado, "", "", fecha);
         } catch (java.text.ParseException e) {
             System.err.println("Error parseando fecha de trasplante: " + e.getMessage());
-            return null;
-        } catch (NotFoundException e) {
-            System.err.println("Registro de trasplante incompleto: " + e.getMessage());
             return null;
         } catch (Exception e) {
             System.err.println("Error al parsear trasplante: " + e.getMessage());
