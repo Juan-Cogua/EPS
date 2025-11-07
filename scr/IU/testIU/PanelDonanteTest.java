@@ -12,50 +12,35 @@ import model.Cita;
 import model.Donante;
 import loaders.DonanteLoader;
 
-/**
- * Clase de pruebas para {@link PanelDonante} y la clase {@link Donante}.
- * Contiene:
- * <ul>
- *   <li>Pruebas de invariantes y consistencia de datos.</li>
- *   <li>Pruebas unitarias sobre serialización, deserialización y persistencia.</li>
- *   <li>Verificación de métodos de utilidad y conversiones.</li>
- *   <li>Pruebas automáticas para el manejo de excepciones y validaciones.</li>
- * </ul>
- * 
- * <p>Esta clase garantiza la correcta funcionalidad de las operaciones básicas
- * del módulo de donantes dentro del sistema de donación.</p>
- * 
- * @author Andres
- * @author Juan Cogua
- * @version 2.0
- */
 public class PanelDonanteTest {
-    /** Ruta temporal utilizada para pruebas de persistencia. */
     private static final String RUTA_TEST = "DonanteTest.txt";
-    /** Panel de prueba para la interfaz de donante. */
     private PanelDonante panel;
-    /** Objeto Donante utilizado como caso de prueba. */
     private Donante donantePrueba;
 
-    /**
-     * Configura los objetos necesarios antes de cada prueba.
-     * Se inicializa un {@link Donante} válido y una instancia del panel.
-     */
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
+        File archivoTest = new File(RUTA_TEST);
+        if (archivoTest.exists()) {
+            archivoTest.delete();
+        }
+        File archivoAntiguo = new File("Donante.txt");
+        if (archivoAntiguo.exists()) {
+            archivoAntiguo.delete();
+        }
+
         donantePrueba = new Donante(
-            "María González",  // Nombre
-            (byte)35,          // Edad (válida)
-            "D001",            // ID
-            "A+",              // Tipo de sangre
-            "Calle 456",       // Dirección
-            "3009876543",      // Teléfono
-            "Órganos",         // Tipo de donación
-            "Saludable",       // Estado de salud
-            true,              // Elegibilidad
-            "Riñón"            // Órgano
+            "María González",
+            (byte)35,
+            "D001",
+            "A+",
+            "Calle 456",
+            "3009876543",
+            "Órganos",
+            "Saludable",
+            true,
+            "Riñón"
         );
-        
+
         panel = new PanelDonante();
     }
 
@@ -177,16 +162,19 @@ public class PanelDonanteTest {
      * Verifica la función de agregar un nuevo donante a la persistencia
      * mediante {@link DonanteLoader#agregarDonante(Donante)}.
      */
-    @Test
-    public void testAgregarDonante() {
-        DonanteLoader.agregarDonante(donantePrueba);
-        List<Donante> donantes = DonanteLoader.cargarDonantes();
-        
-        boolean encontrado = donantes.stream()
-            .anyMatch(d -> d.getId().equals("D001"));
-        
-        assertTrue(encontrado, "El donante debe estar en la lista");
-    }
+
+ // PanelDonanteTest.java - updated testAgregarDonante()
+ @Test
+ public void testAgregarDonante() throws Exception {
+     DonanteLoader.agregarDonante(donantePrueba);
+     List<Donante> donantes = DonanteLoader.cargarDonantes();
+
+     boolean encontrado = donantes.stream()
+         .anyMatch(d -> d.getId().equals("D001"));
+
+     assertTrue(encontrado, "El donante debe estar en la lista");
+ }
+
 
     // -------------------------------
     // 4. Pruebas de excepciones
@@ -262,12 +250,11 @@ public class PanelDonanteTest {
      */
     @Test
     public void testOrganoInvalido() {
-        Donante donanteOrganoInvalido = new Donante(
-            "Test", (byte)25, "D998", "O+", "Calle", "123",
-            "Órganos", "Saludable", true, "Bazo"
-        );
-        
         assertThrows(Exception.class, () -> {
+            Donante donanteOrganoInvalido = new Donante(
+                "Test", (byte)25, "D998", "O+", "Calle", "123",
+                "Órganos", "Saludable", true, "Bazo"
+            );
             donanteOrganoInvalido.checkInvariant();
         }, "Debe lanzar excepción con órgano no disponible");
     }
@@ -281,6 +268,11 @@ public class PanelDonanteTest {
         File archivo = new File(RUTA_TEST);
         if (archivo.exists()) {
             archivo.delete();
+        }
+        // also clean the legacy file
+        File archivoAntiguo = new File("Donante.txt");
+        if (archivoAntiguo.exists()) {
+            archivoAntiguo.delete();
         }
     }
 }

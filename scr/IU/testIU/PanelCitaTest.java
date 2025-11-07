@@ -15,35 +15,61 @@ import model.Paciente;
 import loaders.CitaLoader;
 
 /**
- * Clase de pruebas para {@link PanelCita}, cubriendo los siguientes aspectos:
- *   <li>1. Invariantes de una clase</li>
- *   <li>2. Métodos para verificación</li>
- *   <li>3. Implementación de pruebas automáticas</li>
- *   <li>4. Pruebas automáticas para el manejo de excepciones</li>
- * </ul>
+ * Clase de pruebas unitarias para PanelCita.
+ * Verifica la correcta funcionalidad del panel de gestión de citas médicas
+ * y su integración con el modelo de datos.
  * 
- * Estas pruebas validan el correcto funcionamiento de la clase {@link Cita}
- * y su integración con el panel de interfaz gráfica {@link PanelCita}.
+ * Cubre los 4 puntos de las pruebas unitarias:
+ * 1. Invariantes de una clase
+ * 2. Métodos para verificación
+ * 3. Implementación de pruebas automáticas
+ * 4. Pruebas automáticas para el manejo de excepciones
  * 
- * @author Andrés
  * @author Juan Cogua
- * @version 2.0
+ * @author Andres Rojas
+ * @version 1.0
  */
 public class PanelCitaTest {
-
+    /** Ruta del archivo de prueba */
     private static final String RUTA_TEST = "CitaTest.txt";
+    
+    /** Panel de citas para las pruebas */
     private PanelCita panel;
+    
+    /** Cita utilizada para las pruebas */
     private Cita citaPrueba;
+    
+    /** Paciente asociado a la cita de prueba */
     private Paciente paciente;
+    
+    /** Formato de fecha utilizado en las pruebas */
     private static final SimpleDateFormat FORMATO_FECHA = new SimpleDateFormat("dd/MM/yyyy");
+    
+    /** Formato de hora utilizado en las pruebas */
     private static final SimpleDateFormat FORMATO_HORA = new SimpleDateFormat("HH:mm");
 
     /**
-     * Configura el entorno de prueba antes de cada ejecución.
-     * Se crea un paciente y una cita de prueba con datos válidos.
+     * Configuración inicial antes de cada prueba.
+     * Crea un paciente, una cita y el panel correspondiente.
+     */
+    /**
+     * Configuración inicial antes de cada prueba.
+     * Crea un paciente, una cita y el panel correspondiente.
      */
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws excepciones.InvalidDataException{
+        // Limpiar archivos antes de cada prueba
+        File archivoCita = new File("Cita.txt");
+        if (archivoCita.exists()) {
+            archivoCita.delete();
+        }
+        
+        File archivoPaciente = new File("Paciente.txt");
+        if (archivoPaciente.exists()) {
+            archivoPaciente.delete();
+        }
+        
+        // Crear datos de prueba
         paciente = new Paciente(
             "Carlos Ruiz",     // name
             (byte)28,          // age
@@ -57,22 +83,33 @@ public class PanelCitaTest {
             new ArrayList<>()  // citas
         );
         
+        // Guardar el paciente para que exista en el sistema
+        List<Paciente> pacientes = new ArrayList<>();
+        pacientes.add(paciente);
+        loaders.PacienteLoader.guardarPacientes(pacientes);
+        
+        // Crear cita de prueba con fecha futura
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.add(java.util.Calendar.DAY_OF_MONTH, 7);
+        Date fechaFutura = cal.getTime();
+        
         citaPrueba = new Cita(
             "C001",            // id
-            new Date(),        // date
-            new Date(),        // time
-            "Centro Médico",   // location
+            fechaFutura,       // date futura
+            fechaFutura,       // time futura
+            "Centro Medico",   // location
             paciente,          // paciente
-            "Dr. López"        // doctor
+            "Dr. Lopez"        // doctor
         );
         
         panel = new PanelCita();
     }
 
-    // 1. Invariantes de la clase
+    // ========== 1. INVARIANTES DE LA CLASE ==========
+    
     /**
-     * Prueba las invariantes de la clase {@link Cita}, verificando que los campos esenciales
-     * no sean nulos y se cumplan las condiciones iniciales del modelo.
+     * Verifica las invariantes del objeto Cita.
+     * Todos los campos obligatorios deben ser no nulos y válidos.
      */
     @Test
     public void testInvariantesCita() {
@@ -86,7 +123,7 @@ public class PanelCitaTest {
     }
 
     /**
-     * Prueba las invariantes del panel de citas, verificando que el panel haya sido inicializado correctamente.
+     * Verifica que el panel se inicialice correctamente.
      */
     @Test
     public void testInvariantesPanel() {
@@ -94,8 +131,7 @@ public class PanelCitaTest {
     }
 
     /**
-     * Prueba que el estado inicial de una cita recién creada sea "Pendiente",
-     * y que no esté ni confirmada ni cancelada.
+     * Verifica que el estado inicial de una cita sea correcto.
      */
     @Test
     public void testEstadoInicial() {
@@ -104,10 +140,11 @@ public class PanelCitaTest {
         assertFalse(citaPrueba.isCancelada(), "La cita no debe estar cancelada inicialmente");
     }
 
-    // 2. Métodos para verificación
+    // ========== 2. MÉTODOS PARA VERIFICACIÓN ==========
+    
     /**
-     * Prueba el método {@link Cita#resumen()} asegurando que el resumen generado
-     * no sea nulo y contenga los datos relevantes de la cita.
+     * Verifica que el método resumen() genere una cadena
+     * con la información relevante de la cita.
      */
     @Test
     public void testResumenCita() {
@@ -117,9 +154,9 @@ public class PanelCitaTest {
         assertTrue(resumen.contains("Dr. López"), "Debe contener el doctor");
     }
 
-    /** 
-     * Prueba el método {@link Cita#toArchivo()} verificando que la serialización
-     * de los datos sea correcta y contenga todos los campos requeridos.
+    /**
+     * Verifica que la serialización de una cita contenga
+     * todos los campos necesarios.
      */
     @Test
     public void testToArchivo() {
@@ -133,7 +170,8 @@ public class PanelCitaTest {
     }
 
     /**
-     * Prueba que el método {@link Cita#confirmar()} cambie correctamente el estado de la cita.
+     * Verifica que el método confirmar() actualice
+     * correctamente el estado de la cita.
      */
     @Test
     public void testConfirmarCita() {
@@ -142,8 +180,8 @@ public class PanelCitaTest {
     }
 
     /**
-     * Prueba que el método {@link Cita#cancelar()} cambie correctamente el estado
-     * y marque la cita como cancelada.
+     * Verifica que el método cancelar() actualice
+     * correctamente el estado de la cita.
      */
     @Test
     public void testCancelarCita() {
@@ -152,10 +190,11 @@ public class PanelCitaTest {
         assertEquals("Cancelada", citaPrueba.getEstado(), "El estado debe ser Cancelada");
     }
 
-    // 3. Implementación de pruebas automáticas
+    // ========== 3. IMPLEMENTACIÓN DE PRUEBAS AUTOMÁTICAS ==========
+    
     /**
-     * Prueba el proceso de persistencia de citas mediante {@link CitaLoader},
-     * verificando que los datos se guarden y se recuperen correctamente del archivo.
+     * Verifica el ciclo completo de guardar y cargar citas,
+     * asegurando la persistencia de datos.
      */
     @Test
     public void testGuardarYCargarCitas() {
@@ -180,8 +219,7 @@ public class PanelCitaTest {
     }
 
     /**
-     * Prueba que el método {@link Cita#setEstado(String)} permita cambiar
-     * correctamente el estado de la cita.
+     * Verifica que se pueda cambiar el estado de una cita.
      */
     @Test
     public void testCambiarEstado() {
@@ -189,8 +227,11 @@ public class PanelCitaTest {
         assertEquals("Aprobada", citaPrueba.getEstado(), "El estado debe cambiar a Aprobada");
     }
 
-    // 4. Pruebas automáticas para el manejo de excepciones
-    /** Prueba que se lance excepción al crear una cita con ID nulo. */
+    // ========== 4. PRUEBAS AUTOMÁTICAS PARA EL MANEJO DE EXCEPCIONES ==========
+    
+    /**
+     * Verifica que se lance excepción al crear una cita con ID nulo.
+     */
     @Test
     public void testIdNulo() {
         assertThrows(Exception.class, () -> {
@@ -198,7 +239,9 @@ public class PanelCitaTest {
         }, "Debe lanzar excepción con ID nulo");
     }
 
-    /** Prueba que se lance excepción al crear una cita con ID vacío. */
+    /**
+     * Verifica que se lance excepción al crear una cita con ID vacío.
+     */
     @Test
     public void testIdVacio() {
         assertThrows(Exception.class, () -> {
@@ -206,7 +249,9 @@ public class PanelCitaTest {
         }, "Debe lanzar excepción con ID vacío");
     }
 
-    /** Prueba que se lance excepción al crear una cita con fecha nula. */
+    /**
+     * Verifica que se lance excepción al crear una cita con fecha nula.
+     */
     @Test
     public void testFechaNula() {
         assertThrows(Exception.class, () -> {
@@ -214,7 +259,9 @@ public class PanelCitaTest {
         }, "Debe lanzar excepción con fecha nula");
     }
 
-    /** Prueba que se lance excepción al crear una cita con hora nula. */
+    /**
+     * Verifica que se lance excepción al crear una cita con hora nula.
+     */
     @Test
     public void testHoraNula() {
         assertThrows(Exception.class, () -> {
@@ -222,7 +269,9 @@ public class PanelCitaTest {
         }, "Debe lanzar excepción con hora nula");
     }
 
-    /** Prueba que se lance excepción al crear una cita con ubicación vacía. */
+    /**
+     * Verifica que se lance excepción al crear una cita con ubicación vacía.
+     */
     @Test
     public void testUbicacionVacia() {
         assertThrows(Exception.class, () -> {
@@ -230,7 +279,9 @@ public class PanelCitaTest {
         }, "Debe lanzar excepción con ubicación vacía");
     }
 
-    /** Prueba que se lance excepción al crear una cita con paciente nulo. */
+    /**
+     * Verifica que se lance excepción al crear una cita con paciente nulo.
+     */
     @Test
     public void testPacienteNulo() {
         assertThrows(Exception.class, () -> {
@@ -238,7 +289,9 @@ public class PanelCitaTest {
         }, "Debe lanzar excepción con paciente nulo");
     }
 
-    /** Prueba que se lance excepción al crear una cita con doctor vacío. */
+    /**
+     * Verifica que se lance excepción al crear una cita con doctor vacío.
+     */
     @Test
     public void testDoctorVacio() {
         assertThrows(Exception.class, () -> {
@@ -247,8 +300,7 @@ public class PanelCitaTest {
     }
 
     /**
-     * Prueba que el método {@link Cita#checkInvariant()} no lance excepciones
-     * cuando la cita cumple todas las condiciones de validez.
+     * Verifica que las invariantes de la cita se cumplan sin lanzar excepciones.
      */
     @Test
     public void testCheckInvariant() {
@@ -258,26 +310,20 @@ public class PanelCitaTest {
     }
 
     /**
-     * Prueba complementaria para verificar que {@link Cita#checkInvariant()}
-     * no arroje excepciones cuando la cita es válida.
-     */
-    @Test
-    public void testCheckInvariantIdNulo() {
-        Cita citaInvalida = new Cita("C999", new Date(), new Date(), "Lugar", paciente, "Doctor");
-        assertDoesNotThrow(() -> {
-            citaInvalida.checkInvariant();
-        }, "Una cita válida no debe lanzar excepción");
-    }
-
-    /**
-     * Limpia los archivos temporales generados durante las pruebas,
-     * eliminando el archivo {@link CitaTest.txt} si existe.
+     * Limpieza después de cada prueba.
+     * Elimina los archivos temporales creados.
      */
     @AfterEach
     public void tearDown() {
-        File archivo = new File(RUTA_TEST);
-        if (archivo.exists()) {
-            archivo.delete();
+        // Limpiar archivos de prueba
+        File archivoCita = new File("Cita.txt");
+        if (archivoCita.exists()) {
+            archivoCita.delete();
+        }
+        
+        File archivoPaciente = new File("Paciente.txt");
+        if (archivoPaciente.exists()) {
+            archivoPaciente.delete();
         }
     }
 }

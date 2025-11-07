@@ -8,6 +8,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import IU.PanelPaciente;
+import excepciones.InvalidDataException;
 import model.Paciente;
 import loaders.PacienteLoader;
 
@@ -43,26 +44,26 @@ public class PanelPacienteTest {
      * y una lista vacía de citas. También se instancia el panel asociado.
      */
     @BeforeEach
-    public void setUp() {
-        List<String> alergias = new ArrayList<>();
+    public void setUp() throws InvalidDataException {
+        List<String> alergias = new ArrayList<String>();
         alergias.add("Polen");
         alergias.add("Penicilina");
-        
+
         pacientePrueba = new Paciente(
-            "Juan Pérez",      // Nombre
-            (byte)30,          // Edad
-            "P001",            // ID
-            "O+",              // Tipo de sangre
-            "Calle 123",       // Dirección
-            "3001234567",      // Teléfono
-            70.5,              // Peso
-            1.75,              // Altura
-            alergias,          // Alergias
-            new ArrayList<>()  // Citas
-        );
-        
-        panel = new PanelPaciente();
-    }
+                "Juan Pérez",
+                (byte)30,
+                "P001",
+                "O+",
+                "Calle 123",
+                "3001234567",
+                70.5,
+                1.75,
+                alergias,
+                new ArrayList<model.Cita>()
+            );
+
+            panel = new PanelPaciente();
+        }
 
     // -------------------------------
     // 1. Invariantes de la clase
