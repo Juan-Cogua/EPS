@@ -1,10 +1,11 @@
 package IU;
 
 import javax.swing.*;
-import java.util.*;
-import model.Paciente;
-import loaders.PacienteLoader;
 import java.awt.*;
+import loaders.PacienteLoader;
+import model.Paciente;
+import javax.swing.SwingUtilities;
+import java.util.*;
 import java.util.List;
 import javax.swing.border.TitledBorder;
 
@@ -154,13 +155,32 @@ public class PanelPaciente extends JPanel {
                                           peso, altura, alergiasList, new ArrayList<>());
 
             PacienteLoader.agregarPaciente(nuevo);
-            listaPacientes = PacienteLoader.cargarPacientes(); 
 
-            limpiarCampos();
-            actualizarArea();
+            // actualizar UI local
+            java.util.List<Paciente> lista = PacienteLoader.cargarPacientes();
+            if (areaPacientes != null) {
+                areaPacientes.setText("");
+                for (Paciente p : lista) {
+                    areaPacientes.append(p.getName() + " [" + p.getId() + "]\n");
+                }
+            }
+
+            // notificar PanelTrasplante en el EDT
+            java.awt.Window w = javax.swing.SwingUtilities.getWindowAncestor(this);
+            if (w instanceof EPS_GUI) {
+                EPS_GUI main = (EPS_GUI) w;
+                SwingUtilities.invokeLater(() -> {
+                    if (main.getPanelTrasplante() != null) {
+                        main.getPanelTrasplante().reloadLists();
+                        main.getPanelTrasplante().revalidate();
+                        main.getPanelTrasplante().repaint();
+                    }
+                });
+            }
+
             JOptionPane.showMessageDialog(this, "Paciente agregado correctamente.");
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Error de formato: Edad, Peso o Altura deben ser números válidos.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Formato numérico inválido", "Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error al agregar paciente: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -195,18 +215,5 @@ public class PanelPaciente extends JPanel {
             areaPacientes.append(p.toString() + "\n");
     }
 
-    /**
-     * Limpia los campos del formulario.
-     */
-    private void limpiarCampos() {
-        txtNombre.setText("");
-        txtEdad.setText("");
-        txtID.setText("");
-        cmbTipoSangre.setSelectedIndex(0); // Reset ComboBox
-        txtDireccion.setText("");
-        txtTelefono.setText("");
-        spinnerPeso.setValue(70.0);
-        spinnerAltura.setValue(1.70);
-        txtAlergias.setText("");
-    }
+
 }

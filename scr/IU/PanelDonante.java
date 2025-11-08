@@ -6,6 +6,8 @@ import java.awt.*;
 import java.util.List;
 import model.Donante;
 import loaders.DonanteLoader;
+import javax.swing.SwingUtilities;
+import java.awt.Window;
 
 /**
  * Panel para la gestion de los Donantes
@@ -121,27 +123,60 @@ public class PanelDonante extends JPanel {
     private void agregarDonante() {
         try {
             String nombre = txtNombre.getText().trim();
-            byte edad = Byte.parseByte(txtEdad.getText().trim());
+            byte edad = (byte) (txtEdad.getText().trim().isEmpty() ? 0 : Byte.parseByte(txtEdad.getText().trim()));
             String id = txtID.getText().trim();
             String tipoSangre = (String) cmbTipoSangre.getSelectedItem();
             String direccion = txtDireccion.getText().trim();
             String telefono = txtTelefono.getText().trim();
-            String tipoDonacion = txtTipoDonacion.getText().trim();
+            String tipoDonacionText = txtTipoDonacion.getText().trim();
             String salud = txtSalud.getText().trim();
             boolean elegible = chkElegible.isSelected();
-            String organo = (String) cmbOrgano.getSelectedItem();
+            String organoSeleccionado = cmbOrgano == null ? "" : (String) cmbOrgano.getSelectedItem();
 
-            Donante nuevo = new Donante(nombre, edad, id, tipoSangre, direccion, telefono, 
-                                        tipoDonacion, salud, elegible, organo);
+            // lógica: si el campo tipoDonacion contiene "sangre" -> donationType = "Sangre"
+            // si se selecciona un órgano, eso debe ir en el campo organo (y donationType='Órganos' o el texto que pongas)
+            String donationType;
+            String organo;
+            if (!tipoDonacionText.isEmpty() && tipoDonacionText.equalsIgnoreCase("sangre")) {
+                donationType = "Sangre";
+                organo = "";
+            } else if (organoSeleccionado != null && !organoSeleccionado.isBlank() && !organoSeleccionado.equalsIgnoreCase("Seleccionar")) {
+                donationType = tipoDonacionText.isEmpty() ? "Órganos" : tipoDonacionText;
+                organo = organoSeleccionado;
+            } else {
+                // por defecto usar lo que escriba el usuario en tipoDonacion (puede ser "Sangre" u otra cosa)
+                donationType = tipoDonacionText;
+                organo = "";
+            }
 
+            Donante nuevo = new Donante(nombre, edad, id, tipoSangre, direccion, telefono,
+                    donationType, salud, elegible, organo);
+
+            // usa loader append
             DonanteLoader.agregarDonante(nuevo);
-            listaDonantes = DonanteLoader.cargarDonantes();
 
-            limpiarCampos();
-            actualizarArea();
+            // recargar lista local y UI
+            List<Donante> listaDonantes = DonanteLoader.cargarDonantes();
+            // actualizar areaDonantes o componentes (asegurar areaDonantes exist)
+            if (areaDonantes != null) {
+                areaDonantes.setText("");
+                for (Donante d : listaDonantes) {
+                    areaDonantes.append(d.toString());
+                    areaDonantes.append("\n");
+                }
+            }
+
+            // notificar al PanelTrasplante para recargar sus combos/listas
+            Window w = SwingUtilities.getWindowAncestor(this);
+            if (w instanceof EPS_GUI) {
+                EPS_GUI main = (EPS_GUI) w;
+                if (main.getPanelTrasplante() != null) main.getPanelTrasplante().reloadLists();
+            }
+
             JOptionPane.showMessageDialog(this, "Donante agregado correctamente.");
+
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "La edad tiene un formato inválido.", "Error de Entrada", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Edad inválida", "Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error al agregar donante: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -171,16 +206,5 @@ public class PanelDonante extends JPanel {
         }
     }
 
-    private void limpiarCampos() {
-        txtNombre.setText("");
-        txtEdad.setText("");
-        txtID.setText("");
-        cmbTipoSangre.setSelectedIndex(0);
-        txtDireccion.setText("");
-        txtTelefono.setText("");
-        txtTipoDonacion.setText("");
-        txtSalud.setText("");
-        cmbOrgano.setSelectedIndex(0);
-        chkElegible.setSelected(false);
-    }
+
 }

@@ -6,12 +6,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import loaders.PacienteLoader;
+import loaders.DonanteLoader;
 import model.Trasplante;
 import model.Donante;
 import model.Paciente;
 import loaders.TrasplanteLoader;
-import loaders.DonanteLoader;
-import loaders.PacienteLoader;
 import excepciones.TrasplanteInvalidoException;
 import excepciones.SangreIncompatibleException;
 import excepciones.FechaInvalidaException;
@@ -45,6 +45,7 @@ import excepciones.InvariantViolationException;
 
   private static final SimpleDateFormat FORMATO_FECHA = new SimpleDateFormat("dd/MM/yyyy");
   private static final String[] ESTADOS = {"Pendiente", "Aprobado", "Cancelada"};
+
 
   /**
 
@@ -244,19 +245,7 @@ import excepciones.InvariantViolationException;
   * @param label etiqueta de la lista.
   * @return tipo de sangre encontrado o cadena vacía si no se detecta.
     */
-    private String extraerSangreDesdeLabel(String label) {
-    if (label == null) return "";
-    int idx = label.indexOf("Sangre: ");
-    if (idx >= 0) {
-    int fin = label.indexOf("|", idx + 8);
-    if (fin > idx) {
-    return label.substring(idx + 8, fin).trim();
-    } else {
-    return label.substring(idx + 8).trim();
-    }
-    }
-    return "";
-    }
+
 
   /**
 
@@ -368,5 +357,81 @@ import excepciones.InvariantViolationException;
     donorName, donorId,
     receiverName, receiverId,
     historial, motivo);
+    }
+
+    // Método público para recargar las listas desde los txt (llamado por otros paneles)
+    public void reloadLists() {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            try {
+                java.util.List<Paciente> pacientes = PacienteLoader.cargarPacientes();
+                java.util.List<Donante> donantes = DonanteLoader.cargarDonantes();
+
+                javax.swing.DefaultListModel<String> modelP = new javax.swing.DefaultListModel<>();
+                for (Paciente p : pacientes) {
+                    String nombre = (p == null ? "N/A" : (safeName(p)));
+                    String id = (p == null ? "N/A" : (p.getId() != null ? p.getId() : "N/A"));
+                    String sangre = "";
+                    try { sangre = (p.getBloodType() != null ? p.getBloodType() : p.getBloodType()); } catch (Exception ex) { sangre = ""; }
+
+                    String alergias = obtenerAlergias(p);
+                    if (alergias == null || alergias.trim().isEmpty()) alergias = "Ninguna";
+
+                    modelP.addElement(nombre + " (ID: " + id + ") | Sangre: " + sangre + " | Alergias: " + alergias);
+                }
+
+                javax.swing.DefaultListModel<String> modelD = new javax.swing.DefaultListModel<>();
+                for (Donante d : donantes) {
+                    String nombre = (d == null ? "N/A" : (d.getName() != null ? d.getName() : d.getName()));
+                    String id = (d == null ? "N/A" : (d.getId() != null ? d.getId() : "N/A"));
+                    String sangre = "";
+                    try { sangre = (d.getBloodType() != null ? d.getBloodType() : d.getBloodType()); } catch (Exception ex) { sangre = ""; }
+                    String organo = "";
+                    try { organo = (d.getOrgano() != null ? d.getOrgano() : ""); } catch (Exception ex) { organo = ""; }
+                    modelD.addElement(nombre + " (ID: " + id + ") | Sangre: " + sangre + " | Dona: " + organo);
+                }
+
+                if (listaPacientes != null) listaPacientes.setModel(modelP);
+                if (listaDonantes != null) listaDonantes.setModel(modelD);
+
+                revalidate();
+                repaint();
+                System.out.println("reloadLists(): pacientes=" + modelP.getSize() + " donantes=" + modelD.getSize());
+            } catch (Exception ex) {
+                System.err.println("reloadLists error: " + ex.getMessage());
+            }
+        });
+    }
+
+    // helper: intenta obtener el campo "alergias" probando varios getters por reflexión
+    private String obtenerAlergias(Paciente p) {
+        if (p == null) return "";
+        String[] candidates = {"getAlergias", "getAlergiasString", "getAllergies", "getAllergy", "getAlergia", "getAlergenos"};
+        for (String mName : candidates) {
+            try {
+                java.lang.reflect.Method m = p.getClass().getMethod(mName);
+                Object res = m.invoke(p);
+                if (res != null) return res.toString();
+            } catch (NoSuchMethodException e) {
+                // siguiente candidato
+            } catch (Exception e) {
+                // si falla la invocación, seguir intentando con otros nombres
+            }
+        }
+        // si no hay getter, intentar campo público "alergias" (raro)
+        try {
+            java.lang.reflect.Field f = p.getClass().getField("alergias");
+            Object val = f.get(p);
+            if (val != null) return val.toString();
+        } catch (Exception ex) {
+            // ignorar
+        }
+        return "";
+    }
+
+    // helper para nombre seguro (soporta getName()/getNombre())
+    private String safeName(Paciente p) {
+        try { if (p.getName() != null) return p.getName(); } catch (Throwable t) {}
+        try { if (p.getName() != null) return p.getName(); } catch (Throwable t) {}
+        return "N/A";
     }
   }

@@ -4,7 +4,7 @@ import excepciones.InvalidDataException;
 import excepciones.InvariantViolationException;
 import java.util.Date;
 import java.text.SimpleDateFormat;
-import java.text.Normalizer;
+
 
 /**
  * Clase que representa una cita médica.

@@ -1,1 +1,25 @@
 Juan Pérez;30;P001;O+;Calle 123;3001234567;70.5;1.75;Polen,Penicilina
+Ana Gómez;28;P002;A+;Carrera 4 #12-50;3101112222;62.0;1.66;Ácaros
+Carlos López;45;P003;B-;Avenida 7 #3-20;3203334444;80.0;1.8;
+María Ruiz;52;P004;O-;Calle 5 #2-10;3115556666;68.0;1.62;Aspirina
+Luis Martínez;36;P005;AB+;Cra 10 #30-15;3127778888;74.5;1.78;Polen
+Sofía Díaz;22;P006;A-;Cl 14 #7-21;3139990000;58.0;1.6;Mariscos
+Andrés Torres;40;P007;B+;Av 2 #9-40;3141010101;82.3;1.82;
+Valentina Rojas;31;P008;O+;Cll 6 #18-33;3151212121;65.5;1.68;Lácteos
+Diego Castro;27;P009;A+;Calle 11 #4-66;3161313131;77.0;1.79;
+Camila Herrera;19;P010;B-;Carrera 1 #1-02;3171414141;55.0;1.63;Penicilina
+Mauricio Peña;60;P011;O+;Cl 20 #10-20;3181515151;85.0;1.74;
+Lorena Vega;34;P012;AB-;Av 15 #8-30;3191616161;66.8;1.65;
+Jorge Salazar;48;P013;A+;Cra 18 #12-05;3201717171;90.0;1.85;Ninguna
+Patricia Molina;42;P014;B+;Cll 2 #3-60;3211818181;70.2;1.7;Ácaros
+Esteban Jiménez;55;P015;O-;Av 9 #7-10;3221919191;78.6;1.76;Aspirina
+Natalia Uribe;25;P016;A-;Cl 8 #6-44;3232020202;59.4;1.64;
+Fernando Pérez;38;P017;AB+;Cra 5 #11-22;3242121212;83.7;1.81;Mariscos
+Lucía Sánchez;29;P018;O+;Cll 19 #5-18;3252222222;61.0;1.67;Polen
+Óscar Medina;47;P019;B-;Av 12 #2-14;3262323232;88.0;1.83;
+Isabel Contreras;16;P020;A+;Cll 3 #9-01;3272424242;52.0;1.58;
+Juan;13;12345;O+;dcwscv;3204729358;70.0;1.7;
+juan;12;321;O+;sd;32;70.0;1.7;
+QETRWE;14;7655;O+;;;70.0;1.7;
+AQEFERW;14;8657;O+;;;70.0;1.7;
+AQEFERW;14;8657;O+;;;70.0;1.7;

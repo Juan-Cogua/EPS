@@ -14,6 +14,11 @@ import java.awt.*;
 public class EPS_GUI extends JFrame {
 
     private JTabbedPane pestañas;
+    // <-- mantener referencias a los paneles para notificaciones
+    private PanelPaciente panelPaciente;
+    private PanelDonante panelDonante;
+    private PanelTrasplante panelTrasplante;
+    private PanelCita panelCita;
 
     public EPS_GUI() {
         setTitle("Sistema EPS");
@@ -23,13 +28,25 @@ public class EPS_GUI extends JFrame {
 
         pestañas = new JTabbedPane();
 
-        pestañas.addTab("Pacientes", new PanelPaciente());
-        pestañas.addTab("Donantes", new PanelDonante());
-        pestañas.addTab("Trasplantes", new PanelTrasplante());
-        pestañas.addTab("Citas", new PanelCita());
+        // usar campos para poder obtener referencias desde otros paneles
+        panelPaciente = new PanelPaciente();
+        panelDonante = new PanelDonante();
+        panelTrasplante = new PanelTrasplante();
+        panelCita = new PanelCita();
+
+        pestañas.addTab("Pacientes", panelPaciente);
+        pestañas.addTab("Donantes", panelDonante);
+        pestañas.addTab("Trasplantes", panelTrasplante);
+        pestañas.addTab("Citas", panelCita);
 
         add(pestañas, BorderLayout.CENTER);
     }
+
+    // getters para notificar recarga
+    public PanelPaciente getPanelPaciente() { return panelPaciente; }
+    public PanelDonante getPanelDonante() { return panelDonante; }
+    public PanelTrasplante getPanelTrasplante() { return panelTrasplante; }
+    public PanelCita getPanelCita() { return panelCita; }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

@@ -1,6 +1,5 @@
 package model;
 
-import excepciones.InvalidDataException;
 import excepciones.InvariantViolationException;
 import excepciones.SangreIncompatibleException;
 import java.util.Date;

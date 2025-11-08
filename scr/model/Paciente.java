@@ -4,7 +4,7 @@ import excepciones.InvalidDataException;
 import excepciones.InvariantViolationException;
 import java.util.ArrayList;
 import java.util.List;
-import model.Cita;
+
 
 /**
  * Clase que representa un paciente, heredando de Persona.
@@ -22,18 +22,19 @@ public class Paciente extends Persona {
 
     private static List<Paciente> pacientes = new ArrayList<>();
 
-    public Paciente(String name, byte age, String id, String bloodType, String address, String phone,
-                    double weight, double height, List<String> allergies, List<Cita> citas) throws InvalidDataException {
-        super(name, age, id, bloodType, address, phone);
+    public Paciente(String nombre, byte edad, String id, String tipoSangre, String direccion, String telefono,
+                    double peso, double altura, java.util.List<String> alergias, java.util.List<Cita> citas) throws InvalidDataException {
+        super(nombre, edad, id, tipoSangre, direccion, telefono);
 
         // validaciones: lanzar, no capturar
-        if (weight < 0) throw new InvalidDataException("El peso no puede ser negativo.");
-        if (height < 0) throw new InvalidDataException("La altura no puede ser negativa.");
+        if (peso < 0) throw new InvalidDataException("El peso no puede ser negativo.");
+        if (altura < 0) throw new InvalidDataException("La altura no puede ser negativa.");
 
-        this.weight = weight;
-        this.height = height;
-        this.allergies = allergies != null ? allergies : new ArrayList<>();
-        this.citas = citas != null ? citas : new ArrayList<>();
+        this.weight = peso;
+        this.height = altura;
+        // normalizar listas: nunca dejar null
+        this.allergies = (alergias == null) ? new java.util.ArrayList<>() : new java.util.ArrayList<>(alergias);
+        this.citas = (citas == null) ? new java.util.ArrayList<>() : new java.util.ArrayList<>(citas);
     }
 
     /**

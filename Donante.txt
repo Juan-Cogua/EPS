@@ -10,4 +10,15 @@ Isabela Cruz;33;D019;A-;Avenida 25 #6-18;3112345678;Órganos;Buena;1;Corazón
 Ricardo Díaz;42;D020;AB-;Calle 7 #8-25;3189012345;Sangre;Excelente;1;Riñón
 Gabriela Vargas;31;D021;O+;Carrera 4 #12-40;3190123456;Órganos;Buena;1;Páncreas
 Sebastián Moreno;36;D022;A+;Avenida 8 #20-50;3134567890;Sangre;Excelente;1;Corazón
-Juan;18;1029645745;A+;;;Organo;Bueno;0;Corazón
+Andrea Castillo;26;D023;B+;Cl 21 #2-14;3102223333;Órganos;Buena;1;Hígado
+Roberto Muñoz;58;D024;O-;Cra 16 #19-10;3113334444;Sangre;Regular;1;Riñón
+Camila Ortiz;24;D025;A+;Av 6 #7-26;3124445555;Órganos;Excelente;1;Pulmón
+Alberto León;39;D026;B-;Cll 12 #8-18;3135556666;Sangre;Buena;1;Corazón
+Mariana Peña;32;D027;AB+;Cra 2 #3-09;3146667777;Órganos;Excelente;1;Páncreas
+Héctor Rojas;47;D028;O+;Av 11 #5-30;3157778888;Sangre;Buena;1;Riñón
+Gloria Navarro;44;D029;A-;Cl 17 #10-02;3168889999;Órganos;Regular;1;Hígado
+Diego Vargas;29;D030;AB-;Cra 8 #4-44;3179990000;Sangre;Bueno;1;Pulmón
+carlos;18;12345;A+;awrwr;3204729358;Organo;Bueno;1;Corazón
+juan;18;123;A+;clklo 3a;3204729358;Organo;BIEN;1;Corazón
+maria;18;98776;A+;wsrqwe;3205749358;Organo;bueno;1;Corazón
+DSWRFE;18;1423;A+;;;Órganos;bUENOP;0;Hígado
