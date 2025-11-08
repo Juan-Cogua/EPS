@@ -3,7 +3,6 @@ package loaders;
 import java.io.*;
 import java.util.*;
 import model.Donante;
-import excepciones.InvalidDataException;
 import excepciones.NotFoundException;
 
 /**
@@ -61,33 +60,22 @@ public class DonanteLoader {
     public static void guardarDonantes(List<Donante> lista) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(RUTA))) {
             for (Donante d : lista) {
-                // Se guardan los 10 campos que se asume maneja el archivo Donante.txt
-                pw.println(String.join(";",
-                        d.getName(),
-                        String.valueOf(d.getAge()),
-                        d.getId(),
-                        d.getBloodType(),
-                        d.getAddress(),
-                        d.getPhone(),
-                        d.getDonationType(),
-                        d.getHealthStatus(),
-                        d.isEligibility() ? "1" : "0",
-                        d.getOrgano()
-                ));
+                // usar el serializador común
+                pw.println(toArchivo(d));
             }
         } catch (IOException e) {
             System.err.println("Error al guardar donantes: " + e.getMessage());
         }
     }
 
-    public static void agregarDonante(Donante nuevo) throws InvalidDataException {
-        ArrayList<Donante> lista = cargarDonantes();
-        // Se previene duplicidad por ID
-        if (lista.stream().noneMatch(d -> d.getId().equalsIgnoreCase(nuevo.getId()))) {
-            lista.add(nuevo);
-            guardarDonantes(lista);
-        } else {
-            throw new InvalidDataException("El ID del donante ya existe: " + nuevo.getId());
+    public static void agregarDonante(Donante d) {
+        if (d == null) return;
+        String linea = toArchivo(d); // usar el serializador ya existente
+        try {
+            java.nio.file.Files.write(java.nio.file.Paths.get(RUTA), (linea + System.lineSeparator()).getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                    java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+        } catch (java.io.IOException e) {
+            System.err.println("Error al agregar donante (append): " + e.getMessage());
         }
     }
 
@@ -110,5 +98,26 @@ public class DonanteLoader {
             }
         }
         throw new excepciones.NotFoundException("Donante con ID '" + id + "' no encontrado.");
+    }
+
+    // --- Serialización auxiliar ---
+    private static String toArchivo(Donante d) {
+        if (d == null) return "";
+        return String.join(";",
+                safe(d.getName()),
+                String.valueOf(d.getAge()),
+                safe(d.getId()),
+                safe(d.getBloodType()),
+                safe(d.getAddress()),
+                safe(d.getPhone()),
+                safe(d.getDonationType()),
+                safe(d.getHealthStatus()),
+                d.isEligibility() ? "1" : "0",
+                safe(d.getOrgano())
+        );
+    }
+
+    private static String safe(String s) {
+        return s == null ? "" : s;
     }
 }
