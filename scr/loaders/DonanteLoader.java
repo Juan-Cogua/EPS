@@ -57,6 +57,10 @@ public class DonanteLoader {
         return lista;
     }
 
+    /**
+     * agrega la lista de donantes al archivo Donante.txt
+     * @param lista
+     */
     public static void guardarDonantes(List<Donante> lista) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(RUTA))) {
             for (Donante d : lista) {
@@ -68,17 +72,44 @@ public class DonanteLoader {
         }
     }
 
-    public static void agregarDonante(Donante d) {
+    /**
+     * agrega los donantes al archivo, verificando que no haya duplicados por ID(apoyo para la el funcionamiento del test {@linkplain test.AgregarDonanteTest#testAgregarDonanteDuplicado() }).
+     * @param d
+     * @throws excepciones.InvalidDataException
+     */
+    public static void agregarDonante(Donante d) throws excepciones.InvalidDataException {
         if (d == null) return;
-        String linea = toArchivo(d); // usar el serializador ya existente
+
+        // Cargar donantes existentes
+        ArrayList<Donante> lista = cargarDonantes();
+
+        // Verificar duplicado por ID
+        for (Donante existente : lista) {
+            if (existente.getId().equalsIgnoreCase(d.getId())) {
+                throw new excepciones.InvalidDataException("Ya existe un donante con el ID: " + d.getId());
+            }
+        }
+
+        // Si no existe, agregar normalmente
+        String linea = toArchivo(d);
         try {
-            java.nio.file.Files.write(java.nio.file.Paths.get(RUTA), (linea + System.lineSeparator()).getBytes(java.nio.charset.StandardCharsets.UTF_8),
-                    java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+            java.nio.file.Files.write(
+                java.nio.file.Paths.get(RUTA),
+                (linea + System.lineSeparator()).getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                java.nio.file.StandardOpenOption.CREATE,
+                java.nio.file.StandardOpenOption.APPEND
+            );
         } catch (java.io.IOException e) {
             System.err.println("Error al agregar donante (append): " + e.getMessage());
         }
     }
 
+
+    /**elimina un donante por su ID.
+     * @param id
+     * @return
+     * @throws NotFoundException
+     */
     public static boolean eliminarDonante(String id) throws NotFoundException {
         ArrayList<Donante> lista = cargarDonantes();
         boolean eliminado = lista.removeIf(d -> d.getId().equalsIgnoreCase(id));
@@ -90,6 +121,10 @@ public class DonanteLoader {
         }
     }
     
+    /**busca un donante por su ID.
+     * @param id
+     * @return
+     */
     public static Donante buscarDonantePorId(String id) {
         ArrayList<Donante> lista = cargarDonantes();
         for (Donante d : lista) {
